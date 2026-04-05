@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRD Records Catalogue</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1e1e1e;
+  --surface3: #2a2a2a;
+  --border: #333;
+  --accent: #e8c547;
+  --accent2: #c47b2e;
+  --text: #f0ece4;
+  --text2: #a09890;
+  --text3: #606060;
+  --danger: #e05252;
+  --success: #52c478;
+  --radius: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+input, select, textarea { font-family: inherit; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; outline: none; transition: border-color .2s; }
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
+.hidden { display: none !important; }
+
+/* ── Header ── */
+#header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,10,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 20px;
+}
+#header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.6rem,4vw,2.2rem);
+  letter-spacing: .08em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+#header h1 span { color: var(--text2); font-size: .7em; }
+.header-stats { font-size: .78rem; color: var(--text2); white-space: nowrap; }
+.header-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+.btn { padding: 8px 16px; border-radius: var(--radius); font-size: .85rem; font-weight: 500; transition: all .15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #f0d060; }
+.btn-ghost { border: 1px solid var(--border); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: .85; }
+.btn-sm { padding: 5px 11px; font-size: .78rem; }
+.btn-icon { width: 34px; height: 34px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); color: var(--text2); transition: all .15s; }
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+.btn-icon.active { border-color: var(--accent); color: var(--accent); background: rgba(232,197,71,.12); }
+
+/* ── Login ── */
+#login-screen {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 48px 40px; width: 360px; max-width: 90vw;
+  text-align: center;
+}
+.login-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; color: var(--accent); letter-spacing: .1em; margin-bottom: 4px; }
+.login-box p { color: var(--text2); font-size: .9rem; margin-bottom: 32px; }
+.login-box input { width: 100%; margin-bottom: 12px; padding: 12px 16px; font-size: 1rem; }
+.login-box .btn { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 8px; }
+#login-error { color: var(--danger); font-size: .82rem; min-height: 20px; margin-top: 4px; }
+.login-hint { margin-top: 20px; font-size: .78rem; color: var(--text3); border-top: 1px solid var(--border); padding-top: 16px; text-align: left; }
+.login-hint b { color: var(--text2); }
+
+/* ── Layout ── */
+#app { display: flex; height: calc(100vh - 57px); }
+#sidebar {
+  width: 260px; min-width: 260px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 16px 0;
+  transition: transform .3s;
+}
+@media (max-width: 768px) {
+  #sidebar { position: fixed; top: 57px; left: 0; bottom: 0; z-index: 50; transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); }
+  #sidebar-overlay { position: fixed; inset: 0; z-index: 49; background: rgba(0,0,0,.6); display: none; }
+  #sidebar-overlay.open { display: block; }
+}
+#main { flex: 1; overflow-y: auto; }
+
+/* ── Sidebar ── */
+.sidebar-section { padding: 0 12px 16px; }
+.sidebar-title { font-family: 'DM Mono', monospace; font-size: .7rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text3); padding: 0 4px 8px; }
+.sidebar-sep { height: 1px; background: var(--border); margin: 4px 0 12px; }
+.filter-group { margin-bottom: 8px; }
+.filter-group label { font-size: .78rem; color: var(--text2); display: block; margin-bottom: 4px; }
+.filter-group select, .filter-group input { width: 100%; font-size: .82rem; }
+.filter-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='%23606060'%3E%3Cpath d='M0 0l6 8 6-8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
+.range-row { display: flex; gap: 6px; }
+.range-row input { width: 50%; }
+.quick-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick-filter button { font-size: .75rem; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--text2); transition: all .15s; }
+.quick-filter button:hover, .quick-filter button.active { background: var(--accent); border-color: var(--accent); color: #000; }
+.sidebar-count { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); text-align: right; padding: 0 4px; margin-top: 8px; }
+
+/* ── Toolbar ── */
+#toolbar {
+  padding: 12px 20px; display: flex; gap: 10px; align-items: center;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  position: sticky; top: 0; background: var(--bg); z-index: 10;
+}
+#search-input { flex: 1; min-width: 180px; font-size: .9rem; padding: 9px 14px; }
+.view-toggle { display: flex; gap: 2px; }
+.sort-select { font-size: .82rem; padding: 7px 28px 7px 10px; }
+.toolbar-info { font-size: .8rem; color: var(--text3); white-space: nowrap; }
+#mobile-filter-btn { display: none; }
+@media (max-width: 768px) {
+  #mobile-filter-btn { display: flex; }
+  .toolbar-info { display: none; }
+}
+
+/* ── Grid View ── */
+#catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 2px; padding: 2px;
+}
+@media (max-width: 480px) {
+  #catalogue-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+}
+.album-card {
+  position: relative; cursor: pointer;
+  aspect-ratio: 1; overflow: hidden;
+  background: var(--surface2);
+  transition: transform .2s;
+}
+.album-card:hover { transform: scale(1.03); z-index: 2; }
+.album-card:hover .card-overlay { opacity: 1; }
+.album-art { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-placeholder {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 12px; text-align: center;
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
+}
+.card-placeholder .ph-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: .4; }
+.card-placeholder .ph-artist { font-size: .68rem; color: var(--text2); font-weight: 600; margin-bottom: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.card-placeholder .ph-title { font-size: .62rem; color: var(--text3); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.card-overlay {
+  position: absolute; inset: 0; opacity: 0; transition: opacity .2s;
+  background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 60%);
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 10px;
+}
+.card-overlay .co-artist { font-size: .68rem; color: var(--accent); font-weight: 600; }
+.card-overlay .co-title { font-size: .7rem; color: var(--text); line-height: 1.3; }
+.card-badges { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; gap: 4px; }
+.badge { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .7rem; }
+.badge-listened { background: var(--success); }
+.badge-fav { background: var(--accent); }
+.badge-nofound { background: var(--surface); border: 1px solid var(--border); font-size: .55rem; color: var(--text3); }
+.card-year { position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,.7); font-family: 'DM Mono', monospace; font-size: .62rem; color: var(--text2); padding: 2px 5px; border-radius: 4px; }
+
+/* ── List View ── */
+#catalogue-list { padding: 0 20px; }
+.list-header {
+  display: grid; grid-template-columns: 50px 40px 2fr 3fr 1fr 1fr 80px 70px;
+  gap: 12px; padding: 10px 12px;
+  font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .08em;
+  border-bottom: 1px solid var(--border); cursor: pointer;
+}
+.list-header span:hover { color: var(--text2); }
+.list-row {
+  display: grid; grid-template-columns: 50px 40px 2fr 3fr 1fr 1fr 80px 70px;
+  gap: 12px; padding: 10px 12px;
+  border-bottom: 1px solid rgba(51,51,51,.5);
+  cursor: pointer; transition: background .15s; align-items: center;
+}
+.list-row:hover { background: var(--surface); }
+.list-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.list-thumb img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+.list-id { font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--text3); }
+.list-artist { font-weight: 600; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-title { font-size: .85rem; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-genre { font-size: .75rem; color: var(--text3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-year { font-family: 'DM Mono', monospace; font-size: .78rem; color: var(--text2); }
+.list-flags { display: flex; gap: 4px; }
+.flag { font-size: .75rem; opacity: .5; }
+.flag.on { opacity: 1; }
+.list-actions { display: flex; gap: 4px; }
+@media (max-width: 900px) {
+  .list-header, .list-row { grid-template-columns: 40px 2fr 3fr 60px; }
+  .list-header :nth-child(1), .list-row :nth-child(1),
+  .list-header :nth-child(5), .list-row :nth-child(5),
+  .list-header :nth-child(6), .list-row :nth-child(6),
+  .list-header :nth-child(8), .list-row :nth-child(8) { display: none; }
+}
+@media (max-width: 600px) {
+  .list-header, .list-row { grid-template-columns: 40px 1fr 60px; }
+  .list-header :nth-child(4), .list-row :nth-child(4) { display: none; }
+}
+
+/* ── Detail Modal ── */
+#detail-modal {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,.8); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#detail-modal.open { opacity: 1; pointer-events: all; }
+.detail-sheet {
+  width: 100%; max-height: 92vh;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  transform: translateY(100%); transition: transform .3s cubic-bezier(.4,0,.2,1);
+  padding-bottom: 40px;
+}
+#detail-modal.open .detail-sheet { transform: translateY(0); }
+@media (min-width: 768px) {
+  #detail-modal { align-items: center; justify-content: center; }
+  .detail-sheet { border-radius: 16px; max-width: 780px; max-height: 88vh; }
+}
+.detail-hero {
+  display: flex; gap: 24px; padding: 28px 28px 20px;
+  position: relative;
+}
+.detail-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface3); display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; color: var(--text2); transition: all .15s;
+}
+.detail-close:hover { background: var(--border); color: var(--text); }
+.detail-art-wrap {
+  flex-shrink: 0; width: 140px; height: 140px;
+  border-radius: 8px; overflow: hidden;
+  background: var(--surface3); position: relative;
+  cursor: pointer;
+}
+.detail-art-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-art-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; }
+.art-change-hint {
+  position: absolute; inset: 0; background: rgba(0,0,0,.7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .75rem; color: var(--text); opacity: 0; transition: opacity .2s; text-align: center; padding: 8px;
+}
+.detail-art-wrap:hover .art-change-hint { opacity: 1; }
+.detail-info { flex: 1; min-width: 0; }
+.detail-id { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); margin-bottom: 6px; }
+.detail-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 5vw, 2rem); color: var(--accent); letter-spacing: .05em; line-height: 1; margin-bottom: 4px; }
+.detail-title { font-size: clamp(.9rem, 3vw, 1.2rem); color: var(--text); margin-bottom: 12px; }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.meta-tag { font-size: .72rem; padding: 3px 10px; border-radius: 20px; background: var(--surface3); color: var(--text2); }
+.meta-tag.highlight { background: rgba(232,197,71,.15); color: var(--accent); }
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.detail-body { padding: 0 28px; }
+.detail-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+.detail-tab { padding: 10px 16px; font-size: .85rem; color: var(--text2); border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; }
+.detail-tab:hover { color: var(--text); }
+.detail-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.section-label { font-family: 'DM Mono', monospace; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin-bottom: 10px; }
+.bio-text { font-size: .88rem; line-height: 1.7; color: var(--text2); }
+.bio-text p { margin-bottom: 12px; }
+.loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.track-list { list-style: none; }
+.track-item {
+  display: flex; align-items: center; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid rgba(51,51,51,.5);
+}
+.track-num { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); width: 20px; text-align: right; flex-shrink: 0; }
+.track-name { flex: 1; font-size: .88rem; }
+.track-fav { font-size: .9rem; opacity: .3; transition: opacity .15s; cursor: pointer; }
+.track-fav:hover, .track-fav.on { opacity: 1; color: var(--accent); }
+.track-del { font-size: .8rem; opacity: .2; cursor: pointer; transition: opacity .15s; color: var(--danger); }
+.track-del:hover { opacity: 1; }
+.track-add { display: flex; gap: 8px; margin-top: 12px; }
+.track-add input { flex: 1; }
+.art-search-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 12px; }
+.art-search-result { cursor: pointer; border-radius: 8px; overflow: hidden; border: 2px solid transparent; transition: all .2s; aspect-ratio: 1; }
+.art-search-result:hover { border-color: var(--accent); transform: scale(1.04); }
+.art-search-result img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.art-search-result.selected { border-color: var(--success); }
+.tracklist-search-result {
+  background: var(--surface2); border-radius: 8px; padding: 12px;
+  cursor: pointer; border: 2px solid transparent; margin-bottom: 8px; transition: border-color .2s;
+}
+.tracklist-search-result:hover { border-color: var(--accent); }
+.tracklist-search-result.selected { border-color: var(--success); }
+.tracklist-source { font-size: .72rem; color: var(--accent); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+.tracklist-tracks { list-style: none; }
+.tracklist-tracks li { font-size: .82rem; color: var(--text2); padding: 3px 0; display: flex; gap: 8px; }
+.tracklist-tracks li span:first-child { color: var(--text3); min-width: 20px; }
+.notes-area { width: 100%; min-height: 80px; font-size: .88rem; resize: vertical; }
+.field-row { margin-bottom: 16px; }
+.field-row label { display: block; font-size: .78rem; color: var(--text2); margin-bottom: 6px; }
+.field-row input, .field-row select { width: 100%; }
+.field-save { display: flex; justify-content: flex-end; margin-top: 8px; gap: 8px; }
+.admin-only { display: none; }
+body.is-admin .admin-only { display: flex; }
+body.is-admin .admin-only-inline { display: inline-flex; }
+.readonly-tag { background: rgba(255,255,255,.06); color: var(--text3); font-size: .7rem; padding: 3px 8px; border-radius: 4px; }
+
+/* ── Wheel ── */
+#wheel-modal {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.92); backdrop-filter: blur(8px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+#wheel-modal.open { opacity: 1; pointer-events: all; }
+#wheel-modal h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--accent); letter-spacing: .1em; margin-bottom: 20px; }
+#wheel-canvas { border-radius: 50%; box-shadow: 0 0 60px rgba(232,197,71,.3); }
+#wheel-result { margin-top: 24px; text-align: center; min-height: 80px; }
+#wheel-result .wr-artist { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); }
+#wheel-result .wr-title { font-size: 1rem; color: var(--text2); }
+.wheel-controls { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+.wheel-exclude-info { font-size: .78rem; color: var(--text3); margin-top: 8px; }
+
+/* ── Image Picker Modal ── */
+#artpicker-modal {
+  position: fixed; inset: 0; z-index: 250;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#artpicker-modal.open { opacity: 1; pointer-events: all; }
+.artpicker-box {
+  background: var(--surface); border-radius: 16px; padding: 28px;
+  width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto;
+  transform: scale(.95); transition: transform .25s;
+}
+#artpicker-modal.open .artpicker-box { transform: scale(1); }
+.artpicker-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--accent); letter-spacing: .06em; margin-bottom: 16px; }
+.artpicker-search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.artpicker-search-row input { flex: 1; }
+#artpicker-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+.artpicker-item { cursor: pointer; border-radius: 8px; overflow: hidden; border: 2px solid transparent; transition: all .2s; aspect-ratio: 1; background: var(--surface2); display: flex; align-items: center; justify-content: center; }
+.artpicker-item:hover { border-color: var(--accent); }
+.artpicker-item.selected { border-color: var(--success); }
+.artpicker-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.artpicker-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* ── Toast ── */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 16px; font-size: .85rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  animation: slideUp .3s ease; max-width: 300px;
+}
+.toast.success { border-color: var(--success); }
+.toast.error { border-color: var(--danger); }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } }
+.toast.out { animation: slideOut .3s ease forwards; }
+@keyframes slideOut { to { transform: translateY(20px); opacity: 0; } }
+
+/* ── Empty State ── */
+.empty-state { padding: 80px 20px; text-align: center; color: var(--text3); }
+.empty-state .es-icon { font-size: 4rem; margin-bottom: 16px; opacity: .4; }
+.empty-state p { font-size: .95rem; }
+
+/* ── Progress bar ── */
+.progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s; }
+
+/* ── Misc ── */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.genre-tag { font-size: .72rem; padding: 3px 10px; border-radius: 20px; background: var(--surface3); color: var(--text2); cursor: pointer; transition: all .15s; }
+.genre-tag:hover { background: var(--accent); color: #000; }
+.ocr-area { border: 2px dashed var(--border); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color .2s; }
+.ocr-area:hover { border-color: var(--accent); }
+.ocr-area input { display: none; }
+.ocr-preview { max-width: 100%; border-radius: 8px; margin-top: 12px; }
+.user-badge { font-size: .72rem; padding: 3px 10px; border-radius: 20px; }
+.badge-admin { background: rgba(232,197,71,.15); color: var(--accent); border: 1px solid rgba(232,197,71,.3); }
+.badge-readonly { background: var(--surface3); color: var(--text3); border: 1px solid var(--border); }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.stat-box { background: var(--surface2); border-radius: 8px; padding: 12px; text-align: center; }
+.stat-box .sv { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); }
+.stat-box .sk { font-size: .72rem; color: var(--text3); }
+
+/* ── Admin panel ── */
+#admin-modal {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,.9);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#admin-modal.open { opacity: 1; pointer-events: all; }
+.admin-box {
+  background: var(--surface); border-radius: 16px; padding: 28px;
+  width: 500px; max-width: 95vw; max-height: 80vh; overflow-y: auto;
+}
+.admin-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--accent); margin-bottom: 20px; }
+.user-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.user-row .ur-name { flex: 1; font-weight: 500; }
+.user-row .ur-role { font-size: .78rem; color: var(--text3); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+/* ── Export button ── */
+.export-bar { padding: 8px 20px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+
+/* ── Art Status Indicators ── */
+.art-status-badge {
+  position: absolute; bottom: 6px; left: 6px;
+  font-size: .58rem; font-weight: 700; letter-spacing: .06em;
+  padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
+  backdrop-filter: blur(4px); pointer-events: none;
+}
+.art-status-auto {
+  background: rgba(196,123,46,.85); color: #fff;
+  border: 1px solid rgba(255,180,80,.4);
+}
+.art-status-verified {
+  background: rgba(82,196,120,.85); color: #fff;
+  border: 1px solid rgba(82,196,120,.5);
+}
+.verify-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: var(--radius);
+  background: rgba(82,196,120,.15); border: 1px solid var(--success);
+  color: var(--success); font-size: .82rem; cursor: pointer;
+  transition: all .15s;
+}
+.verify-btn:hover { background: var(--success); color: #000; }
+.verify-btn.verified { background: var(--success); color: #000; }
+
+/* ── Bulk Fetch Modal ── */
+#bulkfetch-modal {
+  position: fixed; inset: 0; z-index: 400;
+  background: rgba(0,0,0,.92); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#bulkfetch-modal.open { opacity: 1; pointer-events: all; }
+.bulkfetch-box {
+  background: var(--surface); border-radius: 16px; padding: 32px;
+  width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto;
+}
+.bulkfetch-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); letter-spacing: .08em; margin-bottom: 4px; }
+.bulkfetch-box p { color: var(--text2); font-size: .88rem; margin-bottom: 20px; }
+.bf-progress-wrap { background: var(--surface2); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.bf-counts { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.bf-count { text-align: center; }
+.bf-count .n { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; }
+.bf-count .l { font-size: .7rem; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.bf-count.found .n { color: var(--success); }
+.bf-count.notfound .n { color: var(--danger); }
+.bf-count.pending .n { color: var(--accent); }
+.bf-count.done .n { color: var(--text2); }
+.bf-progress-bar { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.bf-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); border-radius: 3px; transition: width .3s; }
+.bf-current { font-size: .78rem; color: var(--text2); min-height: 18px; }
+.bf-log { max-height: 200px; overflow-y: auto; font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); background: var(--surface2); border-radius: 6px; padding: 10px; margin-top: 12px; }
+.bf-log-row { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+.bf-log-row.ok { color: var(--success); }
+.bf-log-row.fail { color: var(--text3); }
+.bf-log-row.skip { color: var(--text3); font-style: italic; }
+.bf-controls { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>🎵 MRD</h2>
+    <p>Records Catalogue</p>
+    <input type="text" id="login-user" placeholder="Username" autocomplete="username">
+    <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password">
+    <button class="btn btn-primary" onclick="doLogin()">Enter the Vault</button>
+    <div id="login-error"></div>
+    <div class="login-hint">
+      <b>Admin:</b> admin / vinyl2024<br>
+      <b>Read-only:</b> guest / listen<br>
+      <small>Passwords can be changed in the Admin panel.</small>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div id="header">
+  <button class="btn-icon" id="mobile-sidebar-btn" onclick="toggleSidebar()" style="display:none">☰</button>
+  <h1>MRD <span>Records</span></h1>
+  <div class="header-stats" id="header-stats"></div>
+  <div class="header-actions">
+    <span id="user-badge-display"></span>
+    <button class="btn btn-ghost btn-sm" onclick="openWheel()">🎲 Spin</button>
+    <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">⚙️ Admin</button>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- Sidebar overlay -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div id="app">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Collection</div>
+      <div class="quick-filter" id="collection-filter">
+        <button class="active" data-col="all" onclick="setCollFilter('all',this)">All (171)</button>
+        <button data-col="found" onclick="setCollFilter('found',this)">Found</button>
+        <button data-col="neville" onclick="setCollFilter('neville',this)">Neville's</button>
+      </div>
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Status</div>
+      <div class="quick-filter">
+        <button data-status="all" class="active" onclick="setStatusFilter('all',this)">All</button>
+        <button data-status="listened" onclick="setStatusFilter('listened',this)">✓ Listened</button>
+        <button data-status="unlistened" onclick="setStatusFilter('unlistened',this)">◎ Unheard</button>
+        <button data-status="fav" onclick="setStatusFilter('fav',this)">★ Favourites</button>
+      </div>
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Filters</div>
+      <div class="filter-group">
+        <label>Genre</label>
+        <select id="genre-filter" onchange="applyFilters()">
+          <option value="">All genres</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Label</label>
+        <select id="label-filter" onchange="applyFilters()">
+          <option value="">All labels</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Year Range</label>
+        <div class="range-row">
+          <input type="number" id="year-from" placeholder="From" min="1950" max="2030" onchange="applyFilters()">
+          <input type="number" id="year-to" placeholder="To" min="1950" max="2030" onchange="applyFilters()">
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Has Art</label>
+        <select id="art-filter" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="yes">With art</option>
+          <option value="no">Without art</option>
+        </select>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="clearFilters()">Clear filters</button>
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Stats</div>
+      <div class="stat-grid" id="sidebar-stats"></div>
+      <div class="progress-bar" style="margin-top:12px">
+        <div class="progress-fill" id="listened-progress" style="width:0%"></div>
+      </div>
+      <div style="font-size:.72rem;color:var(--text3);margin-top:4px" id="listened-label"></div>
+    </div>
+    <div class="sidebar-sep"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-title">Export</div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:6px" onclick="exportJSON()">⬇ Export JSON</button>
+      <div class="sidebar-sep" style="margin-top:10px"></div>
+      <div class="sidebar-title">Album Art</div>
+      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center" onclick="openBulkFetch()">🖼 Fetch All Art</button>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:6px;padding:0 2px" id="art-coverage-label"></div>
+    </div>
+    <div class="sidebar-count" id="sidebar-count"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main">
+    <div id="toolbar">
+      <button class="btn-icon" id="mobile-filter-btn" onclick="toggleSidebar()">⚙</button>
+      <input type="text" id="search-input" placeholder="🔍 Search artist, title, label…" oninput="applyFilters()">
+      <select class="sort-select" id="sort-select" onchange="applyFilters()">
+        <option value="artist">Sort: Artist</option>
+        <option value="title">Sort: Title</option>
+        <option value="year">Sort: Year</option>
+        <option value="label">Sort: Label</option>
+        <option value="id">Sort: ID</option>
+      </select>
+      <div class="view-toggle">
+        <button class="btn-icon active" id="view-grid" onclick="setView('grid')" title="Grid view">⊞</button>
+        <button class="btn-icon" id="view-list" onclick="setView('list')" title="List view">≡</button>
+      </div>
+      <div class="toolbar-info" id="toolbar-info"></div>
+    </div>
+    <div id="catalogue-grid"></div>
+    <div id="catalogue-list" class="hidden">
+      <div class="list-header">
+        <span>#</span><span></span>
+        <span onclick="setSortBy('artist')">Artist</span>
+        <span onclick="setSortBy('title')">Title</span>
+        <span onclick="setSortBy('genre')">Genre</span>
+        <span onclick="setSortBy('year')">Year</span>
+        <span>Status</span>
+        <span></span>
+      </div>
+      <div id="list-rows"></div>
+    </div>
+    <div class="empty-state hidden" id="empty-state">
+      <div class="es-icon">🎵</div>
+      <p>No records match your filters.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal (bottom sheet / centered dialog) -->
+<div id="detail-modal" onclick="closeDetailOnBg(event)">
+  <div class="detail-sheet">
+    <div class="detail-hero">
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <div class="detail-art-wrap" id="d-art-wrap" onclick="openArtPicker()">
+          <div class="detail-art-placeholder" id="d-art-placeholder">🎵</div>
+          <img id="d-art-img" src="" alt="" style="display:none">
+          <div class="art-change-hint admin-only-inline" style="display:none">🖼 Change Art</div>
+        </div>
+        <div id="d-art-status-row" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
+          <span id="d-art-status-badge" style="font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.06em;text-transform:uppercase"></span>
+          <button class="verify-btn admin-only" id="d-verify-btn" onclick="verifyArt()" style="display:none;padding:4px 10px;font-size:.72rem"></button>
+        </div>
+      </div>
+      <div class="detail-info">
+        <div class="detail-id" id="d-id"></div>
+        <div class="detail-artist" id="d-artist"></div>
+        <div class="detail-title" id="d-title"></div>
+        <div class="detail-meta" id="d-meta"></div>
+        <div class="detail-actions">
+          <button class="btn btn-ghost btn-sm" id="d-listen-btn" onclick="toggleListened()"></button>
+          <button class="btn btn-ghost btn-sm" id="d-fav-btn" onclick="toggleFavourite()"></button>
+          <button class="btn btn-ghost btn-sm admin-only" onclick="openArtPicker()">🖼 Art</button>
+          <button class="btn btn-ghost btn-sm admin-only" id="d-tracks-btn" onclick="switchTab('tracks')">🎵 Tracks</button>
+        </div>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-tabs">
+        <button class="detail-tab active" onclick="switchTab('info')">Info</button>
+        <button class="detail-tab" onclick="switchTab('tracks')">Tracks</button>
+        <button class="detail-tab" onclick="switchTab('bio')">Artist Bio</button>
+        <button class="detail-tab" onclick="switchTab('notes')">Notes</button>
+        <button class="detail-tab admin-only" onclick="switchTab('edit')">Edit</button>
+      </div>
+      <!-- Info Tab -->
+      <div class="tab-pane active" id="tab-info">
+        <div class="section-label">Album Description</div>
+        <div class="bio-text" id="d-album-desc"><em style="color:var(--text3)">No description yet.</em></div>
+        <div class="admin-only" style="margin-top:12px;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="fetchAlbumDesc()">🔍 Fetch Description</button>
+        </div>
+      </div>
+      <!-- Tracks Tab -->
+      <div class="tab-pane" id="tab-tracks">
+        <div class="section-label">Track Listing</div>
+        <ul class="track-list" id="d-track-list"></ul>
+        <div class="admin-only" style="flex-direction:column;gap:12px;margin-top:16px">
+          <div class="track-add">
+            <input type="text" id="track-add-input" placeholder="Add track name…" onkeydown="if(event.key==='Enter')addTrack()">
+            <button class="btn btn-primary btn-sm" onclick="addTrack()">Add</button>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="fetchTracklist()">🔍 Fetch from Database</button>
+            <button class="btn btn-ghost btn-sm" onclick="openOCR()">📷 From Image (OCR)</button>
+          </div>
+        </div>
+        <div id="tracklist-search-results"></div>
+      </div>
+      <!-- Bio Tab -->
+      <div class="tab-pane" id="tab-bio">
+        <div class="section-label">Artist Biography</div>
+        <div class="bio-text" id="d-artist-bio"><em style="color:var(--text3)">No biography yet.</em></div>
+        <div class="admin-only" style="margin-top:12px;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="fetchArtistBio()">🔍 Fetch Biography</button>
+        </div>
+      </div>
+      <!-- Notes Tab -->
+      <div class="tab-pane" id="tab-notes">
+        <div class="section-label">Personal Notes</div>
+        <textarea class="notes-area admin-only-ta" id="d-notes-area" placeholder="Add your notes about this record…" oninput="saveNotes()" rows="5"></textarea>
+        <div id="d-notes-readonly" class="bio-text" style="display:none;color:var(--text2)"></div>
+      </div>
+      <!-- Edit Tab (admin only) -->
+      <div class="tab-pane" id="tab-edit">
+        <div class="field-row"><label>Artist</label><input type="text" id="e-artist"></div>
+        <div class="field-row"><label>Album Title</label><input type="text" id="e-title"></div>
+        <div class="field-row"><label>Genre</label><input type="text" id="e-genre"></div>
+        <div class="field-row"><label>Year</label><input type="number" id="e-year"></div>
+        <div class="field-row"><label>Record Label</label><input type="text" id="e-label"></div>
+        <div class="field-row"><label>Collection Notes</label><input type="text" id="e-notes"></div>
+        <div class="field-save">
+          <button class="btn btn-ghost" onclick="closeDetail()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveEdit()">💾 Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Art Picker Modal -->
+<div id="artpicker-modal" onclick="if(event.target===this)closeArtPicker()">
+  <div class="artpicker-box">
+    <h3>🖼 Choose Album Art</h3>
+    <div class="artpicker-search-row">
+      <input type="text" id="artpicker-query" placeholder="Search…" onkeydown="if(event.key==='Enter')searchArt()">
+      <button class="btn btn-primary btn-sm" onclick="searchArt()">Search</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--text3);margin-bottom:10px">Results from iTunes / Cover Art Archive. Click to select, then confirm.</div>
+    <div id="artpicker-results"></div>
+    <div style="margin-top:12px">
+      <div class="section-label">Or paste / enter image URL directly</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input type="text" id="artpicker-url" placeholder="https://… .jpg" style="flex:1">
+        <button class="btn btn-ghost btn-sm" onclick="setArtFromUrl()">Use URL</button>
+      </div>
+    </div>
+    <div class="artpicker-footer">
+      <button class="btn btn-ghost" onclick="closeArtPicker()">Cancel</button>
+      <button class="btn btn-primary" id="artpicker-confirm" onclick="event.stopPropagation();confirmArt()" disabled>Confirm Art</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Art Fetch Modal -->
+<div id="bulkfetch-modal">
+  <div class="bulkfetch-box">
+    <h3>🖼 Bulk Art Fetch</h3>
+    <p>Automatically searches iTunes for album art for every record without verified art. Results are marked <strong style="color:#c47b2e">Auto</strong> until you review and verify them.</p>
+    <div class="bf-progress-wrap">
+      <div class="bf-counts">
+        <div class="bf-count pending"><div class="n" id="bf-n-pending">—</div><div class="l">Remaining</div></div>
+        <div class="bf-count found"><div class="n" id="bf-n-found">0</div><div class="l">Found</div></div>
+        <div class="bf-count notfound"><div class="n" id="bf-n-notfound">0</div><div class="l">Not Found</div></div>
+        <div class="bf-count done"><div class="n" id="bf-n-done">0</div><div class="l">Skipped</div></div>
+      </div>
+      <div class="bf-progress-bar"><div class="bf-progress-fill" id="bf-progress" style="width:0%"></div></div>
+      <div class="bf-current" id="bf-current">Ready to start.</div>
+    </div>
+    <div class="bf-log" id="bf-log"></div>
+    <div class="bf-controls">
+      <button class="btn btn-primary" id="bf-start-btn" onclick="startBulkFetch()">▶ Start Fetching</button>
+      <button class="btn btn-danger btn-sm" id="bf-stop-btn" onclick="stopBulkFetch()" style="display:none">⏹ Stop</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeBulkFetch()">Close</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--text3);margin-top:12px">
+      ⚠ Only fetches records without verified art. Fetched art is marked <strong style="color:#c47b2e">Auto</strong> — visit each record to verify or replace it.
+    </div>
+  </div>
+</div>
+
+<!-- Wheel Modal -->
+<div id="wheel-modal">
+  <h2>🎲 Spin the Record</h2>
+  <canvas id="wheel-canvas" width="320" height="320"></canvas>
+  <div id="wheel-result"></div>
+  <div class="wheel-controls">
+    <button class="btn btn-primary" id="spin-btn" onclick="spinWheel()">🎵 Spin!</button>
+    <button class="btn btn-ghost" onclick="resetWheelListened()">Reset Listened</button>
+    <button class="btn btn-ghost" onclick="closeWheel()">✕ Close</button>
+  </div>
+  <div class="wheel-exclude-info" id="wheel-exclude-info"></div>
+</div>
+
+<!-- Admin Modal -->
+<div id="admin-modal">
+  <div class="admin-box">
+    <h3>⚙ Admin Panel</h3>
+    <div class="section-label">Manage Users</div>
+    <div id="user-list"></div>
+    <div class="divider"></div>
+    <div class="section-label">Add / Update User</div>
+    <div class="field-row"><label>Username</label><input type="text" id="new-user-name" placeholder="username"></div>
+    <div class="field-row"><label>Password</label><input type="password" id="new-user-pass" placeholder="password"></div>
+    <div class="field-row">
+      <label>Role</label>
+      <select id="new-user-role">
+        <option value="admin">Admin (can edit)</option>
+        <option value="readonly">Read-only (can browse)</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeAdmin()">Close</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+    </div>
+    <div class="divider"></div>
+    <div class="section-label">Database</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup All Data</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input').click()">📂 Restore Backup</button>
+      <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
+    </div>
+    <p style="font-size:.72rem;color:var(--text3);margin-top:8px">Backup saves all records, art, tracks, and bios to a JSON file.</p>
+  </div>
+</div>
+
+<!-- OCR Modal -->
+<div id="ocr-modal" style="position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--accent);margin-bottom:16px">📷 Tracklist from Photo</h3>
+    <div class="ocr-area" onclick="document.getElementById('ocr-file').click()">
+      <div style="font-size:2rem">📸</div>
+      <div style="color:var(--text2);margin-top:8px">Click to upload photo of the record sleeve / tracklist</div>
+      <input type="file" id="ocr-file" accept="image/*" onchange="handleOCRFile(event)">
+    </div>
+    <img id="ocr-preview" class="ocr-preview hidden">
+    <div id="ocr-status" style="margin-top:12px;font-size:.85rem;color:var(--text2)"></div>
+    <div id="ocr-result-tracks" style="margin-top:12px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeOCR()">Cancel</button>
+      <button class="btn btn-primary hidden" id="ocr-apply-btn" onclick="applyOCRTracks()">Apply Tracks</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════════════════
+const INITIAL_DATA = [{"id":"MRD-A-001","artist":"ADC Band","title":"Roll With The Punches","genre":"Funk / Soul","year":1979,"label":"Cotillion","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-A-002","artist":"Ashford & Simpson","title":"Performance","genre":"Funk / Soul","year":1981,"label":"Warner Bros.","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-001","artist":"The Bar-Kays","title":"Propositions","genre":"Funk / Soul","year":1979,"label":"Mercury","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-002","artist":"Barry White","title":"Beware!","genre":"Soul, Funk","year":1981,"label":"Unlimited Gold","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-003","artist":"Ben E. King","title":"Music Trance","genre":"Soul, R&B","year":1976,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-004","artist":"Betty Wright","title":"Wright Back At You","genre":"Funk / Soul","year":1981,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-005","artist":"Bill Withers","title":"Live at Carnegie Hall","genre":"Soul","year":1973,"label":"Sussex","notes":"Found","favourite":true,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-006","artist":"Brass Construction","title":"Brass Construction 6","genre":"Funk, Disco","year":1980,"label":"United Artists","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-007","artist":"Brook Benton","title":"Golden Hits","genre":"Pop / Vocal","year":1961,"label":"Mercury","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-008","artist":"Bruce Hornsby and the Range","title":"The Way It Is","genre":"Rock","year":1986,"label":"RCA","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-B-009","artist":"Bud Shank","title":"California Dreamin'","genre":"Jazz","year":1966,"label":"World Pacific","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-001","artist":"Carl Carlton","title":"The Bad C.C.","genre":"R&B / Soul","year":1981,"label":"20th Century-Fox","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-002","artist":"Chairmen of the Board","title":"Skin I'm In","genre":"Funk / Soul","year":1974,"label":"Invictus","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-003","artist":"Change","title":"Change of Heart","genre":"Boogie, Disco, Funk","year":1984,"label":"Atlantic","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-004","artist":"Chic","title":"Take It Off","genre":"Disco","year":1981,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-005","artist":"Clifford Coulter","title":"East Side San Jose","genre":"Jazz","year":1970,"label":"Impulse!","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-C-006","artist":"Crown Heights Affair","title":"Sure Shot","genre":"Funk, Soul, Disco","year":1980,"label":"De-Lite","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-001","artist":"David Newman","title":"Front Money","genre":"Jazz","year":1972,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-002","artist":"Delegation","title":"Delegation","genre":"Disco, Soul","year":1980,"label":"Mercury","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-003","artist":"Diana Ross","title":"Diana","genre":"Disco, Pop, Soul","year":1980,"label":"Motown","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-004","artist":"Donald Byrd","title":"Royal Flush","genre":"Jazz","year":1975,"label":"Blue Note","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-005","artist":"Donny Hathaway","title":"Extension of a Man","genre":"R&B / Soul","year":1973,"label":"ATCO","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-006","artist":"Donore O'Malley","title":"First Be A Woman","genre":"Disco","year":1980,"label":"Polydor","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-D-007","artist":"Dynasty","title":"Adventures in the Land of Music","genre":"Disco, Soul","year":1980,"label":"Solar","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-E-001","artist":"The Escorts","title":"The Escorts","genre":"","year":null,"label":"","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-G-001","artist":"George Benson","title":"Give Me the Night","genre":"Jazz, R&B","year":1980,"label":"Warner Bros.","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-G-002","artist":"Gloria Gaynor","title":"I Kinda Like Me","genre":"Disco / R&B","year":1981,"label":"Polydor","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-G-003","artist":"Gloria Gaynor","title":"Now Is The Time","genre":"Soul","year":1976,"label":"Pye","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-G-004","artist":"Grace Jones","title":"Living My Life","genre":"Post-disco, Reggae, Funk","year":1982,"label":"Island","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-G-005","artist":"Gwen McCrae","title":"On My Way","genre":"Funk / Soul","year":1982,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-H-001","artist":"Harari","title":"Home Brew","genre":"Funk / Soul","year":1982,"label":"Rufaro","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-H-002","artist":"Herbie Hancock","title":"Monster","genre":"Disco","year":1980,"label":"Columbia","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-H-003","artist":"Hot Chocolate","title":"Going Through the Motions","genre":"R&B / Soul","year":1981,"label":"MCA","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-H-004","artist":"Hot Chocolate","title":"Hot Chocolate","genre":"Pop / Rock","year":1975,"label":"Rak / Big Tree","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-I-001","artist":"The Impressions","title":"Come to My Party","genre":"Soul","year":1965,"label":"ABC-Paramount","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-I-002","artist":"The Isley Brothers","title":"Go for Your Guns","genre":"Funk, Soul","year":1977,"label":"T-Neck","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-J-001","artist":"Joy","title":"Paradise Road","genre":"Funk / Soul","year":1980,"label":"RPM / Café Society","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-K-001","artist":"Kano","title":"New York Cake","genre":"Disco","year":1981,"label":"Full Time","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-K-002","artist":"Kenny Rogers","title":"Eyes That See in the Dark","genre":"Country / Pop","year":1983,"label":"Liberty","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-K-003","artist":"The Kids","title":"Number One","genre":"","year":null,"label":"","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-L-001","artist":"Lenny Williams","title":"Taking Chances","genre":"R&B / Soul","year":1983,"label":"Epic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-L-002","artist":"Lou Rawls","title":"Let Me Be Good to You","genre":"Soul","year":1979,"label":"Philadelphia International","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-L-003","artist":"Luther","title":"Luther","genre":"Funk / Soul","year":1976,"label":"Cotillion","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-M-001","artist":"The Main Ingredient","title":"Celi Gooding","genre":"Funk / Soul","year":1980,"label":"RCA Victor","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-M-002","artist":"Mark-Almond","title":"Mark-Almond","genre":"Jazz-Rock","year":1971,"label":"Blue Thumb","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-M-003","artist":"Maze feat. Frankie Beverly","title":"Live in New Orleans","genre":"Soul, Funk","year":1981,"label":"Capitol","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-M-004","artist":"Maze feat. Frankie Beverly","title":"Maze","genre":"Soul, Funk","year":1977,"label":"Capitol","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-M-005","artist":"Midnight Star","title":"Standing Together","genre":"Funk / Soul","year":1983,"label":"Solar","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-N-001","artist":"Neil Diamond","title":"Hot August Night","genre":"Pop / Rock (Live)","year":1972,"label":"Uni / MCA","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-N-002","artist":"The New Jersey Mass Choir","title":"Look Up and Live","genre":"Gospel","year":1986,"label":"Light","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-O-001","artist":"The O'Jays","title":"So Full of Love","genre":"Soul","year":1978,"label":"Philadelphia International","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-P-001","artist":"Parliament","title":"Live: P-Funk Earth Tour","genre":"Funk","year":1977,"label":"Casablanca","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-P-002","artist":"Passport","title":"Midnight Express","genre":"Soundtrack, Electronic, Disco","year":1978,"label":"Casablanca","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-P-003","artist":"Peter Gabriel","title":"So","genre":"Rock","year":1986,"label":"Geffen","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-Q-001","artist":"Quincy Jones","title":"The Dude","genre":"R&B, Funk, Disco","year":1981,"label":"A&M","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-R-001","artist":"Ray Brown & Milt Jackson","title":"Much in Common","genre":"Jazz","year":1964,"label":"Verve","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-R-002","artist":"Ruth Brown","title":"Black is Brown and Brown is Beautiful","genre":"R&B, Soul","year":1969,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-001","artist":"Sadao Watanabe","title":"Orange Express","genre":"Jazz, Jazz fusion","year":1981,"label":"CBS/Sony","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-002","artist":"Shelly Manne & His Men","title":"At the Black Hawk 3","genre":"Jazz","year":1959,"label":"Contemporary","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-003","artist":"Silk","title":"Silk","genre":"R&B","year":1995,"label":"Elektra","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-004","artist":"Sister Sledge","title":"All American Girls","genre":"R&B, Disco","year":1981,"label":"Cotillion","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-005","artist":"Skyy","title":"Skyyport","genre":"Funk / Soul, Disco","year":1980,"label":"Salsoul","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-006","artist":"The Spinners","title":"Grand Slam","genre":"Soul, R&B","year":1982,"label":"Atlantic","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-S-007","artist":"Spyro Gyra","title":"Carnaval","genre":"Jazz, Jazz fusion","year":1980,"label":"MCA","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-T-001","artist":"Teddy Pendergrass","title":"Life Is a Song Worth Singing","genre":"Soul, R&B","year":1978,"label":"Philadelphia International","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-U-001","artist":"Ullanda McCullough","title":"Ullanda McCullough","genre":"Pop / Rock","year":1985,"label":"EMI","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-V-001","artist":"Various Artists","title":"Booty","genre":"Soul / Funk","year":1974,"label":"Invictus","notes":"Found","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-V-002","artist":"Various Artists","title":"Castle Lager Jazz Festival 1964","genre":"Jazz","year":1964,"label":"His Master's Voice (HMV)","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-V-003","artist":"Various Artists","title":"Let's Boogie With Autumn Harvest","genre":"Funk / Soul (Compilation)","year":1980,"label":"Autumn Harvest","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"MRD-V-004","artist":"London Symphony Orchestra","title":"The Power of Classic Rock","genre":"Rock, Classical (Compilation)","year":1985,"label":"Portrait","notes":"","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-001","artist":"Gary Wright","title":"The Dream Weaver","genre":"Soft Rock / Synth-pop","year":1975,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-002","artist":"Ebonee Webb","title":"Ebonee Webb","genre":"Funk / Disco","year":1981,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-003","artist":"La Toya Jackson","title":"La Toya Jackson","genre":"Soul / Disco","year":1980,"label":"Polydor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-004","artist":"The Futures","title":"The Greetings of Peace","genre":"Soul / Philly Soul","year":1980,"label":"Philadelphia Int.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-005","artist":"Various Artists","title":"Castle Lager Jazz Festival 1964","genre":"South African Jazz","year":1964,"label":"Gallotone","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-006","artist":"Hugh Masekela","title":"Hugh Masekela & The Union Of South Africa","genre":"Jazz / Afrobeat","year":1971,"label":"Chisa / Motown","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-007","artist":"Jim Reeves","title":"Across The Bridge","genre":"Country / Gospel","year":1963,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-008","artist":"Brook Benton","title":"The Gospel Truth","genre":"Gospel / Soul","year":1971,"label":"Cotillion","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-009","artist":"King Messenger's Quartet","title":"Precious Moments","genre":"Gospel","year":1970,"label":"Gallo","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-010","artist":"King Messenger's Quartet","title":"More Songs With","genre":"Gospel","year":1971,"label":"Gallo","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-011","artist":"Ford Choirs","title":"National Eisteddfod 1982","genre":"Choral","year":1982,"label":"SABC","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-012","artist":"King Messenger's Quartet","title":"Lead Kindly Light","genre":"Gospel","year":1972,"label":"Gallo","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-013","artist":"Springbok","title":"Hit Parade 40","genre":"Pop / Compilation","year":1979,"label":"Music for Pleasure","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-014","artist":"The Beatles","title":"Let it Be","genre":"Rock","year":1970,"label":"Apple","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-015","artist":"Elvis Presley","title":"Almost in Love","genre":"Rock & Roll / Pop","year":1970,"label":"RCA Camden","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-016","artist":"Elvis Presley","title":"His Hand in Mine","genre":"Gospel","year":1960,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-017","artist":"Tommy Lakes and his Orchestra","title":"Tin Pan Alley","genre":"Jazz / Pop","year":1958,"label":"Continental","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-018","artist":"Cliff Richard","title":"It'll Be Me","genre":"Rock & Roll","year":1962,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-019","artist":"Jim Reeves","title":"Golden Hits","genre":"Country","year":1968,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-020","artist":"Change","title":"Miracles","genre":"Funk / Disco","year":1981,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-021","artist":"Leonore O'Malley","title":"First Be A Woman","genre":"Disco / Soul","year":1979,"label":"Polydor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-022","artist":"Harry Belafonte","title":"The Midnight Special","genre":"Folk / Blues","year":1962,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-023","artist":"Marvin Gaye","title":"Here, My Dear","genre":"Soul / R&B","year":1978,"label":"Tamla (Motown)","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-024","artist":"The Evasions","title":"Wikka Wrap","genre":"Funk / Disco / Parody","year":1981,"label":"Groove Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-025","artist":"Linda Clifford","title":"I'll Keep on Loving You","genre":"Soul / Disco","year":1982,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-026","artist":"Beyonce","title":"Renaissance","genre":"Dance / Electronic / House","year":2022,"label":"Parkwood / Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-027","artist":"Solange","title":"A Seat At the Table","genre":"R&B / Neo Soul","year":2016,"label":"Saint / Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-028","artist":"Nas","title":"Illmatic","genre":"Hip Hop","year":1994,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-029","artist":"Chic","title":"C'est Chic","genre":"Disco / Funk","year":1978,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-030","artist":"Marvin Gaye","title":"Midnight Love","genre":"Soul / Funk","year":1982,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-031","artist":"Marvin Gaye & Diana Ross","title":"Diana & Marvin","genre":"Soul","year":1973,"label":"Motown","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-032","artist":"Roger Troutman","title":"The Many Facets of Roger","genre":"Funk / Soul","year":1981,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-033","artist":"Peaches & Herb","title":"Worth the Wait","genre":"Soul / Disco","year":1980,"label":"Polydor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-034","artist":"Sam Rivers","title":"Contours","genre":"Jazz / Post-Bop","year":1967,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-035","artist":"Kenny Doss","title":"Movin' on a Feelin'","genre":"Soul","year":1980,"label":"Bearsville","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-036","artist":"Donny Hathaway","title":"Donny Hathaway","genre":"Soul / R&B","year":1971,"label":"Atco","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-037","artist":"Lakeside","title":"Your Wish is My Command","genre":"Funk / Soul","year":1981,"label":"Solar","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-038","artist":"Gladys Knight and the Pips","title":"Neither One of Us","genre":"Soul","year":1973,"label":"Soul / Motown","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-039","artist":"Stevie Wonder","title":"Songs in the Key of Life","genre":"Soul / Funk / Pop","year":1976,"label":"Tamla (Motown)","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-040","artist":"The Gap Band","title":"The Gap Band II","genre":"Funk / R&B","year":1979,"label":"Mercury","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-041","artist":"Barry White and Glodean White","title":"Barry & Glodean","genre":"Soul","year":1981,"label":"Unlimited Gold","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-042","artist":"Etta James","title":"Changes","genre":"Blues / Soul","year":1980,"label":"MCA","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-043","artist":"Shirley Brown","title":"Woman to Woman","genre":"Soul","year":1974,"label":"Truth Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-044","artist":"Joe Cocker","title":"Cocker","genre":"Rock","year":1986,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-045","artist":"Bob James","title":"Hands Down","genre":"Jazz Fusion","year":1982,"label":"Columbia / Tappan Zee","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-046","artist":"Clark Terry","title":"Angyumaluma Bongliddleany Nannyany Awhan Yi!","genre":"Jazz","year":1976,"label":"Mainstream","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-047","artist":"Herbie Mann","title":"Mississippi Gambler","genre":"Jazz-Funk","year":1972,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-048","artist":"Sting","title":"...Nothing Like the Sun","genre":"Pop Rock / Jazz Fusion","year":1987,"label":"A&M","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-049","artist":"GQ","title":"Face to Face","genre":"Soul / Funk","year":1981,"label":"Arista","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-050","artist":"Rare Earth","title":"Ma","genre":"Funk Rock","year":1973,"label":"Rare Earth","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-051","artist":"Linx","title":"You're Lying","genre":"Funk / Soul","year":1980,"label":"Chrysalis","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-052","artist":"Duke Pearson","title":"Wahoo!","genre":"Hard Bop","year":1964,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-053","artist":"Aretha Franklin","title":"Hey Now Hey (The Other Side of the Sky)","genre":"Soul / Jazz","year":1973,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-054","artist":"Phyllis Hyman","title":"You Know How to Love Me","genre":"Soul / Disco","year":1979,"label":"Arista","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-055","artist":"Kenny Dorham","title":"Trompeta Toccata","genre":"Hard Bop","year":1965,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-056","artist":"Nat King Cole","title":"The Greatest","genre":"Jazz / Pop","year":1963,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-057","artist":"Nat King Cole","title":"Come Closer to Me","genre":"Jazz / Pop","year":1958,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-058","artist":"Jonathan Butler","title":"Spotlight On","genre":"South African Jazz","year":1983,"label":"Mountain Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-059","artist":"The Crusaders","title":"Hollywood","genre":"Jazz Fusion / Funk","year":1972,"label":"MoWest","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-060","artist":"Johnny Hodges","title":"The Blues","genre":"Jazz","year":1955,"label":"Norgran / Verve","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-061","artist":"Mercury Records","title":"Singing the Blues","genre":"Blues / Soul / Compilation","year":1960,"label":"Mercury","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-062","artist":"George Benson","title":"Weekend in LA","genre":"Jazz Fusion / Soul","year":1978,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-063","artist":"Starpoint","title":"Keep On It","genre":"Funk / Soul","year":1981,"label":"Chocolate City","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-064","artist":"Margaret Singana","title":"Golden Greats","genre":"South African Soul / Pop","year":1980,"label":"The Sun","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-065","artist":"Jim Reeves","title":"Souvenir Album","genre":"Country","year":1964,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-066","artist":"Louis Armstrong","title":"Hello Dolly","genre":"Jazz","year":1964,"label":"Kapp","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-067","artist":"Champion Jack Dupree","title":"I'm Happy to Be Free","genre":"Blues","year":1971,"label":"Vogue","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-068","artist":"Nat King Cole","title":"Portrait of","genre":"Jazz / Pop","year":1966,"label":"Capitol Records","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-069","artist":"The Temptations","title":"Reunion","genre":"Soul / Funk","year":1982,"label":"Gordy","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-070","artist":"CL Blast","title":"I Wanna Get Down","genre":"Soul","year":1980,"label":"Cotillion","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-071","artist":"Jimmy Smith","title":"Prayer Meetin'","genre":"Jazz / Soul Jazz","year":1963,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-072","artist":"Rose Royce","title":"Jump Street","genre":"Funk / Soul","year":1981,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-073","artist":"The Main Ingredient","title":"Rolling Down a Mountainside","genre":"Soul","year":1975,"label":"RCA Victor","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-074","artist":"Joan Armatrading","title":"To the Limit","genre":"Rock / Soul","year":1978,"label":"A&M","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-075","artist":"Percy Sledge","title":"That's the Way I want To Live My Life","genre":"Soul","year":1969,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-076","artist":"Collage","title":"Shine the Light","genre":"Funk / Soul","year":1985,"label":"MCA / Constellation","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-077","artist":"Patti Page","title":"Stand By Your Man","genre":"Country / Pop","year":1970,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-078","artist":"Dollar Brand","title":"Mannenberg Is Where It's Happening","genre":"Jazz","year":1974,"label":"The Sun","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-079","artist":"Curtis Mayfield","title":"There's No Place Like America Today","genre":"Soul / Funk","year":1975,"label":"Curtom","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-080","artist":"Eddie Harris","title":"Cool Sax Warm Heart","genre":"Jazz","year":1964,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-081","artist":"Roberta Flack","title":"Killing Me Softly","genre":"Soul / R&B","year":1973,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-082","artist":"Queen","title":"A Night At the Opera","genre":"Rock","year":1975,"label":"EMI / Elektra","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-083","artist":"Dexter Gordon","title":"One Flight Up","genre":"Jazz / Hard Bop","year":1964,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-084","artist":"The Pointer Sisters","title":"The Pointer Sisters","genre":"Soul / Funk","year":1973,"label":"Blue Thumb","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-085","artist":"The Brothers Johnson","title":"Light Up the Night","genre":"Funk / Disco","year":1980,"label":"A&M","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-086","artist":"Millie Jackson","title":"Feelin' Bitchy","genre":"Soul / R&B","year":1977,"label":"Spring","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-087","artist":"Jimmy Smith","title":"A Date with Jimmy Smith Volume One","genre":"Jazz","year":1957,"label":"Blue Note","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-088","artist":"Aretha Franklin","title":"Aretha's Greatest Hits","genre":"Soul","year":1971,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-089","artist":"Handel","title":"Masterpiece","genre":"Classical","year":1985,"label":"Various","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-090","artist":"The Staple Singers","title":"Be Altitude: Respect Yourself","genre":"Soul / Gospel","year":1972,"label":"Stax","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-091","artist":"Hugh Masekela","title":"The Lasting Impressions of Hugh Masekela","genre":"Jazz","year":1968,"label":"MGM","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-092","artist":"Milt Jackson","title":"Olinga","genre":"Jazz","year":1974,"label":"CTI","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-093","artist":"Randy Crawford","title":"Secret Combination","genre":"Soul / Jazz-Pop","year":1981,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-094","artist":"Unlimited Touch","title":"Unlimited Touch","genre":"Funk / Disco","year":1981,"label":"Prelude","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-095","artist":"Roberta Flack","title":"Quiet Nights","genre":"Soul / Jazz","year":1970,"label":"Atlantic","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-096","artist":"Gibson Kente","title":"How Long","genre":"South African Musical Theatre","year":1973,"label":"Gallo","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-097","artist":"Champion Jack Dupree","title":"An Evening With","genre":"Blues","year":1959,"label":"Storyville","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-098","artist":"Letta Mbulu","title":"Not Yet Uhuru","genre":"South African Jazz / Pop","year":1992,"label":"Columbia","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-099","artist":"Caiphus Semenya","title":"Woman Got A Right To Be","genre":"South African Jazz / Pop","year":1996,"label":"M-Net / Teal","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-100","artist":"Letta Mbulu","title":"Gold","genre":"South African Jazz / Pop","year":1978,"label":"A&M","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]},{"id":"NC-101","artist":"George Benson","title":"In Your Eyes","genre":"Jazz / Soul","year":1983,"label":"Warner Bros.","notes":"Neville's Collection","favourite":false,"albumArt":null,"listened":false,"trackList":[],"artistBio":"","albumDesc":"","favTracks":[]}];
+
+let DB = [];
+let currentRecord = null;
+let filteredRecords = [];
+let currentView = 'grid';
+let activeFilters = { search:'', genre:'', label:'', yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
+let sortBy = 'artist';
+let currentUser = null;
+let users = {};
+let selectedArtUrl = null;
+let wheelSpinning = false;
+let ocrExtractedTracks = [];
+let bulkFetchAborted = false;
+// artStatus: null=no art, "auto"=fetched automatically (unverified), "verified"=admin confirmed
+
+const SUPABASE_URL = 'https://uaqvqvrflzxulixdrmna.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhcXZxdnJmbHp4dWxpeGRybW5hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDg0MjYsImV4cCI6MjA5MDk4NDQyNn0.CB486BMb9ZNelvm05hgxHru1Dqs8o2YloBV5Nted_68';
+const STORAGE_KEY = 'mrd_db_cache'; // local cache only
+const USERS_KEY   = 'mrd_users';
+
+// ── Supabase helpers ──────────────────────────────────
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...opts,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
+      ...opts.headers
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase ${res.status}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+function recordToRow(r) {
+  return {
+    id:          r.id,
+    artist:      r.artist,
+    title:       r.title,
+    genre:       r.genre,
+    year:        r.year,
+    label:       r.label,
+    notes:       r.notes,
+    favourite:   r.favourite  || false,
+    listened:    r.listened   || false,
+    album_art:   r.albumArt   || null,
+    art_status:  r.artStatus  || null,
+    track_list:  r.trackList  || [],
+    fav_tracks:  r.favTracks  || [],
+    artist_bio:  r.artistBio  || '',
+    album_desc:  r.albumDesc  || ''
+  };
+}
+
+function rowToRecord(row) {
+  // Merge with INITIAL_DATA defaults so all fields always exist
+  const base = INITIAL_DATA.find(r => r.id === row.id) || {};
+  return {
+    ...base,
+    id:         row.id,
+    artist:     row.artist     ?? base.artist     ?? '',
+    title:      row.title      ?? base.title      ?? '',
+    genre:      row.genre      ?? base.genre      ?? '',
+    year:       row.year       ?? base.year       ?? null,
+    label:      row.label      ?? base.label      ?? '',
+    notes:      row.notes      ?? base.notes      ?? '',
+    favourite:  row.favourite  ?? false,
+    listened:   row.listened   ?? false,
+    albumArt:   row.album_art  ?? null,
+    artStatus:  row.art_status ?? null,
+    trackList:  row.track_list ?? [],
+    favTracks:  row.fav_tracks ?? [],
+    artistBio:  row.artist_bio ?? '',
+    albumDesc:  row.album_desc ?? ''
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+async function init() {
+  loadUsers();
+  showAppLoading('Connecting to database…');
+  await loadDB();
+  populateFilterDropdowns();
+  renderAll();
+  updateStats();
+  hideAppLoading();
+  if (window.innerWidth <= 768) {
+    document.getElementById('mobile-sidebar-btn').style.display = 'flex';
+  }
+  window.addEventListener('resize', () => {
+    document.getElementById('mobile-sidebar-btn').style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  });
+}
+
+function showAppLoading(msg) {
+  let el = document.getElementById('app-loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'app-loading';
+    el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
+    el.innerHTML = `<div style="font-family:\'Bebas Neue\',sans-serif;font-size:3rem;color:var(--accent);letter-spacing:.1em">MRD</div>
+      <div class="loading-spinner" style="width:28px;height:28px;border-width:3px"></div>
+      <div id="app-loading-msg" style="font-size:.85rem;color:var(--text2)"></div>`;
+    document.body.appendChild(el);
+  }
+  document.getElementById('app-loading-msg').textContent = msg;
+}
+
+function hideAppLoading() {
+  const el = document.getElementById('app-loading');
+  if (el) { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; setTimeout(() => el.remove(), 400); }
+}
+
+async function loadDB() {
+  // 1. Show cached data instantly if available
+  const cached = localStorage.getItem(STORAGE_KEY);
+  if (cached) {
+    try { DB = JSON.parse(cached); } catch(e) {}
+  }
+
+  // 2. Try loading from Supabase
+  try {
+    showAppLoading('Loading your collection…');
+    const rows = await sbFetch('records?select=*&order=id.asc');
+
+    if (rows && rows.length > 0) {
+      // Build DB: start from INITIAL_DATA, overlay Supabase data
+      const rowMap = {};
+      rows.forEach(r => rowMap[r.id] = r);
+      DB = INITIAL_DATA.map(initial => {
+        return rowMap[initial.id] ? rowToRecord(rowMap[initial.id]) : { ...initial };
+      });
+      // Include any extra records in Supabase not in initial
+      rows.forEach(r => { if (!DB.find(x => x.id === r.id)) DB.push(rowToRecord(r)); });
+    } else {
+      // First run — seed Supabase with all INITIAL_DATA
+      showAppLoading('First run — seeding database…');
+      DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+      await seedDatabase();
+    }
+    // Cache locally for instant next load
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  } catch(e) {
+    console.warn('Supabase unavailable, using local cache:', e.message);
+    if (!DB.length) DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+    toast('Offline mode — changes will sync when reconnected', 'error');
+  }
+}
+
+async function seedDatabase() {
+  // Insert all records in batches of 20
+  const batch = 20;
+  for (let i = 0; i < INITIAL_DATA.length; i += batch) {
+    const chunk = INITIAL_DATA.slice(i, i + batch).map(recordToRow);
+    await sbFetch('records', {
+      method: 'POST',
+      prefer: 'return=minimal',
+      body: JSON.stringify(chunk)
+    });
+  }
+}
+
+async function saveRecord(r) {
+  // Update local DB and cache immediately (optimistic)
+  const idx = DB.findIndex(x => x.id === r.id);
+  if (idx !== -1) DB[idx] = r;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+
+  // Push to Supabase in background
+  try {
+    await sbFetch(`records?id=eq.${encodeURIComponent(r.id)}`, {
+      method: 'PATCH',
+      prefer: 'return=minimal',
+      body: JSON.stringify(recordToRow(r))
+    });
+  } catch(e) {
+    console.warn('Save failed for', r.id, e.message);
+  }
+}
+
+// Keep saveDB as a bulk cache save (no network call — use saveRecord for individual saves)
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  // Sync current record to Supabase if one is open
+  if (currentRecord) saveRecord(currentRecord);
+}
+
+// Push multiple records to Supabase in batches (used for bulk operations)
+async function saveBulk(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  const batch = 20;
+  for (let i = 0; i < records.length; i += batch) {
+    const chunk = records.slice(i, i + batch).map(recordToRow);
+    try {
+      await sbFetch('records', {
+        method: 'POST',
+        prefer: 'resolution=merge-duplicates,return=minimal',
+        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(chunk)
+      });
+    } catch(e) { console.warn('Bulk save chunk failed:', e.message); }
+    await new Promise(r => setTimeout(r, 100));
+  }
+}
+
+function loadUsers() {
+  const saved = localStorage.getItem(USERS_KEY);
+  if (saved) { try { users = JSON.parse(saved); } catch(e) {} }
+  if (!users.admin) users.admin = { password: 'vinyl2024', role: 'admin' };
+  if (!users.guest) users.guest = { password: 'listen', role: 'readonly' };
+  saveUsers();
+}
+
+function saveUsers() {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+// ═══════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (users[u] && users[u].password === p) {
+    currentUser = { username: u, role: users[u].role };
+    document.getElementById('login-screen').classList.add('hidden');
+    document.body.classList.toggle('is-admin', currentUser.role === 'admin');
+    const badge = document.getElementById('user-badge-display');
+    badge.innerHTML = `<span class="user-badge ${currentUser.role === 'admin' ? 'badge-admin' : 'badge-readonly'}">${currentUser.role === 'admin' ? '⚡ Admin' : '👁 View Only'}</span>`;
+    // Show admin-only elements
+    document.querySelectorAll('.admin-only').forEach(el => {
+      if (currentUser.role === 'admin') el.style.display = 'flex';
+    });
+    document.querySelectorAll('.admin-only-ta').forEach(el => {
+      el.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+    });
+    renderAll();
+  } else {
+    document.getElementById('login-error').textContent = 'Invalid username or password.';
+  }
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-pass').focus(); });
+
+function doLogout() {
+  currentUser = null;
+  document.body.classList.remove('is-admin');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+function isAdmin() { return currentUser && currentUser.role === 'admin'; }
+
+// ═══════════════════════════════════════════════════════
+// FILTERS & SORTING
+// ═══════════════════════════════════════════════════════
+function populateFilterDropdowns() {
+  const genres = [...new Set(DB.map(r=>r.genre).filter(Boolean))].sort();
+  const labels = [...new Set(DB.map(r=>r.label).filter(Boolean))].sort();
+  const gSel = document.getElementById('genre-filter');
+  const lSel = document.getElementById('label-filter');
+  genres.forEach(g => gSel.innerHTML += `<option value="${g}">${g}</option>`);
+  labels.forEach(l => lSel.innerHTML += `<option value="${l}">${l}</option>`);
+}
+
+function applyFilters() {
+  activeFilters.search = document.getElementById('search-input').value.toLowerCase();
+  activeFilters.genre = document.getElementById('genre-filter').value;
+  activeFilters.label = document.getElementById('label-filter').value;
+  activeFilters.yearFrom = document.getElementById('year-from').value;
+  activeFilters.yearTo = document.getElementById('year-to').value;
+  activeFilters.art = document.getElementById('art-filter').value;
+  sortBy = document.getElementById('sort-select').value;
+  renderAll();
+}
+
+function setCollFilter(val, btn) {
+  activeFilters.collection = val;
+  document.querySelectorAll('#collection-filter button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function setStatusFilter(val, btn) {
+  activeFilters.status = val;
+  document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function clearFilters() {
+  activeFilters = { search:'', genre:'', label:'', yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
+  document.getElementById('search-input').value = '';
+  document.getElementById('genre-filter').value = '';
+  document.getElementById('label-filter').value = '';
+  document.getElementById('year-from').value = '';
+  document.getElementById('year-to').value = '';
+  document.getElementById('art-filter').value = '';
+  document.querySelectorAll('[data-col]').forEach(b => b.classList.toggle('active', b.dataset.col === 'all'));
+  document.querySelectorAll('[data-status]').forEach(b => b.classList.toggle('active', b.dataset.status === 'all'));
+  renderAll();
+}
+
+function setSortBy(key) {
+  sortBy = key;
+  document.getElementById('sort-select').value = key;
+  renderAll();
+}
+
+function getFiltered() {
+  let records = DB.filter(r => {
+    const s = activeFilters.search;
+    if (s && !`${r.artist} ${r.title} ${r.label} ${r.genre} ${r.id}`.toLowerCase().includes(s)) return false;
+    if (activeFilters.genre && r.genre !== activeFilters.genre) return false;
+    if (activeFilters.label && r.label !== activeFilters.label) return false;
+    if (activeFilters.yearFrom && (!r.year || r.year < +activeFilters.yearFrom)) return false;
+    if (activeFilters.yearTo && (!r.year || r.year > +activeFilters.yearTo)) return false;
+    if (activeFilters.art === 'yes' && !r.albumArt) return false;
+    if (activeFilters.art === 'no' && r.albumArt) return false;
+    if (activeFilters.collection === 'found' && r.notes !== 'Found') return false;
+    if (activeFilters.collection === 'neville' && r.notes !== "Neville's Collection") return false;
+    if (activeFilters.status === 'listened' && !r.listened) return false;
+    if (activeFilters.status === 'unlistened' && r.listened) return false;
+    if (activeFilters.status === 'fav' && !r.favourite) return false;
+    return true;
+  });
+
+  records.sort((a,b) => {
+    const av = (a[sortBy]||'').toString().toLowerCase();
+    const bv = (b[sortBy]||'').toString().toLowerCase();
+    return av < bv ? -1 : av > bv ? 1 : 0;
+  });
+  return records;
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderAll() {
+  filteredRecords = getFiltered();
+  const count = filteredRecords.length;
+  document.getElementById('toolbar-info').textContent = `${count} of ${DB.length} records`;
+  document.getElementById('sidebar-count').textContent = `Showing ${count} records`;
+  document.getElementById('header-stats').textContent = `${DB.length} records`;
+  document.getElementById('empty-state').classList.toggle('hidden', count > 0);
+
+  if (currentView === 'grid') {
+    renderGrid();
+    document.getElementById('catalogue-grid').classList.remove('hidden');
+    document.getElementById('catalogue-list').classList.add('hidden');
+  } else {
+    renderList();
+    document.getElementById('catalogue-list').classList.remove('hidden');
+    document.getElementById('catalogue-grid').classList.add('hidden');
+  }
+  updateStats();
+}
+
+function getGenreColor(genre) {
+  const map = {
+    'Funk':'#e8a020','Soul':'#c47b2e','Jazz':'#4a8fd4','Disco':'#9b59b6','Rock':'#e05252',
+    'Gospel':'#52c478','Blues':'#3a7bd5','R&B':'#e88020','Country':'#7d6b4a','Pop':'#d4598a',
+    'Hip Hop':'#2ecc71','Classical':'#9b8fa0','South African':'#f39c12'
+  };
+  for (const [k,v] of Object.entries(map)) {
+    if (genre && genre.toLowerCase().includes(k.toLowerCase())) return v;
+  }
+  return '#4a4a4a';
+}
+
+function getArtistEmoji(genre) {
+  if (!genre) return '🎵';
+  const g = genre.toLowerCase();
+  if (g.includes('jazz')) return '🎷';
+  if (g.includes('gospel') || g.includes('choral')) return '🙏';
+  if (g.includes('blues')) return '🎸';
+  if (g.includes('classical')) return '🎻';
+  if (g.includes('country')) return '🤠';
+  if (g.includes('hip hop')) return '🎤';
+  if (g.includes('rock')) return '🎸';
+  if (g.includes('disco')) return '💿';
+  if (g.includes('funk')) return '🎹';
+  if (g.includes('soul')) return '🎙';
+  return '🎵';
+}
+
+function renderGrid() {
+  const grid = document.getElementById('catalogue-grid');
+  grid.innerHTML = filteredRecords.map(r => {
+    const color = getGenreColor(r.genre);
+    const emoji = getArtistEmoji(r.genre);
+    const artHTML = r.albumArt
+      ? `<img class="album-art" src="${r.albumArt}" alt="${r.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      : '';
+    const placeholderStyle = r.albumArt ? 'display:none' : '';
+    let artBadge = '';
+    if (r.albumArt && r.artStatus === 'auto') {
+      artBadge = '<div class="art-status-badge art-status-auto" title="Auto-fetched, not yet verified">Auto</div>';
+    } else if (r.albumArt && r.artStatus === 'verified') {
+      artBadge = '<div class="art-status-badge art-status-verified" title="Art verified by admin">✓ OK</div>';
+    }
+    return `<div class="album-card" onclick="openDetail('${r.id}')">
+      ${artHTML}
+      <div class="card-placeholder" style="${placeholderStyle};background:linear-gradient(135deg,${color}22,${color}44)">
+        <div class="ph-icon">${emoji}</div>
+        <div class="ph-artist">${r.artist}</div>
+        <div class="ph-title">${r.title}</div>
+      </div>
+      <div class="card-overlay">
+        <div class="co-artist">${r.artist}</div>
+        <div class="co-title">${r.title}</div>
+      </div>
+      ${r.year ? `<div class="card-year">${r.year}</div>` : ''}
+      ${artBadge}
+      <div class="card-badges">
+        ${r.listened ? '<div class="badge badge-listened" title="Listened">✓</div>' : ''}
+        ${r.favourite ? '<div class="badge badge-fav" title="Favourite">★</div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderList() {
+  const rows = document.getElementById('list-rows');
+  rows.innerHTML = filteredRecords.map((r,i) => {
+    const thumbHTML = r.albumArt
+      ? `<div class="list-thumb"><img src="${r.albumArt}" alt="" onerror="this.parentNode.textContent='${getArtistEmoji(r.genre)}'"></div>`
+      : `<div class="list-thumb">${getArtistEmoji(r.genre)}</div>`;
+    return `<div class="list-row" onclick="openDetail('${r.id}')">
+      <span class="list-id">${r.id}</span>
+      ${thumbHTML}
+      <span class="list-artist">${r.artist}</span>
+      <span class="list-title">${r.title}</span>
+      <span class="list-genre">${r.genre||'—'}</span>
+      <span class="list-year">${r.year||'—'}</span>
+      <div class="list-flags">
+        <span class="flag ${r.listened?'on':''}" title="Listened">✓</span>
+        <span class="flag ${r.favourite?'on':''}" title="Favourite">★</span>
+      </div>
+      <div class="list-actions"></div>
+    </div>`;
+  }).join('');
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-grid').classList.toggle('active', v==='grid');
+  document.getElementById('view-list').classList.toggle('active', v==='list');
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════
+function updateStats() {
+  const total = DB.length;
+  const listened = DB.filter(r=>r.listened).length;
+  const favs = DB.filter(r=>r.favourite).length;
+  const withArt = DB.filter(r=>r.albumArt).length;
+  const verified = DB.filter(r=>r.artStatus==='verified').length;
+  const autoArt = DB.filter(r=>r.artStatus==='auto').length;
+  const pct = total ? Math.round(listened/total*100) : 0;
+  document.getElementById('sidebar-stats').innerHTML = `
+    <div class="stat-box"><div class="sv">${total}</div><div class="sk">Total</div></div>
+    <div class="stat-box"><div class="sv">${listened}</div><div class="sk">Listened</div></div>
+    <div class="stat-box"><div class="sv">${favs}</div><div class="sk">Favourites</div></div>
+    <div class="stat-box"><div class="sv">${withArt}</div><div class="sk">With Art</div></div>
+  `;
+  document.getElementById('listened-progress').style.width = pct + '%';
+  document.getElementById('listened-label').textContent = `${pct}% of collection listened`;
+  const coverageEl = document.getElementById('art-coverage-label');
+  if (coverageEl) {
+    const noArt = total - withArt;
+    coverageEl.innerHTML = `<span style="color:var(--success)">✓ ${verified} verified</span> &nbsp;
+      <span style="color:#c47b2e">◑ ${autoArt} auto</span> &nbsp;
+      <span style="color:var(--text3)">○ ${noArt} missing</span>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// DETAIL MODAL
+// ═══════════════════════════════════════════════════════
+function openDetail(id) {
+  currentRecord = DB.find(r => r.id === id);
+  if (!currentRecord) return;
+  const r = currentRecord;
+
+  document.getElementById('d-id').textContent = r.id;
+  document.getElementById('d-artist').textContent = r.artist;
+  document.getElementById('d-title').textContent = r.title;
+
+  // Meta tags
+  const metas = [];
+  if (r.year) metas.push(`<span class="meta-tag highlight">${r.year}</span>`);
+  if (r.genre) metas.push(`<span class="meta-tag">${r.genre}</span>`);
+  if (r.label) metas.push(`<span class="meta-tag">${r.label}</span>`);
+  if (r.notes) metas.push(`<span class="meta-tag">${r.notes}</span>`);
+  document.getElementById('d-meta').innerHTML = metas.join('');
+
+  // Art
+  const artImg = document.getElementById('d-art-img');
+  const artPh = document.getElementById('d-art-placeholder');
+  if (r.albumArt) {
+    artImg.src = r.albumArt; artImg.style.display = 'block';
+    artPh.style.display = 'none';
+  } else {
+    artImg.style.display = 'none';
+    artPh.style.display = 'flex';
+    artPh.textContent = getArtistEmoji(r.genre);
+  }
+
+  // Buttons
+  document.getElementById('d-listen-btn').textContent = r.listened ? '✓ Mark Unlistened' : '◎ Mark as Listened';
+  document.getElementById('d-fav-btn').textContent = r.favourite ? '★ Unfavourite' : '☆ Favourite';
+  updateDetailArtStatus(r);
+
+  // Tabs
+  switchTab('info');
+  renderDetailTracks();
+  document.getElementById('d-album-desc').innerHTML = r.albumDesc
+    ? r.albumDesc.split('\n').map(p=>`<p>${p}</p>`).join('')
+    : '<em style="color:var(--text3)">No description yet.</em>';
+  document.getElementById('d-artist-bio').innerHTML = r.artistBio
+    ? r.artistBio.split('\n').map(p=>`<p>${p}</p>`).join('')
+    : '<em style="color:var(--text3)">No biography yet.</em>';
+
+  // Notes
+  const notesArea = document.getElementById('d-notes-area');
+  const notesRO = document.getElementById('d-notes-readonly');
+  if (isAdmin()) {
+    notesArea.value = r.albumDesc || '';
+    notesArea.style.display = 'block';
+    notesRO.style.display = 'none';
+  } else {
+    notesRO.textContent = r.albumDesc || 'No notes.';
+    notesArea.style.display = 'none';
+    notesRO.style.display = 'block';
+  }
+
+  // Edit tab
+  document.getElementById('e-artist').value = r.artist;
+  document.getElementById('e-title').value = r.title;
+  document.getElementById('e-genre').value = r.genre;
+  document.getElementById('e-year').value = r.year||'';
+  document.getElementById('e-label').value = r.label;
+  document.getElementById('e-notes').value = r.notes;
+
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+  currentRecord = null;
+}
+
+function closeDetailOnBg(e) {
+  if (e.target === document.getElementById('detail-modal')) closeDetail();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const idx = ['info','tracks','bio','notes','edit'].indexOf(tab);
+  document.querySelectorAll('.detail-tab')[idx]?.classList.add('active');
+  document.getElementById('tab-'+tab)?.classList.add('active');
+}
+
+function renderDetailTracks() {
+  if (!currentRecord) return;
+  const list = document.getElementById('d-track-list');
+  const tracks = currentRecord.trackList || [];
+  if (!tracks.length) {
+    list.innerHTML = '<li style="color:var(--text3);font-size:.85rem;padding:8px 0">No tracks added yet.</li>';
+    return;
+  }
+  list.innerHTML = tracks.map((t,i) => {
+    const isFav = (currentRecord.favTracks||[]).includes(i);
+    const adminDel = isAdmin() ? `<span class="track-del" onclick="removeTrack(${i},event)">✕</span>` : '';
+    return `<li class="track-item">
+      <span class="track-num">${i+1}</span>
+      <span class="track-name">${t}</span>
+      <span class="track-fav ${isFav?'on':''}" onclick="toggleTrackFav(${i},event)" title="Favourite track">★</span>
+      ${adminDel}
+    </li>`;
+  }).join('');
+}
+
+function toggleListened() {
+  if (!currentRecord || !isAdmin()) { if(!isAdmin()) toast('Admin access required','error'); return; }
+  currentRecord.listened = !currentRecord.listened;
+  saveDB();
+  document.getElementById('d-listen-btn').textContent = currentRecord.listened ? '✓ Mark Unlistened' : '◎ Mark as Listened';
+  renderAll();
+  toast(currentRecord.listened ? '✓ Marked as listened' : 'Marked as unlistened');
+}
+
+function toggleFavourite() {
+  if (!currentRecord || !isAdmin()) { if(!isAdmin()) toast('Admin access required','error'); return; }
+  currentRecord.favourite = !currentRecord.favourite;
+  saveDB();
+  document.getElementById('d-fav-btn').textContent = currentRecord.favourite ? '★ Unfavourite' : '☆ Favourite';
+  renderAll();
+  toast(currentRecord.favourite ? '★ Added to favourites' : 'Removed from favourites');
+}
+
+function addTrack() {
+  if (!isAdmin()) return;
+  const input = document.getElementById('track-add-input');
+  const name = input.value.trim();
+  if (!name || !currentRecord) return;
+  currentRecord.trackList = currentRecord.trackList || [];
+  currentRecord.trackList.push(name);
+  saveDB();
+  input.value = '';
+  renderDetailTracks();
+}
+
+function removeTrack(i, e) {
+  e.stopPropagation();
+  if (!currentRecord || !isAdmin()) return;
+  currentRecord.trackList.splice(i,1);
+  if (currentRecord.favTracks) currentRecord.favTracks = currentRecord.favTracks.filter(x=>x!==i).map(x=>x>i?x-1:x);
+  saveDB(); renderDetailTracks();
+}
+
+function toggleTrackFav(i, e) {
+  e.stopPropagation();
+  if (!currentRecord) return;
+  currentRecord.favTracks = currentRecord.favTracks || [];
+  const idx = currentRecord.favTracks.indexOf(i);
+  if (idx === -1) currentRecord.favTracks.push(i);
+  else currentRecord.favTracks.splice(idx,1);
+  saveDB(); renderDetailTracks();
+}
+
+function saveEdit() {
+  if (!isAdmin() || !currentRecord) return;
+  currentRecord.artist = document.getElementById('e-artist').value.trim();
+  currentRecord.title = document.getElementById('e-title').value.trim();
+  currentRecord.genre = document.getElementById('e-genre').value.trim();
+  currentRecord.year = +document.getElementById('e-year').value || null;
+  currentRecord.label = document.getElementById('e-label').value.trim();
+  currentRecord.notes = document.getElementById('e-notes').value.trim();
+  saveDB(); renderAll();
+  toast('Record updated ✓');
+  openDetail(currentRecord.id);
+}
+
+function saveNotes() {
+  if (!currentRecord || !isAdmin()) return;
+  currentRecord.albumDesc = document.getElementById('d-notes-area').value;
+  saveDB();
+}
+
+// ═══════════════════════════════════════════════════════
+// ALBUM ART PICKER
+// ═══════════════════════════════════════════════════════
+function openArtPicker() {
+  if (!isAdmin()) return;
+  selectedArtUrl = null;
+  const btn = document.getElementById('artpicker-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Confirm Art';
+  document.getElementById('artpicker-results').innerHTML = '';
+  document.getElementById('artpicker-url').value = '';
+  if (currentRecord) {
+    document.getElementById('artpicker-query').value = `${currentRecord.artist} ${currentRecord.title}`;
+    searchArt();
+  }
+  document.getElementById('artpicker-modal').classList.add('open');
+}
+
+function closeArtPicker() {
+  document.getElementById('artpicker-modal').classList.remove('open');
+}
+
+async function searchArt() {
+  const query = document.getElementById('artpicker-query').value.trim();
+  if (!query) return;
+  const container = document.getElementById('artpicker-results');
+  container.innerHTML = '<div style="color:var(--text3);font-size:.85rem">🔍 Searching iTunes…</div>';
+
+  let results = [];
+
+  // iTunes has native CORS (Access-Control-Allow-Origin: *) - call directly, no proxy needed
+  try {
+    const res = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=album&limit=24&media=music`
+    );
+    const data = await res.json();
+    if (data.results?.length) {
+      results = data.results
+        .filter(i => i.artworkUrl100)
+        .map(i => i.artworkUrl100.replace('100x100bb','600x600bb'));
+    }
+  } catch(e) {}
+
+  if (results.length > 0) {
+    renderArtResults(container, results);
+    return;
+  }
+
+  // Fallback: ask Claude to suggest the best image URL for this album
+  container.innerHTML = '<div style="color:var(--text3);font-size:.85rem">iTunes unavailable, trying AI search…</div>';
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        messages: [{
+          role: 'user',
+          content: `For the album "${query}", provide exactly 3 direct iTunes artwork image URLs in this exact format - one per line, nothing else:
+https://is1-ssl.mzstatic.com/image/thumb/...
+The URLs must be real iTunes artwork URLs ending in /600x600bb.jpg for the album or similar albums by this artist. Only output the URLs, no other text.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const urls = text.split('\n').map(l=>l.trim()).filter(l=>l.startsWith('http'));
+    if (urls.length > 0) {
+      renderArtResults(container, urls);
+      return;
+    }
+  } catch(e) {}
+
+  // Final fallback: show manual instructions
+  container.innerHTML = `
+    <div style="color:var(--text2);font-size:.85rem;line-height:1.9">
+      <strong>Auto-search unavailable.</strong> Here's how to add art manually:<br>
+      1. Open <a href="https://www.discogs.com/search/?q=${encodeURIComponent(query)}&type=release" target="_blank" style="color:var(--accent)">Discogs ↗</a> or <a href="https://music.apple.com/search?term=${encodeURIComponent(query)}" target="_blank" style="color:var(--accent)">Apple Music ↗</a><br>
+      2. Find the album cover image<br>
+      3. Right-click → <em>Copy Image Address</em><br>
+      4. Paste the URL in the field below
+    </div>`;
+}
+
+function renderArtResults(container, urls) {
+  container.innerHTML = '';
+  if (!urls.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:.85rem">No images found.</div>';
+    return;
+  }
+  urls.forEach(url => {
+    const div = document.createElement('div');
+    div.className = 'artpicker-item';
+    div.style.cssText = 'cursor:pointer;border-radius:8px;overflow:hidden;border:2px solid transparent;transition:all .2s;aspect-ratio:1;background:var(--surface2);';
+    const img = document.createElement('img');
+    img.src = url;
+    img.loading = 'lazy';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    img.onerror = () => div.remove();
+    div.appendChild(img);
+    div.addEventListener('click', (e) => { e.stopPropagation();
+      // Deselect all
+      container.querySelectorAll('div[data-art]').forEach(x => {
+        x.style.borderColor = 'transparent';
+        x.style.boxShadow = 'none';
+      });
+      // Select this one
+      div.style.borderColor = '#52c478';
+      div.style.boxShadow = '0 0 0 2px #52c478';
+      div.setAttribute('data-art', url);
+      selectedArtUrl = url;
+      const btn = document.getElementById('artpicker-confirm');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.textContent = '✓ Confirm Art';
+    });
+    div.setAttribute('data-art', url);
+    container.appendChild(div);
+  });
+}
+
+function setArtFromUrl() {
+  const url = document.getElementById('artpicker-url').value.trim();
+  if (!url) { toast('Please enter a URL first', 'error'); return; }
+  selectedArtUrl = url;
+  const btn = document.getElementById('artpicker-confirm');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  btn.textContent = '✓ Confirm Art';
+  toast('URL set — click Confirm Art to save');
+}
+
+function confirmArt() {
+  const url = selectedArtUrl;
+  const record = currentRecord;
+  if (!url) { toast('Please select an image first', 'error'); return; }
+  if (!record) { toast('No record open — please close and reopen the record', 'error'); return; }
+  record.albumArt = url;
+  record.artStatus = 'verified';
+  saveDB();
+  renderAll();
+  const artImg = document.getElementById('d-art-img');
+  const artPh = document.getElementById('d-art-placeholder');
+  if (artImg) { artImg.src = url; artImg.style.display = 'block'; }
+  if (artPh) { artPh.style.display = 'none'; }
+  updateDetailArtStatus(record);
+  document.getElementById('artpicker-modal').classList.remove('open');
+  selectedArtUrl = null;
+  toast('Album art saved & verified ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// TRACKLIST FETCH (MusicBrainz)
+// ═══════════════════════════════════════════════════════
+async function fetchTracklist() {
+  if (!currentRecord || !isAdmin()) return;
+  const container = document.getElementById('tracklist-search-results');
+  container.innerHTML = '<div style="color:var(--text2);font-size:.85rem"><span class="loading-spinner"></span> Fetching tracklist via AI…</div>';
+
+  // First try MusicBrainz directly (it supports CORS natively)
+  let mbTracks = null;
+  try {
+    const q = encodeURIComponent(`release:"${currentRecord.title}" artist:"${currentRecord.artist}"`);
+    const res = await fetch(
+      `https://musicbrainz.org/ws/2/release/?query=${q}&limit=3&fmt=json`,
+      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+    );
+    const data = await res.json();
+    if (data.releases?.length) {
+      const rel = data.releases[0];
+      const detRes = await fetch(
+        `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
+        { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+      );
+      const det = await detRes.json();
+      const tracks = [];
+      if (det.media) det.media.forEach(m => m.tracks?.forEach(t => tracks.push(t.title)));
+      if (tracks.length) {
+        mbTracks = { tracks, source: `MusicBrainz — ${rel.title} (${rel.date||'?'})` };
+      }
+    }
+  } catch(e) {}
+
+  if (mbTracks) {
+    showTracklistResult(container, mbTracks.tracks, mbTracks.source);
+    return;
+  }
+
+  // Fallback: Claude API knows most albums' track listings
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 600,
+        messages: [{
+          role: 'user',
+          content: `List the track listing for the album "${currentRecord.title}" by ${currentRecord.artist}${currentRecord.year ? ` (${currentRecord.year})` : ''}. Output ONLY the track names, one per line, numbered like "1. Track Name". No other text, no side labels, no durations. If you don't know this album's exact tracks, say "UNKNOWN".`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+
+    if (text.includes('UNKNOWN') || text.trim().length < 10) {
+      container.innerHTML = `<div style="color:var(--text3);font-size:.85rem">Tracklist not found. Add tracks manually above, or try the OCR photo option.</div>`;
+      return;
+    }
+
+    const tracks = text.split('\n')
+      .map(l => l.replace(/^\d+[\.\)]\s*/, '').replace(/\s+\d+:\d+.*$/, '').trim())
+      .filter(l => l.length > 1 && l !== 'UNKNOWN');
+
+    showTracklistResult(container, tracks, 'AI (Claude) — verify before saving');
+  } catch(e) {
+    container.innerHTML = `<div style="color:var(--text3);font-size:.85rem">Could not fetch tracklist. Add tracks manually using the field above.</div>`;
+  }
+}
+
+function showTracklistResult(container, tracks, source) {
+  container.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'tracklist-search-result';
+  div.innerHTML = `
+    <div class="tracklist-source">${source}</div>
+    <ol class="tracklist-tracks">${tracks.map((t,i)=>`<li><span>${i+1}.</span>${t}</li>`).join('')}</ol>
+    <button class="btn btn-primary btn-sm" style="margin-top:10px" id="apply-tracks-btn">✓ Apply this tracklist</button>
+  `;
+  div.querySelector('#apply-tracks-btn').onclick = (e) => {
+    e.stopPropagation();
+    if (!confirm(`Apply ${tracks.length} tracks to "${currentRecord.title}"?`)) return;
+    currentRecord.trackList = tracks;
+    saveDB(); renderDetailTracks();
+    container.innerHTML = `<div style="color:var(--success);font-size:.85rem">✓ Applied ${tracks.length} tracks.</div>`;
+    toast(`✓ Applied ${tracks.length} tracks`);
+  };
+  container.appendChild(div);
+}
+
+// ═══════════════════════════════════════════════════════
+// ARTIST BIO & ALBUM DESC (Wikipedia / LastFM-style)
+// ═══════════════════════════════════════════════════════
+async function fetchArtistBio() {
+  if (!currentRecord || !isAdmin()) return;
+  const bioEl = document.getElementById('d-artist-bio');
+  bioEl.innerHTML = '<span class="loading-spinner"></span> Fetching biography via AI…';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Write a concise, factual 2-3 paragraph biography of the music artist "${currentRecord.artist}". Cover their origins, musical style, most important albums and career highlights. Write in plain text with no markdown formatting, no asterisks, no headers. If you don't know this artist, say so briefly.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    if (!text || text.toLowerCase().includes("i don't know") || text.toLowerCase().includes("i'm not familiar")) {
+      throw new Error('No info');
+    }
+    currentRecord.artistBio = text;
+    saveDB();
+    const paras = text.split('\n').filter(p => p.trim().length > 10);
+    bioEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+    toast('Biography loaded ✓');
+  } catch(e) {
+    bioEl.innerHTML = `<em style="color:var(--text3)">Could not load biography for "${currentRecord.artist}". You can type one manually in the Notes tab.</em>`;
+  }
+}
+
+async function fetchAlbumDesc() {
+  if (!currentRecord || !isAdmin()) return;
+  const descEl = document.getElementById('d-album-desc');
+  descEl.innerHTML = '<span class="loading-spinner"></span> Fetching description via AI…';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        messages: [{
+          role: 'user',
+          content: `Write a concise, factual 2 paragraph description of the album "${currentRecord.title}" by ${currentRecord.artist}${currentRecord.year ? ` (${currentRecord.year})` : ''}. Cover the album's musical style, notable tracks, its significance, and reception. Write in plain text with no markdown, no asterisks, no headers. If you don't know this specific album, write what you can about the artist's work from that era.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    if (!text) throw new Error('No response');
+    currentRecord.albumDesc = text;
+    saveDB();
+    const paras = text.split('\n').filter(p => p.trim().length > 10);
+    descEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+    const notesArea = document.getElementById('d-notes-area');
+    if (notesArea) notesArea.value = text;
+    toast('Description loaded ✓');
+  } catch(e) {
+    descEl.innerHTML = `<em style="color:var(--text3)">Could not load description. You can write one manually in the Notes tab.</em>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// OCR (via free OCR API)
+// ═══════════════════════════════════════════════════════
+function openOCR() {
+  if (!isAdmin()) return;
+  document.getElementById('ocr-modal').style.opacity = '1';
+  document.getElementById('ocr-modal').style.pointerEvents = 'all';
+  document.getElementById('ocr-preview').classList.add('hidden');
+  document.getElementById('ocr-status').textContent = '';
+  document.getElementById('ocr-result-tracks').innerHTML = '';
+  document.getElementById('ocr-apply-btn').classList.add('hidden');
+  document.getElementById('ocr-file').value = '';
+  ocrExtractedTracks = [];
+}
+
+function closeOCR() {
+  document.getElementById('ocr-modal').style.opacity = '0';
+  document.getElementById('ocr-modal').style.pointerEvents = 'none';
+}
+
+async function handleOCRFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('ocr-preview');
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    preview.src = ev.target.result;
+    preview.classList.remove('hidden');
+    await runOCR(file, ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runOCR(file, dataUrl) {
+  const status = document.getElementById('ocr-status');
+  status.innerHTML = '<span class="loading-spinner"></span> Processing image with OCR…';
+  try {
+    const base64 = dataUrl.split(',')[1];
+    const res = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: {'apikey': 'K81234567890', 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `base64Image=data:image/jpeg;base64,${base64}&language=eng&isTable=false`
+    });
+    const data = await res.json();
+    let text = '';
+    if (data.ParsedResults && data.ParsedResults[0]) text = data.ParsedResults[0].ParsedText;
+    if (!text) throw new Error('No text');
+    processOCRText(text);
+  } catch(e) {
+    // Fallback: show manual entry
+    status.textContent = 'OCR service unavailable. Please review and manually enter track names below.';
+    document.getElementById('ocr-result-tracks').innerHTML = `<textarea id="ocr-manual" style="width:100%;height:120px;margin-top:8px;font-size:.85rem" placeholder="Paste or type track names, one per line…"></textarea>`;
+    document.getElementById('ocr-apply-btn').classList.remove('hidden');
+    ocrExtractedTracks = [];
+  }
+}
+
+function processOCRText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2 && l.length < 100);
+  const trackLines = lines.filter(l => !l.match(/^[0-9]{4}$/) && !l.match(/^(side|label|rpm|stereo|mono)/i));
+  ocrExtractedTracks = trackLines.map(l => l.replace(/^\d+[\.\)]\s*/, '').replace(/\s+\d+:\d+$/, '').trim()).filter(Boolean);
+  const container = document.getElementById('ocr-result-tracks');
+  const status = document.getElementById('ocr-status');
+  status.textContent = `Found ${ocrExtractedTracks.length} potential track names. Edit below before applying:`;
+  container.innerHTML = `<textarea id="ocr-edit" style="width:100%;height:140px;margin-top:8px;font-size:.83rem">${ocrExtractedTracks.join('\n')}</textarea>`;
+  document.getElementById('ocr-apply-btn').classList.remove('hidden');
+}
+
+function applyOCRTracks() {
+  if (!currentRecord) return;
+  const editArea = document.getElementById('ocr-edit') || document.getElementById('ocr-manual');
+  const lines = (editArea ? editArea.value : ocrExtractedTracks.join('\n')).split('\n').map(l=>l.trim()).filter(Boolean);
+  if (!lines.length) { toast('No tracks to apply', 'error'); return; }
+  if (!confirm(`Apply ${lines.length} tracks to "${currentRecord.title}"?`)) return;
+  currentRecord.trackList = lines;
+  saveDB(); renderDetailTracks();
+  closeOCR();
+  toast(`✓ Applied ${lines.length} tracks from image`);
+}
+
+// ═══════════════════════════════════════════════════════
+// SPINNING WHEEL
+// ═══════════════════════════════════════════════════════
+function openWheel() {
+  document.getElementById('wheel-modal').classList.add('open');
+  drawWheel();
+  updateWheelInfo();
+}
+
+function closeWheel() {
+  document.getElementById('wheel-modal').classList.remove('open');
+}
+
+function getWheelRecords() {
+  return DB.filter(r => !r.listened);
+}
+
+function updateWheelInfo() {
+  const pool = getWheelRecords();
+  document.getElementById('wheel-exclude-info').textContent = `${pool.length} unlistened records in the pool. ${DB.length - pool.length} already listened.`;
+}
+
+function drawWheel(highlightIndex = -1, angle = 0) {
+  const canvas = document.getElementById('wheel-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, r = W/2 - 8;
+  const records = getWheelRecords();
+  if (!records.length) {
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#2a2a2a'; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#a09890'; ctx.font = '16px DM Sans'; ctx.textAlign = 'center';
+    ctx.fillText('All records listened!', cx, cy);
+    return;
+  }
+  const slice = (Math.PI*2) / records.length;
+  const colors = ['#e8c547','#c47b2e','#4a8fd4','#9b59b6','#e05252','#52c478','#d4598a','#3a7bd5'];
+  ctx.clearRect(0,0,W,H);
+  records.forEach((rec, i) => {
+    const start = angle + i * slice;
+    const end = start + slice;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.fillStyle = i === highlightIndex ? '#f0f0f0' : colors[i % colors.length];
+    ctx.fill();
+    ctx.strokeStyle = '#0a0a0a'; ctx.lineWidth = 2; ctx.stroke();
+
+    // Label
+    if (records.length <= 30) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + slice/2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = i === highlightIndex ? '#000' : 'rgba(0,0,0,0.8)';
+      ctx.font = `bold ${Math.min(11, 280/records.length)}px DM Sans`;
+      const label = rec.artist.length > 14 ? rec.artist.substring(0,12)+'…' : rec.artist;
+      ctx.fillText(label, r - 8, 4);
+      ctx.restore();
+    }
+  });
+
+  // Center circle
+  ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2);
+  ctx.fillStyle = '#0a0a0a'; ctx.fill();
+  ctx.strokeStyle = '#e8c547'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#e8c547'; ctx.font = 'bold 18px Bebas Neue'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('MRD', cx, cy);
+
+  // Pointer
+  ctx.beginPath();
+  ctx.moveTo(cx + r + 6, cy);
+  ctx.lineTo(cx + r - 16, cy - 10);
+  ctx.lineTo(cx + r - 16, cy + 10);
+  ctx.fillStyle = '#fff'; ctx.fill();
+}
+
+let wheelAngle = 0;
+function spinWheel() {
+  if (wheelSpinning) return;
+  const records = getWheelRecords();
+  if (!records.length) { toast('All records have been listened to!'); return; }
+  wheelSpinning = true;
+  document.getElementById('spin-btn').disabled = true;
+  document.getElementById('wheel-result').innerHTML = '';
+
+  const totalRotation = (Math.PI * 2 * (8 + Math.random() * 6));
+  const duration = 4000;
+  const startTime = Date.now();
+  const startAngle = wheelAngle;
+
+  function animate() {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 4);
+    wheelAngle = startAngle + totalRotation * ease;
+    drawWheel(-1, wheelAngle);
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      // Determine winner
+      const slice = (Math.PI * 2) / records.length;
+      const normalised = ((2 * Math.PI) - (wheelAngle % (Math.PI * 2))) % (Math.PI * 2);
+      const winnerIdx = Math.floor(normalised / slice) % records.length;
+      const winner = records[winnerIdx];
+      drawWheel(winnerIdx, wheelAngle);
+
+      document.getElementById('wheel-result').innerHTML = `
+        <div style="color:var(--text3);font-size:.8rem;margin-bottom:4px">🎵 Tonight's record:</div>
+        <div class="wr-artist">${winner.artist}</div>
+        <div class="wr-title">${winner.title}${winner.year ? ` (${winner.year})` : ''}</div>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="markWheelWinner('${winner.id}')">✓ Mark as Listened</button>
+      `;
+      wheelSpinning = false;
+      document.getElementById('spin-btn').disabled = false;
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function markWheelWinner(id) {
+  if (!isAdmin()) { toast('Admin access required to mark as listened', 'error'); return; }
+  const r = DB.find(x => x.id === id);
+  if (r) { r.listened = true; saveRecord(r); updateWheelInfo(); drawWheel(); renderAll(); toast('Marked as listened ✓'); }
+}
+
+async function resetWheelListened() {
+  if (!isAdmin()) { toast('Admin access required', 'error'); return; }
+  if (!confirm('Reset all listened status? This cannot be undone.')) return;
+  DB.forEach(r => r.listened = false);
+  await saveBulk(DB);
+  updateWheelInfo(); drawWheel(); renderAll();
+  toast('All listened status reset');
+}
+
+// ═══════════════════════════════════════════════════════
+// ADMIN PANEL
+// ═══════════════════════════════════════════════════════
+function openAdmin() {
+  if (!isAdmin()) return;
+  renderUserList();
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function closeAdmin() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+
+function renderUserList() {
+  const list = document.getElementById('user-list');
+  list.innerHTML = Object.entries(users).map(([u,d]) =>
+    `<div class="user-row">
+      <span class="ur-name">${u}</span>
+      <span class="ur-role">${d.role === 'admin' ? '⚡ Admin' : '👁 Read-only'}</span>
+      ${u !== 'admin' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u}')">Delete</button>` : ''}
+    </div>`
+  ).join('');
+}
+
+function saveUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const pass = document.getElementById('new-user-pass').value;
+  const role = document.getElementById('new-user-role').value;
+  if (!name || !pass) { toast('Username and password required', 'error'); return; }
+  users[name] = { password: pass, role };
+  saveUsers(); renderUserList();
+  document.getElementById('new-user-name').value = '';
+  document.getElementById('new-user-pass').value = '';
+  toast(`User "${name}" saved ✓`);
+}
+
+function deleteUser(name) {
+  if (!confirm(`Delete user "${name}"?`)) return;
+  delete users[name];
+  saveUsers(); renderUserList();
+  toast(`User deleted`);
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// ART STATUS HELPERS
+// ═══════════════════════════════════════════════════════
+function updateDetailArtStatus(r) {
+  const row = document.getElementById('d-art-status-row');
+  const badge = document.getElementById('d-art-status-badge');
+  const verifyBtn = document.getElementById('d-verify-btn');
+  if (!r.albumArt) {
+    row.style.display = 'none';
+    return;
+  }
+  row.style.display = 'flex';
+  if (r.artStatus === 'verified') {
+    badge.textContent = '✓ Verified';
+    badge.style.cssText = 'font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(82,196,120,.2);color:#52c478;border:1px solid rgba(82,196,120,.4)';
+    verifyBtn.style.display = 'none';
+  } else if (r.artStatus === 'auto') {
+    badge.textContent = '◑ Auto-fetched';
+    badge.style.cssText = 'font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(196,123,46,.2);color:#c47b2e;border:1px solid rgba(196,123,46,.4)';
+    if (isAdmin()) {
+      verifyBtn.style.display = 'inline-flex';
+      verifyBtn.textContent = '✓ Verify Art';
+      verifyBtn.classList.remove('verified');
+    }
+  } else {
+    badge.textContent = '● Has Art';
+    badge.style.cssText = 'font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:rgba(255,255,255,.08);color:var(--text2);border:1px solid var(--border)';
+    if (isAdmin()) {
+      verifyBtn.style.display = 'inline-flex';
+      verifyBtn.textContent = '✓ Verify Art';
+      verifyBtn.classList.remove('verified');
+    }
+  }
+}
+
+function verifyArt() {
+  if (!currentRecord || !isAdmin()) return;
+  currentRecord.artStatus = 'verified';
+  saveDB();
+  renderAll();
+  updateDetailArtStatus(currentRecord);
+  toast('Art verified ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// BULK ART FETCH
+// ═══════════════════════════════════════════════════════
+function openBulkFetch() {
+  if (!isAdmin()) return;
+  bulkFetchAborted = false;
+  const toFetch = DB.filter(r => !r.albumArt || r.artStatus !== 'verified');
+  document.getElementById('bf-n-pending').textContent = toFetch.length;
+  document.getElementById('bf-n-found').textContent = '0';
+  document.getElementById('bf-n-notfound').textContent = '0';
+  document.getElementById('bf-n-done').textContent = '0';
+  document.getElementById('bf-progress').style.width = '0%';
+  document.getElementById('bf-current').textContent = 'Ready. Press Start to begin.';
+  document.getElementById('bf-log').innerHTML = '';
+  document.getElementById('bf-start-btn').style.display = 'inline-flex';
+  document.getElementById('bf-stop-btn').style.display = 'none';
+  document.getElementById('bulkfetch-modal').classList.add('open');
+}
+
+function closeBulkFetch() {
+  bulkFetchAborted = true;
+  document.getElementById('bulkfetch-modal').classList.remove('open');
+  renderAll();
+}
+
+function stopBulkFetch() {
+  bulkFetchAborted = true;
+  document.getElementById('bf-current').textContent = 'Stopping after current record…';
+  document.getElementById('bf-stop-btn').style.display = 'none';
+}
+
+function bfLog(msg, type='') {
+  const log = document.getElementById('bf-log');
+  const row = document.createElement('div');
+  row.className = 'bf-log-row ' + type;
+  row.textContent = msg;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function startBulkFetch() {
+  if (!isAdmin()) return;
+  bulkFetchAborted = false;
+  document.getElementById('bf-start-btn').style.display = 'none';
+  document.getElementById('bf-stop-btn').style.display = 'inline-flex';
+  document.getElementById('bf-log').innerHTML = '';
+
+  // Only fetch records without verified art
+  const toFetch = DB.filter(r => !r.albumArt || r.artStatus !== 'verified');
+  const total = toFetch.length;
+  let found = 0, notFound = 0, skipped = 0, done = 0;
+
+  document.getElementById('bf-n-pending').textContent = total;
+
+  for (let i = 0; i < toFetch.length; i++) {
+    if (bulkFetchAborted) {
+      bfLog('⏹ Stopped by user.', 'fail');
+      break;
+    }
+
+    const r = toFetch[i];
+    const pct = Math.round((i / total) * 100);
+    document.getElementById('bf-progress').style.width = pct + '%';
+    document.getElementById('bf-current').textContent = `[${i+1}/${total}] ${r.artist} — ${r.title}`;
+
+    // Skip if already has verified art
+    if (r.artStatus === 'verified') {
+      skipped++;
+      done++;
+      document.getElementById('bf-n-done').textContent = skipped;
+      bfLog(`⤼ ${r.artist} — ${r.title} (already verified)`, 'skip');
+      continue;
+    }
+
+    const artUrl = await fetchArtForRecord(r);
+
+    if (artUrl) {
+      r.albumArt = artUrl;
+      r.artStatus = 'auto';
+      found++;
+      document.getElementById('bf-n-found').textContent = found;
+      bfLog(`✓ ${r.artist} — ${r.title}`, 'ok');
+    } else {
+      notFound++;
+      document.getElementById('bf-n-notfound').textContent = notFound;
+      bfLog(`✗ ${r.artist} — ${r.title}`, 'fail');
+    }
+
+    done++;
+    document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
+    if (artUrl) saveRecord(r); else localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+
+    // Throttle to avoid rate limiting
+    await new Promise(res => setTimeout(res, 300));
+  }
+
+  document.getElementById('bf-progress').style.width = '100%';
+  document.getElementById('bf-current').textContent = `Complete! Found art for ${found} of ${total} records.`;
+  document.getElementById('bf-stop-btn').style.display = 'none';
+  document.getElementById('bf-start-btn').textContent = '▶ Run Again';
+  document.getElementById('bf-start-btn').style.display = 'inline-flex';
+  renderAll();
+  toast(`Bulk fetch done: ${found} found, ${notFound} not found`);
+}
+
+async function fetchArtForRecord(r) {
+  const query = `${r.artist} ${r.title}`;
+  try {
+    const res = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=album&limit=5&media=music`
+    );
+    if (!res.ok) throw new Error('iTunes error');
+    const data = await res.json();
+    if (data.results?.length) {
+      // Try to find best match by year if available
+      let best = data.results[0];
+      if (r.year) {
+        const yearMatch = data.results.find(x => x.releaseDate?.startsWith(String(r.year)));
+        if (yearMatch) best = yearMatch;
+      }
+      if (best.artworkUrl100) {
+        return best.artworkUrl100.replace('100x100bb', '600x600bb');
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+
+function exportCSV() {
+  const headers = ['ID','Artist','Title','Genre','Year','Label','Notes','Favourite','Listened','Tracks','FavTracks'];
+  const rows = DB.map(r => [
+    r.id, `"${r.artist}"`, `"${r.title}"`, `"${r.genre}"`, r.year||'', `"${r.label}"`, `"${r.notes}"`,
+    r.favourite?'Yes':'No', r.listened?'Yes':'No', r.trackList?.length||0, r.favTracks?.length||0
+  ]);
+  const csv = [headers.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  download('mrd_catalogue.csv', csv, 'text/csv');
+}
+
+function exportJSON() {
+  download('mrd_backup.json', JSON.stringify(DB, null, 2), 'application/json');
+}
+
+function backupData() {
+  const backup = { db: DB, users, exported: new Date().toISOString() };
+  download('mrd_full_backup.json', JSON.stringify(backup, null, 2), 'application/json');
+  toast('Backup downloaded ✓');
+}
+
+function restoreData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!confirm('This will replace ALL current data in the cloud database. Are you sure?')) return;
+      if (data.db) {
+        DB = data.db;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+        toast('Pushing data to cloud…');
+        await saveBulk(DB);
+      }
+      if (data.users) { users = data.users; saveUsers(); }
+      renderAll(); toast('Data restored & synced to cloud ✓');
+    } catch(e) { toast('Invalid backup file', 'error'); }
+  };
+  reader.readAsText(file);
+}
+
+function download(filename, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = filename; a.click();
+}
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR MOBILE
+// ═══════════════════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function toast(msg, type='success') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 300);
+  }, 2800);
+}
+
+// ═══════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
