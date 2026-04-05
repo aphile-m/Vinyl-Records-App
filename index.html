@@ -1730,50 +1730,50 @@ async function fetchArtistBio() {
   bioEl.innerHTML = '<span class="loading-spinner"></span> Searching Wikipedia…';
 
   const artist = currentRecord.artist;
+  // Strip "The " prefix and "feat." suffixes for better search hits
+  const cleanArtist = artist.replace(/^The /i,'').replace(/\s+feat\..*$/i,'').trim();
 
-  // Try several search variations to maximise hit rate
-  const searches = [
-    artist,
-    artist.replace(/^The /, ''),
-    `${artist} musician`,
-    `${artist} singer`,
-    `${artist} band`
-  ];
+  const searches = [cleanArtist, artist, `${cleanArtist} musician`, `${cleanArtist} singer`];
 
   for (const term of searches) {
     try {
-      // Step 1: search for the best matching page
       const searchRes = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=5&format=json&origin=*`
       );
+      if (!searchRes.ok) throw new Error(`HTTP ${searchRes.status}`);
       const searchData = await searchRes.json();
-      const hit = searchData?.query?.search?.[0];
-      if (!hit) continue;
+      const results = searchData?.query?.search || [];
+      if (!results.length) continue;
 
-      // Step 2: get the intro extract of that page
+      // Pick best result — prefer one whose title contains the artist name
+      const best = results.find(r =>
+        r.title.toLowerCase().includes(cleanArtist.toLowerCase())
+      ) || results[0];
+
       const extractRes = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=10&pageids=${hit.pageid}&format=json&origin=*`
+        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=12&pageids=${best.pageid}&format=json&origin=*`
       );
+      if (!extractRes.ok) throw new Error(`HTTP ${extractRes.status}`);
       const extractData = await extractRes.json();
-      const pages = extractData?.query?.pages;
-      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+      const pages = extractData?.query?.pages || {};
+      const extract = pages[Object.keys(pages)[0]]?.extract?.trim() || '';
 
-      if (!extract || extract.length < 80) continue;
+      if (extract.length < 50) continue;
 
-      // Clean up and trim to 4 paragraphs
-      const paras = extract.split('\n').map(p => p.trim()).filter(p => p.length > 40).slice(0, 4);
-      if (!paras.length) continue;
-
+      const paras = extract.split('\n').map(p=>p.trim()).filter(p=>p.length > 30).slice(0,4);
       const text = paras.join('\n\n');
+
       currentRecord.artistBio = text;
       saveDB();
-      bioEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+      bioEl.innerHTML = `<p style="font-size:.72rem;color:var(--text3);margin-bottom:8px">Source: Wikipedia — "${best.title}"</p>` +
+        paras.map(p=>`<p>${p}</p>`).join('');
       toast('Biography loaded ✓');
       return;
-    } catch(e) { continue; }
+    } catch(e) {
+      console.warn('Bio fetch attempt failed:', term, e.message);
+    }
   }
 
-  // Nothing found on Wikipedia — show a helpful message
   bioEl.innerHTML = `<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
     No Wikipedia entry found for <strong>${artist}</strong>.<br>
     You can type a biography manually in the <strong>Notes</strong> tab.
@@ -1786,52 +1786,60 @@ async function fetchAlbumDesc() {
   descEl.innerHTML = '<span class="loading-spinner"></span> Searching Wikipedia…';
 
   const { artist, title, year } = currentRecord;
+  const cleanArtist = artist.replace(/^The /i,'').replace(/\s+feat\..*$/i,'').trim();
 
-  // Try several search variations
   const searches = [
-    `${title} ${artist} album`,
+    `${title} ${cleanArtist}`,
     `${title} album`,
-    `${title} ${year || ''}`.trim(),
+    `${title} ${year||''}`.trim(),
     title
   ];
 
   for (const term of searches) {
     try {
       const searchRes = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=5&format=json&origin=*`
       );
+      if (!searchRes.ok) throw new Error(`HTTP ${searchRes.status}`);
       const searchData = await searchRes.json();
-      const hit = searchData?.query?.search?.[0];
-      if (!hit) continue;
+      const results = searchData?.query?.search || [];
+      if (!results.length) continue;
+
+      // Pick best result — prefer one whose title matches the album title
+      const best = results.find(r =>
+        r.title.toLowerCase().includes(title.toLowerCase().split(' ').slice(0,3).join(' '))
+      ) || results[0];
 
       const extractRes = await fetch(
-        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=8&pageids=${hit.pageid}&format=json&origin=*`
+        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=10&pageids=${best.pageid}&format=json&origin=*`
       );
+      if (!extractRes.ok) throw new Error(`HTTP ${extractRes.status}`);
       const extractData = await extractRes.json();
-      const pages = extractData?.query?.pages;
-      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+      const pages = extractData?.query?.pages || {};
+      const extract = pages[Object.keys(pages)[0]]?.extract?.trim() || '';
 
-      if (!extract || extract.length < 80) continue;
+      if (extract.length < 50) continue;
 
-      // Verify it's actually about this album (not a random page)
+      // Loose relevance check — just needs artist OR album word OR "album"/"record"
       const lc = extract.toLowerCase();
-      const isRelevant = lc.includes(artist.toLowerCase().split(' ')[0]) ||
-                         lc.includes(title.toLowerCase().split(' ')[0]) ||
-                         lc.includes('album') || lc.includes('record');
-      if (!isRelevant) continue;
+      const artistWord = cleanArtist.toLowerCase().split(' ')[0];
+      const titleWord = title.toLowerCase().split(' ').filter(w=>w.length>3)[0] || title.split(' ')[0].toLowerCase();
+      if (!lc.includes(artistWord) && !lc.includes(titleWord) && !lc.includes('album') && !lc.includes('record') && !lc.includes('music')) continue;
 
-      const paras = extract.split('\n').map(p => p.trim()).filter(p => p.length > 40).slice(0, 3);
-      if (!paras.length) continue;
-
+      const paras = extract.split('\n').map(p=>p.trim()).filter(p=>p.length > 30).slice(0,3);
       const text = paras.join('\n\n');
+
       currentRecord.albumDesc = text;
       saveDB();
-      descEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+      descEl.innerHTML = `<p style="font-size:.72rem;color:var(--text3);margin-bottom:8px">Source: Wikipedia — "${best.title}"</p>` +
+        paras.map(p=>`<p>${p}</p>`).join('');
       const notesArea = document.getElementById('d-notes-area');
       if (notesArea) notesArea.value = text;
       toast('Description loaded ✓');
       return;
-    } catch(e) { continue; }
+    } catch(e) {
+      console.warn('Album desc fetch attempt failed:', term, e.message);
+    }
   }
 
   descEl.innerHTML = `<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
