@@ -1555,40 +1555,14 @@ async function searchArt() {
     return;
   }
 
-  // Fallback: ask Claude to suggest the best image URL for this album
-  container.innerHTML = '<div style="color:var(--text3);font-size:.85rem">iTunes unavailable, trying AI search…</div>';
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        messages: [{
-          role: 'user',
-          content: `For the album "${query}", provide exactly 3 direct iTunes artwork image URLs in this exact format - one per line, nothing else:
-https://is1-ssl.mzstatic.com/image/thumb/...
-The URLs must be real iTunes artwork URLs ending in /600x600bb.jpg for the album or similar albums by this artist. Only output the URLs, no other text.`
-        }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-    const urls = text.split('\n').map(l=>l.trim()).filter(l=>l.startsWith('http'));
-    if (urls.length > 0) {
-      renderArtResults(container, urls);
-      return;
-    }
-  } catch(e) {}
-
-  // Final fallback: show manual instructions
+  // iTunes unavailable — show manual instructions with helpful links
   container.innerHTML = `
     <div style="color:var(--text2);font-size:.85rem;line-height:1.9">
-      <strong>Auto-search unavailable.</strong> Here's how to add art manually:<br>
+      <strong>Couldn't find art automatically.</strong> Here's how to add it manually:<br>
       1. Open <a href="https://www.discogs.com/search/?q=${encodeURIComponent(query)}&type=release" target="_blank" style="color:var(--accent)">Discogs ↗</a> or <a href="https://music.apple.com/search?term=${encodeURIComponent(query)}" target="_blank" style="color:var(--accent)">Apple Music ↗</a><br>
       2. Find the album cover image<br>
       3. Right-click → <em>Copy Image Address</em><br>
-      4. Paste the URL in the field below
+      4. Paste the URL in the field below and click <strong>Use URL</strong>
     </div>`;
 }
 
@@ -1696,36 +1670,35 @@ async function fetchTracklist() {
     return;
   }
 
-  // Fallback: Claude API knows most albums' track listings
+  // Broader MusicBrainz search — try just title without quotes
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 600,
-        messages: [{
-          role: 'user',
-          content: `List the track listing for the album "${currentRecord.title}" by ${currentRecord.artist}${currentRecord.year ? ` (${currentRecord.year})` : ''}. Output ONLY the track names, one per line, numbered like "1. Track Name". No other text, no side labels, no durations. If you don't know this album's exact tracks, say "UNKNOWN".`
-        }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-
-    if (text.includes('UNKNOWN') || text.trim().length < 10) {
-      container.innerHTML = `<div style="color:var(--text3);font-size:.85rem">Tracklist not found. Add tracks manually above, or try the OCR photo option.</div>`;
-      return;
+    const q2 = encodeURIComponent(`${currentRecord.title} ${currentRecord.artist}`);
+    const res2 = await fetch(
+      `https://musicbrainz.org/ws/2/release/?query=${q2}&limit=3&fmt=json`,
+      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+    );
+    const data2 = await res2.json();
+    if (data2.releases?.length) {
+      for (const rel of data2.releases.slice(0, 3)) {
+        const detRes = await fetch(
+          `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
+          { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+        );
+        const det = await detRes.json();
+        const tracks = [];
+        if (det.media) det.media.forEach(m => m.tracks?.forEach(t => tracks.push(t.title)));
+        if (tracks.length) {
+          showTracklistResult(container, tracks, `MusicBrainz — ${rel.title} (${rel.date||'?'})`);
+          return;
+        }
+        await new Promise(r => setTimeout(r, 200));
+      }
     }
+  } catch(e) {}
 
-    const tracks = text.split('\n')
-      .map(l => l.replace(/^\d+[\.\)]\s*/, '').replace(/\s+\d+:\d+.*$/, '').trim())
-      .filter(l => l.length > 1 && l !== 'UNKNOWN');
-
-    showTracklistResult(container, tracks, 'AI (Claude) — verify before saving');
-  } catch(e) {
-    container.innerHTML = `<div style="color:var(--text3);font-size:.85rem">Could not fetch tracklist. Add tracks manually using the field above.</div>`;
-  }
+  container.innerHTML = `<div style="color:var(--text3);font-size:.85rem">
+    Tracklist not found in MusicBrainz. Add tracks manually using the field above, or use the 📷 OCR photo option.
+  </div>`;
 }
 
 function showTracklistResult(container, tracks, source) {
@@ -1754,67 +1727,117 @@ function showTracklistResult(container, tracks, source) {
 async function fetchArtistBio() {
   if (!currentRecord || !isAdmin()) return;
   const bioEl = document.getElementById('d-artist-bio');
-  bioEl.innerHTML = '<span class="loading-spinner"></span> Fetching biography via AI…';
+  bioEl.innerHTML = '<span class="loading-spinner"></span> Searching Wikipedia…';
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `Write a concise, factual 2-3 paragraph biography of the music artist "${currentRecord.artist}". Cover their origins, musical style, most important albums and career highlights. Write in plain text with no markdown formatting, no asterisks, no headers. If you don't know this artist, say so briefly.`
-        }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-    if (!text || text.toLowerCase().includes("i don't know") || text.toLowerCase().includes("i'm not familiar")) {
-      throw new Error('No info');
-    }
-    currentRecord.artistBio = text;
-    saveDB();
-    const paras = text.split('\n').filter(p => p.trim().length > 10);
-    bioEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
-    toast('Biography loaded ✓');
-  } catch(e) {
-    bioEl.innerHTML = `<em style="color:var(--text3)">Could not load biography for "${currentRecord.artist}". You can type one manually in the Notes tab.</em>`;
+  const artist = currentRecord.artist;
+
+  // Try several search variations to maximise hit rate
+  const searches = [
+    artist,
+    artist.replace(/^The /, ''),
+    `${artist} musician`,
+    `${artist} singer`,
+    `${artist} band`
+  ];
+
+  for (const term of searches) {
+    try {
+      // Step 1: search for the best matching page
+      const searchRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`
+      );
+      const searchData = await searchRes.json();
+      const hit = searchData?.query?.search?.[0];
+      if (!hit) continue;
+
+      // Step 2: get the intro extract of that page
+      const extractRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=10&pageids=${hit.pageid}&format=json&origin=*`
+      );
+      const extractData = await extractRes.json();
+      const pages = extractData?.query?.pages;
+      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+
+      if (!extract || extract.length < 80) continue;
+
+      // Clean up and trim to 4 paragraphs
+      const paras = extract.split('\n').map(p => p.trim()).filter(p => p.length > 40).slice(0, 4);
+      if (!paras.length) continue;
+
+      const text = paras.join('\n\n');
+      currentRecord.artistBio = text;
+      saveDB();
+      bioEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+      toast('Biography loaded ✓');
+      return;
+    } catch(e) { continue; }
   }
+
+  // Nothing found on Wikipedia — show a helpful message
+  bioEl.innerHTML = `<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
+    No Wikipedia entry found for <strong>${artist}</strong>.<br>
+    You can type a biography manually in the <strong>Notes</strong> tab.
+  </div>`;
 }
 
 async function fetchAlbumDesc() {
   if (!currentRecord || !isAdmin()) return;
   const descEl = document.getElementById('d-album-desc');
-  descEl.innerHTML = '<span class="loading-spinner"></span> Fetching description via AI…';
+  descEl.innerHTML = '<span class="loading-spinner"></span> Searching Wikipedia…';
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: `Write a concise, factual 2 paragraph description of the album "${currentRecord.title}" by ${currentRecord.artist}${currentRecord.year ? ` (${currentRecord.year})` : ''}. Cover the album's musical style, notable tracks, its significance, and reception. Write in plain text with no markdown, no asterisks, no headers. If you don't know this specific album, write what you can about the artist's work from that era.`
-        }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-    if (!text) throw new Error('No response');
-    currentRecord.albumDesc = text;
-    saveDB();
-    const paras = text.split('\n').filter(p => p.trim().length > 10);
-    descEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
-    const notesArea = document.getElementById('d-notes-area');
-    if (notesArea) notesArea.value = text;
-    toast('Description loaded ✓');
-  } catch(e) {
-    descEl.innerHTML = `<em style="color:var(--text3)">Could not load description. You can write one manually in the Notes tab.</em>`;
+  const { artist, title, year } = currentRecord;
+
+  // Try several search variations
+  const searches = [
+    `${title} ${artist} album`,
+    `${title} album`,
+    `${title} ${year || ''}`.trim(),
+    title
+  ];
+
+  for (const term of searches) {
+    try {
+      const searchRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`
+      );
+      const searchData = await searchRes.json();
+      const hit = searchData?.query?.search?.[0];
+      if (!hit) continue;
+
+      const extractRes = await fetch(
+        `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=8&pageids=${hit.pageid}&format=json&origin=*`
+      );
+      const extractData = await extractRes.json();
+      const pages = extractData?.query?.pages;
+      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+
+      if (!extract || extract.length < 80) continue;
+
+      // Verify it's actually about this album (not a random page)
+      const lc = extract.toLowerCase();
+      const isRelevant = lc.includes(artist.toLowerCase().split(' ')[0]) ||
+                         lc.includes(title.toLowerCase().split(' ')[0]) ||
+                         lc.includes('album') || lc.includes('record');
+      if (!isRelevant) continue;
+
+      const paras = extract.split('\n').map(p => p.trim()).filter(p => p.length > 40).slice(0, 3);
+      if (!paras.length) continue;
+
+      const text = paras.join('\n\n');
+      currentRecord.albumDesc = text;
+      saveDB();
+      descEl.innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+      const notesArea = document.getElementById('d-notes-area');
+      if (notesArea) notesArea.value = text;
+      toast('Description loaded ✓');
+      return;
+    } catch(e) { continue; }
   }
+
+  descEl.innerHTML = `<div style="color:var(--text2);font-size:.88rem;line-height:1.7">
+    No Wikipedia entry found for <strong>${title}</strong>.<br>
+    You can write a description manually in the <strong>Notes</strong> tab.
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════════════
