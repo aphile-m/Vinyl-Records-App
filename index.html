@@ -21,6 +21,24 @@
   --success: #52c478;
   --radius: 8px;
 }
+/* Theme: Magazine (light) */
+body.theme-magazine {
+  --bg: #f5f0e8; --surface: #fff; --surface2: #f0ebe0;
+  --surface3: #e8e0d0; --border: #d4c8b0; --text: #1a1208;
+  --text2: #6b5c42; --text3: #a09070; --accent: #c47b2e; --accent2: #8b4513;
+}
+/* Theme: Crate Digger (warm analog) */
+body.theme-crate {
+  --bg: #1a1208; --surface: #241a0e; --surface2: #2e2010;
+  --surface3: #3a2a14; --border: #4a3820; --text: #f0ddb8;
+  --text2: #c8a878; --text3: #806848; --accent: #e8943a; --accent2: #c47b2e;
+}
+/* Theme: Streaming (clean dark) */
+body.theme-streaming {
+  --bg: #121212; --surface: #1e1e1e; --surface2: #282828;
+  --surface3: #333; --border: #404040; --text: #fff;
+  --text2: #b3b3b3; --text3: #737373; --accent: #1db954; --accent2: #17a349;
+}
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
 body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
@@ -680,6 +698,254 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 .tag-add-row input { flex: 1; }
 .tag-record-count { font-size: .72rem; color: var(--text3); margin-left: 4px; }
 
+
+/* ── Track page ── */
+.tp-header { display:flex; gap:16px; align-items:flex-start; margin-bottom:20px; }
+.tp-num { font-family:'Bebas Neue',sans-serif; font-size:3rem; color:var(--accent); line-height:1; opacity:.4; flex-shrink:0; width:50px; text-align:right; }
+.tp-title { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--text); letter-spacing:.04em; line-height:1.1; }
+.tp-album { font-size:.82rem; color:var(--text2); margin-top:4px; }
+.tp-duration { font-family:'DM Mono',monospace; font-size:.82rem; color:var(--text3); }
+.tp-actions { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.tp-action-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.75rem; padding:5px 12px; border-radius:20px;
+  border:1px solid var(--border); color:var(--text2);
+  cursor:pointer; transition:all .15s; text-decoration:none;
+}
+.tp-action-btn:hover { border-color:var(--accent); color:var(--accent); }
+.tp-action-btn.genius { border-color:#ffff64; color:#ffff64; }
+.tp-action-btn.whosampled { border-color:#e05252; color:#e05252; }
+.tp-section { margin-bottom:20px; }
+.tp-section-label { font-family:'DM Mono',monospace; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text3); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.tp-section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+.tp-credits { display:flex; flex-direction:column; gap:4px; }
+.tp-credit-row { display:flex; gap:12px; font-size:.84rem; }
+.tp-credit-role { color:var(--text3); min-width:100px; flex-shrink:0; }
+.tp-credit-name { color:var(--text2); }
+.tp-lyrics { font-size:.85rem; line-height:1.9; color:var(--text2); white-space:pre-wrap; max-height:300px; overflow-y:auto; background:var(--surface2); border-radius:8px; padding:16px; }
+.tp-lyrics-partial { font-size:.75rem; color:var(--text3); margin-top:8px; font-style:italic; }
+.tp-enriched-badge { font-size:.65rem; background:rgba(82,196,120,.15); color:var(--success); border:1px solid rgba(82,196,120,.3); border-radius:4px; padding:1px 6px; }
+.tp-mb-badge { font-size:.65rem; background:rgba(74,143,212,.15); color:#4a8fd4; border:1px solid rgba(74,143,212,.3); border-radius:4px; padding:1px 6px; }
+.track-item { cursor:pointer; }
+.track-item:hover { background:var(--surface2); border-radius:6px; }
+.track-col-extra { font-size:.7rem; color:var(--text3); margin-left:4px; font-family:'DM Mono',monospace; }
+.track-enriched-dot { width:6px; height:6px; border-radius:50%; background:var(--success); display:inline-block; margin-left:4px; vertical-align:middle; }
+/* toggle switch for column manager */
+.tc-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.tc-row:last-child { border-bottom:none; }
+.tc-label { flex:1; font-size:.85rem; }
+.tc-toggle { width:36px; height:20px; border-radius:10px; background:var(--surface3); border:1px solid var(--border); position:relative; cursor:pointer; transition:background .15s; flex-shrink:0; }
+.tc-toggle.on { background:var(--accent); border-color:var(--accent); }
+.tc-toggle::after { content:''; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--text3); transition:all .15s; }
+.tc-toggle.on::after { left:18px; background:#000; }
+
+
+/* ── Audio preview player ── */
+.preview-btn {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .75rem; border: 1px solid var(--border); color: var(--text2);
+  cursor: pointer; transition: all .15s; background: transparent;
+}
+.preview-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preview-btn.playing { border-color: var(--accent); color: var(--accent); background: rgba(232,197,71,.12); animation: pulse .8s ease infinite alternate; }
+.preview-btn.loading { border-color: var(--text3); color: var(--text3); }
+@keyframes pulse { from { box-shadow: 0 0 0 0 rgba(232,197,71,.4); } to { box-shadow: 0 0 0 6px rgba(232,197,71,0); } }
+
+/* Track page audio player */
+.tp-player {
+  background: var(--surface2); border-radius: 12px; padding: 14px 16px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 12px;
+}
+.tp-player-btn {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; background: var(--accent); color: #000;
+  cursor: pointer; transition: all .15s;
+}
+.tp-player-btn:hover { transform: scale(1.08); }
+.tp-player-btn.loading { background: var(--surface3); color: var(--text3); animation: spin .7s linear infinite; }
+.tp-progress-wrap { flex: 1; cursor: pointer; }
+.tp-progress-bar { height: 4px; background: var(--surface3); border-radius: 2px; position: relative; margin-bottom: 6px; }
+.tp-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width .1s linear; pointer-events: none; }
+.tp-progress-handle { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); position: absolute; top: -4px; transform: translateX(-50%); left: 0%; transition: left .1s linear; }
+.tp-time { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); display: flex; justify-content: space-between; }
+.tp-preview-label { font-size: .7rem; color: var(--text3); white-space: nowrap; }
+.tp-no-preview { font-size: .82rem; color: var(--text3); text-align: center; padding: 12px; background: var(--surface2); border-radius: 12px; margin-bottom: 16px; }
+
+
+/* ── App version ── */
+.app-version { font-family: 'DM Mono', monospace; font-size: .65rem; color: var(--text3); letter-spacing: .06em; }
+
+/* ── Page nav system ── */
+#page-nav-top {
+  display: flex; gap: 2px; padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  overflow-x: auto; flex-shrink: 0;
+}
+.nav-tab {
+  padding: 10px 16px; font-size: .82rem; font-weight: 500;
+  color: var(--text2); border-bottom: 2px solid transparent;
+  white-space: nowrap; transition: all .15s; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Mobile bottom nav */
+#page-nav-bottom {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+  background: var(--surface); border-top: 1px solid var(--border);
+  justify-content: space-around; padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+}
+.nav-tab-mobile {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: .62rem; color: var(--text3); padding: 4px 12px;
+  cursor: pointer; transition: color .15s; min-width: 48px;
+}
+.nav-tab-mobile .ni { font-size: 1.2rem; }
+.nav-tab-mobile.active { color: var(--accent); }
+@media (max-width: 768px) {
+  #page-nav-top { display: none; }
+  #page-nav-bottom { display: flex; }
+  #app { padding-bottom: 60px; }
+}
+
+/* ── Page containers ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── HOME PAGE ── */
+#page-home { min-height: calc(100vh - 120px); }
+.home-hero {
+  position: relative; height: min(480px, 55vw); min-height: 300px;
+  overflow: hidden; display: flex; align-items: flex-end;
+}
+.home-hero-bg {
+  position: absolute; inset: -20px;
+  background-size: cover; background-position: center;
+  filter: blur(24px) brightness(.45) saturate(1.3);
+  transform: scale(1.1);
+}
+.home-hero-content {
+  position: relative; z-index: 1; display: flex; gap: 24px;
+  align-items: flex-end; padding: 28px; width: 100%;
+}
+.home-hero-art {
+  width: clamp(100px,16vw,160px); height: clamp(100px,16vw,160px);
+  border-radius: 10px; object-fit: cover;
+  box-shadow: 0 12px 48px rgba(0,0,0,.7); flex-shrink: 0;
+  cursor: pointer; transition: transform .2s;
+}
+.home-hero-art:hover { transform: scale(1.04) rotate(-1deg); }
+.home-hero-art-placeholder {
+  width: clamp(100px,16vw,160px); height: clamp(100px,16vw,160px);
+  border-radius: 10px; background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; flex-shrink: 0;
+}
+.home-hero-info { flex: 1; min-width: 0; }
+.home-hero-label { font-size: .7rem; color: var(--accent); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 4px; }
+.home-hero-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem,5vw,3rem); color: var(--text); letter-spacing: .04em; line-height: 1; }
+.home-hero-title { font-size: clamp(.9rem,2.5vw,1.3rem); color: var(--text2); margin-bottom: 12px; }
+.home-hero-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Shelf sections on home */
+.home-section { padding: 20px 20px 0; }
+.home-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.home-section-title { font-family: 'DM Mono', monospace; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text2); }
+.home-section-link { font-size: .75rem; color: var(--accent); cursor: pointer; }
+.shelf-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 12px; }
+.shelf-scroll::-webkit-scrollbar { height: 3px; }
+.shelf-card {
+  flex-shrink: 0; width: 130px; cursor: pointer;
+  transition: transform .2s;
+}
+.shelf-card:hover { transform: translateY(-3px); }
+.shelf-art {
+  width: 130px; height: 130px; border-radius: 8px; object-fit: cover;
+  background: var(--surface2); display: flex; align-items: center;
+  justify-content: center; font-size: 2.5rem; margin-bottom: 6px;
+}
+.shelf-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.shelf-artist { font-size: .72rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shelf-title { font-size: .68rem; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shelf-tag { font-size: .62rem; color: var(--text3); margin-top: 2px; }
+
+/* Daily pick card */
+.daily-pick-card {
+  margin: 20px; border-radius: 12px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; gap: 0; cursor: pointer; transition: transform .2s;
+}
+.daily-pick-card:hover { transform: translateY(-2px); }
+.daily-pick-art { width: 100px; height: 100px; object-fit: cover; flex-shrink: 0; }
+.daily-pick-art-ph { width: 100px; height: 100px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0; }
+.daily-pick-info { padding: 14px 16px; flex: 1; min-width: 0; }
+.daily-pick-label { font-size: .68rem; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.daily-pick-artist { font-weight: 700; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.daily-pick-title { font-size: .82rem; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.daily-pick-reason { font-size: .72rem; color: var(--text3); margin-top: 6px; font-style: italic; }
+.daily-pick-mode { display: flex; gap: 6px; margin: 0 20px 4px; }
+.pick-mode-btn { font-size: .72rem; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all .15s; }
+.pick-mode-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+/* ── DISCOVER PAGE ── */
+#page-discover { padding: 20px; }
+.discover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 16px; }
+.discover-card {
+  background: var(--surface); border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); cursor: pointer; transition: transform .2s;
+}
+.discover-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.discover-card-art { height: 160px; overflow: hidden; position: relative; }
+.discover-card-art img { width: 100%; height: 100%; object-fit: cover; }
+.discover-card-art-ph { width: 100%; height: 100%; background: linear-gradient(135deg, var(--surface2), var(--surface3)); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+.discover-card-body { padding: 14px; }
+.discover-card-label { font-size: .65rem; color: var(--accent); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+.discover-card-title { font-weight: 700; font-size: .92rem; margin-bottom: 2px; }
+.discover-card-sub { font-size: .78rem; color: var(--text2); }
+.discover-section { margin-bottom: 32px; }
+.discover-section h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent); letter-spacing: .06em; margin-bottom: 14px; }
+
+/* ── SESSIONS PAGE ── */
+#page-sessions { padding: 20px; }
+.session-entry {
+  display: flex; gap: 14px; align-items: center;
+  padding: 12px 0; border-bottom: 1px solid rgba(51,51,51,.5);
+  cursor: pointer; transition: background .15s;
+}
+.session-entry:hover { background: var(--surface); border-radius: 8px; padding: 12px 8px; margin: 0 -8px; }
+.session-art { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.session-info { flex: 1; min-width: 0; }
+.session-artist { font-weight: 600; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-title { font-size: .78rem; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-time { font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--text3); white-space: nowrap; }
+.session-count-badge { font-size: .7rem; background: var(--surface2); color: var(--text3); padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+.sessions-empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+.sessions-empty .ei { font-size: 3rem; margin-bottom: 12px; opacity: .4; }
+
+/* ── SETTINGS PAGE ── */
+#page-settings { padding: 20px; max-width: 560px; }
+.settings-section { margin-bottom: 28px; }
+.settings-section h3 { font-family: 'DM Mono', monospace; font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.setting-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(51,51,51,.3); }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { flex: 1; }
+.setting-label strong { font-size: .88rem; display: block; }
+.setting-label span { font-size: .75rem; color: var(--text2); }
+.theme-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-top: 10px; }
+.theme-option {
+  border: 2px solid var(--border); border-radius: 10px; padding: 12px;
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.theme-option:hover { border-color: var(--accent); }
+.theme-option.active { border-color: var(--accent); background: rgba(232,197,71,.08); }
+.theme-option .th-name { font-size: .82rem; font-weight: 600; margin-bottom: 2px; }
+.theme-option .th-desc { font-size: .7rem; color: var(--text2); }
+.theme-preview { height: 32px; border-radius: 6px; margin-bottom: 8px; }
+
 </style>
 </head>
 <body>
@@ -706,23 +972,92 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
 <!-- Header -->
 <div id="header">
-  <button class="btn-icon" id="mobile-sidebar-btn" onclick="toggleSidebar()" style="display:none">☰</button>
-  <h1>MRD <span>Records</span></h1>
+  <h1 style="cursor:pointer" onclick="navTo('home')">MRD <span>Records</span></h1>
+  <span class="app-version" id="app-version-display">v2.0</span>
   <div class="header-stats" id="header-stats"></div>
   <div class="header-actions">
     <span id="user-badge-display"></span>
-    <button class="btn btn-ghost btn-sm" onclick="openWheel()">🎲 Spin</button>
-    <button class="btn btn-ghost btn-sm" onclick="openAnalytics()">📊</button>
-    <button class="btn btn-ghost btn-sm" onclick="openTagsModal()">🏷</button>
-    <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">⚙️ Admin</button>
-    <button class="btn btn-ghost btn-sm" id="admin-switch-btn" onclick="openAdminLogin()" style="display:none">🔐 Admin Login</button>
-    <button class="btn btn-ghost btn-sm admin-only" id="drop-admin-btn" onclick="dropToGuest()" title="Switch back to guest mode">👁 Guest Mode</button>
+    <button class="btn btn-ghost btn-sm" onclick="openWheel()">🎲</button>
+    <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">⚙️</button>
+    <button class="btn btn-ghost btn-sm" id="admin-switch-btn" onclick="openAdminLogin()" style="display:none">🔐</button>
+    <button class="btn btn-ghost btn-sm admin-only" id="drop-admin-btn" onclick="dropToGuest()" title="Guest mode">👁</button>
   </div>
 </div>
+<!-- Top nav (desktop) -->
+<nav id="page-nav-top">
+  <div class="nav-tab active" id="ntop-home" onclick="navTo('home')">🏠 Home</div>
+  <div class="nav-tab" id="ntop-catalogue" onclick="navTo('catalogue')">🎵 Catalogue</div>
+  <div class="nav-tab" id="ntop-discover" onclick="navTo('discover')">✨ Discover</div>
+  <div class="nav-tab" id="ntop-sessions" onclick="navTo('sessions')">📖 Sessions</div>
+  <div class="nav-tab" id="ntop-settings" onclick="navTo('settings')">⚙ Settings</div>
+</nav>
 
 <!-- Sidebar overlay -->
 <div id="sidebar-overlay" onclick="closeSidebar()"></div>
 
+<!-- Mobile bottom nav -->
+<nav id="page-nav-bottom">
+  <div class="nav-tab-mobile active" id="nbot-home" onclick="navTo('home')"><span class="ni">🏠</span>Home</div>
+  <div class="nav-tab-mobile" id="nbot-catalogue" onclick="navTo('catalogue')"><span class="ni">🎵</span>Catalogue</div>
+  <div class="nav-tab-mobile" id="nbot-discover" onclick="navTo('discover')"><span class="ni">✨</span>Discover</div>
+  <div class="nav-tab-mobile" id="nbot-sessions" onclick="navTo('sessions')"><span class="ni">📖</span>Sessions</div>
+  <div class="nav-tab-mobile" id="nbot-settings" onclick="navTo('settings')"><span class="ni">⚙</span>Settings</div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div id="home-hero" class="home-hero">
+    <div class="home-hero-bg" id="home-hero-bg"></div>
+    <div class="home-hero-content">
+      <div id="home-hero-art-wrap"></div>
+      <div class="home-hero-info">
+        <div class="home-hero-label" id="home-hero-label">Last played</div>
+        <div class="home-hero-artist" id="home-hero-artist">Your Collection</div>
+        <div class="home-hero-title" id="home-hero-title">Start exploring your records</div>
+        <div class="home-hero-actions" id="home-hero-actions"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Daily Pick -->
+  <div class="home-section">
+    <div class="home-section-header">
+      <span class="home-section-title">🎯 Daily Pick</span>
+      <span class="home-section-link" onclick="refreshDailyPick()">↻ Refresh</span>
+    </div>
+    <div class="daily-pick-mode">
+      <button class="pick-mode-btn active" id="pick-comfort" onclick="setPickMode('comfort',this)">😌 Comfort</button>
+      <button class="pick-mode-btn" id="pick-discovery" onclick="setPickMode('discovery',this)">🔍 Discovery</button>
+    </div>
+    <div id="daily-pick-container"></div>
+  </div>
+  <!-- Unplayed shelf -->
+  <div class="home-section" id="shelf-unplayed-section">
+    <div class="home-section-header">
+      <span class="home-section-title">◎ Never Played</span>
+      <span class="home-section-link" onclick="navTo('catalogue');setStatusFilter('unlistened',document.querySelector('[data-status=unlistened]'))">See all</span>
+    </div>
+    <div class="shelf-scroll" id="shelf-unplayed"></div>
+  </div>
+  <!-- Recently played shelf -->
+  <div class="home-section" id="shelf-recent-section">
+    <div class="home-section-header">
+      <span class="home-section-title">🕐 Recently Played</span>
+      <span class="home-section-link" onclick="navTo('sessions')">See all</span>
+    </div>
+    <div class="shelf-scroll" id="shelf-recent"></div>
+  </div>
+  <!-- Favourites shelf -->
+  <div class="home-section" style="padding-bottom:20px">
+    <div class="home-section-header">
+      <span class="home-section-title">★ Favourites</span>
+      <span class="home-section-link" onclick="navTo('catalogue');setStatusFilter('fav',document.querySelector('[data-status=fav]'))">See all</span>
+    </div>
+    <div class="shelf-scroll" id="shelf-favs"></div>
+  </div>
+</div>
+
+<!-- CATALOGUE PAGE (existing) -->
+<div class="page" id="page-catalogue">
 <div id="app">
   <!-- Sidebar -->
   <div id="sidebar">
@@ -799,6 +1134,9 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center" onclick="openBulkFetch('art')">🖼 Fetch All Art</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('bio')">👤 Fetch All Bios</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('desc')">📝 Fetch All Info</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('tracks')">🎵 Fetch All Tracks</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('credits')">🎼 Fetch Track Credits</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('lyrics')">🎤 Fetch Track Lyrics</button>
       <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding:0 2px;line-height:1.6" id="art-coverage-label"></div>
     </div>
     <div class="sidebar-count" id="sidebar-count"></div>
@@ -842,8 +1180,116 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     </div>
   </div>
 </div>
+</div><!-- /page-catalogue -->
 
-<!-- Detail Modal (bottom sheet / centered dialog) -->
+<!-- DISCOVER PAGE -->
+<div class="page" id="page-discover">
+  <div style="padding:20px">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:4px">✨ Discover</h2>
+    <p style="font-size:.85rem;color:var(--text2);margin-bottom:24px">Records from your collection worth exploring</p>
+  </div>
+  <div id="discover-content" style="padding:0 20px 40px"></div>
+</div>
+
+<!-- SESSIONS PAGE -->
+<div class="page" id="page-sessions">
+  <div style="padding:20px">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:4px">📖 Listening Sessions</h2>
+    <p style="font-size:.85rem;color:var(--text2);margin-bottom:24px">Your complete listening history</p>
+  </div>
+  <div id="sessions-content" style="padding:0 20px 40px"></div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div style="padding:20px;max-width:560px">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:20px">⚙ Settings</h2>
+
+    <div class="settings-section">
+      <h3>Appearance</h3>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Theme</strong><span>Choose the look and feel</span></div>
+      </div>
+      <div class="theme-grid">
+        <div class="theme-option active" id="theme-opt-dark" onclick="setTheme('dark')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#0a0a0a,#1e1e1e);border:1px solid #333"></div>
+          <div class="th-name">Vinyl Room</div>
+          <div class="th-desc">Dark gold — default</div>
+        </div>
+        <div class="theme-option" id="theme-opt-magazine" onclick="setTheme('magazine')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#f5f0e8,#fff);border:1px solid #d4c8b0"></div>
+          <div class="th-name">Magazine</div>
+          <div class="th-desc">Light editorial</div>
+        </div>
+        <div class="theme-option" id="theme-opt-crate" onclick="setTheme('crate')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#1a1208,#3a2a14);border:1px solid #4a3820"></div>
+          <div class="th-name">Crate Digger</div>
+          <div class="th-desc">Warm analog</div>
+        </div>
+        <div class="theme-option" id="theme-opt-streaming" onclick="setTheme('streaming')">
+          <div class="theme-preview" style="background:linear-gradient(135deg,#121212,#282828);border:1px solid #404040"></div>
+          <div class="th-name">Streaming</div>
+          <div class="th-desc">Clean modern</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Daily Pick</h3>
+      <div class="setting-row">
+        <div class="setting-label">
+          <strong>Default mode</strong>
+          <span>What the Daily Pick section prioritises</span>
+        </div>
+        <select id="setting-pickmode" onchange="saveSetting('pickMode',this.value)" style="font-size:.85rem;padding:6px 10px">
+          <option value="comfort">Comfort — favourites and familiar</option>
+          <option value="discovery">Discovery — unplayed and unexplored</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Navigation</h3>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Start page</strong><span>Where the app opens</span></div>
+        <select id="setting-startpage" onchange="saveSetting('startPage',this.value)" style="font-size:.85rem;padding:6px 10px">
+          <option value="last">Last visited page</option>
+          <option value="home">Always Home</option>
+          <option value="catalogue">Always Catalogue</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Account</h3>
+      <div class="setting-row">
+        <div class="setting-label"><strong>User</strong><span id="settings-user-display"></span></div>
+        <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">Admin Panel</button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Device</strong><span>Admin trust status for this browser</span></div>
+        <button class="btn btn-ghost btn-sm admin-only" onclick="forgetDevice()" style="color:var(--danger)">Forget Device</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Data</h3>
+      <div class="setting-row" style="flex-wrap:wrap;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input2').click()">📂 Restore</button>
+        <input type="file" id="restore-input2" accept=".json" style="display:none" onchange="restoreData(event)">
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:20px 0;color:var(--text3);font-size:.75rem">
+      <span id="settings-version"></span><br>
+      MRD Records Catalogue
+    </div>
+  </div>
+</div>
+
+
 <div id="detail-modal" onclick="closeDetailOnBg(event)">
   <div class="detail-sheet">
     <div class="detail-hero">
@@ -896,16 +1342,22 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       </div>
       <!-- Tracks Tab -->
       <div class="tab-pane" id="tab-tracks">
-        <div class="section-label">Track Listing</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="section-label" style="margin-bottom:0">Track Listing</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="openTrackColManager()" title="Manage columns">⊟ Columns</button>
+          </div>
+        </div>
         <ul class="track-list" id="d-track-list"></ul>
         <div class="admin-only" style="flex-direction:column;gap:12px;margin-top:16px">
           <div class="track-add">
             <input type="text" id="track-add-input" placeholder="Add track name…" onkeydown="if(event.key==='Enter')addTrack()">
             <button class="btn btn-primary btn-sm" onclick="addTrack()">Add</button>
           </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost btn-sm" onclick="fetchTracklist()">🔍 Fetch from Database</button>
-            <button class="btn btn-ghost btn-sm" onclick="openOCR()">📷 From Image (OCR)</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="fetchTracklist()">🔍 Fetch Tracklist</button>
+            <button class="btn btn-ghost btn-sm admin-only" onclick="enrichAllTracks()">⚡ Enrich All Tracks</button>
+            <button class="btn btn-ghost btn-sm" onclick="openOCR()">📷 OCR</button>
           </div>
         </div>
         <div id="tracklist-search-results"></div>
@@ -981,9 +1433,12 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div class="bulkfetch-box">
     <h3>⚡ Bulk Fetch</h3>
     <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--surface2);border-radius:8px;padding:4px">
-      <button class="bf-tab-btn active" id="bf-tab-art" onclick="setBfTab('art')">🖼 Album Art</button>
-      <button class="bf-tab-btn" id="bf-tab-bio" onclick="setBfTab('bio')">👤 Artist Bio</button>
-      <button class="bf-tab-btn" id="bf-tab-desc" onclick="setBfTab('desc')">📝 Album Info</button>
+      <button class="bf-tab-btn active" id="bf-tab-art" onclick="setBfTab('art')">🖼 Art</button>
+      <button class="bf-tab-btn" id="bf-tab-bio" onclick="setBfTab('bio')">👤 Bio</button>
+      <button class="bf-tab-btn" id="bf-tab-desc" onclick="setBfTab('desc')">📝 Info</button>
+      <button class="bf-tab-btn" id="bf-tab-tracks" onclick="setBfTab('tracks')">🎵 Tracks</button>
+      <button class="bf-tab-btn" id="bf-tab-credits" onclick="setBfTab('credits')">🎼 Credits</button>
+      <button class="bf-tab-btn" id="bf-tab-lyrics" onclick="setBfTab('lyrics')">🎤 Lyrics</button>
     </div>
     <p id="bf-description" style="color:var(--text2);font-size:.83rem;margin-bottom:16px"></p>
     <div class="bf-progress-wrap">
@@ -1003,7 +1458,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm" onclick="closeBulkFetch()">Close</button>
     </div>
     <div style="font-size:.72rem;color:var(--text3);margin-top:10px">
-      ⚠ Skips records already verified. Results marked <strong style="color:#c47b2e">Auto</strong> until you review them.
+      ⚠ Only fetches records with completely empty fields. Results marked <strong style="color:#c47b2e">Auto</strong> until you verify them.
     </div>
   </div>
 </div>
@@ -1043,12 +1498,18 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-primary" onclick="saveUser()">Save User</button>
     </div>
     <div class="divider"></div>
+    <div class="section-label">API Keys (optional — enhances track data)</div>
+    <div class="field-row"><label>Last.fm API Key <a href="https://www.last.fm/api/account/create" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get free key</a></label><input type="text" id="key-lastfm" placeholder="Paste Last.fm key…"></div>
+    <div class="field-row"><label>Discogs Token <a href="https://www.discogs.com/settings/developers" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get free token</a></label><input type="text" id="key-discogs" placeholder="Paste Discogs token…"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
+      <button class="btn btn-primary btn-sm" onclick="saveApiKeysFromAdmin()">Save Keys</button>
+    </div>
     <div class="section-label">Database</div>
-    <div style="display:flex;gap:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup All Data</button>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input').click()">📂 Restore Backup</button>
       <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
-      <button class="btn btn-ghost btn-sm" onclick="forgetDevice()" style="margin-top:6px;color:var(--danger)">🔓 Forget This Device</button>
+      <button class="btn btn-ghost btn-sm" onclick="forgetDevice()" style="color:var(--danger)">🔓 Forget This Device</button>
     </div>
     <p style="font-size:.72rem;color:var(--text3);margin-top:8px">Backup saves all records, art, tracks, and bios to a JSON file.</p>
   </div>
@@ -1160,6 +1621,27 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   </div>
 </div>
 
+<!-- Track Page Modal -->
+<div id="trackpage-modal" style="position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:16px">
+  <div id="trackpage-box" style="background:var(--surface);border-radius:16px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto;position:relative">
+    <button onclick="closeTrackPage()" style="position:absolute;top:14px;right:14px;font-size:1.2rem;color:var(--text2);z-index:2">✕</button>
+    <div id="trackpage-content" style="padding:28px"></div>
+  </div>
+</div>
+
+<!-- Track Column Manager Modal -->
+<div id="trackcol-modal" style="position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s" onclick="if(event.target===this)closeTrackColManager()">
+  <div style="background:var(--surface);border-radius:16px;padding:24px;width:360px;max-width:95vw">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);margin-bottom:4px">⊟ Track Columns</h3>
+    <p style="font-size:.78rem;color:var(--text2);margin-bottom:16px">Choose which columns show in the tracklist view.</p>
+    <div id="trackcol-list"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost btn-sm" onclick="resetTrackCols()">Reset</button>
+      <button class="btn btn-primary btn-sm" onclick="closeTrackColManager()">Done</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast container -->
 <div id="toast-container"></div>
 
@@ -1182,6 +1664,13 @@ let wheelSpinning = false;
 let ocrExtractedTracks = [];
 let bulkFetchAborted = false;
 let activeTagFilter = null;
+
+// ── API Keys (set in Admin panel) ─────────────────────────
+const API_KEYS_KEY = 'mrd_api_keys';
+function getApiKeys() {
+  try { return JSON.parse(localStorage.getItem(API_KEYS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveApiKeys(keys) { localStorage.setItem(API_KEYS_KEY, JSON.stringify(keys)); }
 // artStatus: null=no art, "auto"=fetched automatically (unverified), "verified"=admin confirmed
 
 const SUPABASE_URL = 'https://uaqvqvrflzxulixdrmna.supabase.co';
@@ -1265,22 +1754,31 @@ function rowToRecord(row) {
 // ═══════════════════════════════════════════════════════
 async function init() {
   loadUsers();
-  // Always start as guest immediately — no login wall
   loginAsGuest();
+  applyTheme();
+
+  // Show version number
+  const vEl = document.getElementById('app-version-display');
+  if (vEl) vEl.textContent = APP_VERSION;
+
   showAppLoading('Loading your collection…');
   await loadDB();
   populateFilterDropdowns();
-  // Check if this device has a saved admin token — auto-elevate if so
+
   if (checkTrustedDevice()) {
     toast('⚡ Admin mode — trusted device', 'success');
   }
-  // Show admin login button for non-admin users
   const switchBtn = document.getElementById('admin-switch-btn');
   if (switchBtn && !isAdmin()) switchBtn.style.display = 'flex';
+
   renderAll();
   updateStats();
   hideAppLoading();
   setBfTab('art');
+
+  // Navigate to start page
+  navTo(getStartPage());
+
   if (window.innerWidth <= 768) {
     document.getElementById('mobile-sidebar-btn').style.display = 'flex';
   }
@@ -2027,6 +2525,35 @@ function switchTab(tab) {
   document.getElementById('tab-'+tab)?.classList.add('active');
 }
 
+
+// ═══════════════════════════════════════════════════════
+// TRACK DATA HELPERS
+// ═══════════════════════════════════════════════════════
+// Track objects: { name, duration, writers, producers, musicians, lyrics, lyricsPartial, mbid, enriched }
+// Backward compat: plain strings are treated as {name: string}
+function trackObj(t) {
+  if (typeof t === 'string') return { name: t };
+  return t || {};
+}
+function trackName(t) { return trackObj(t).name || ''; }
+
+// ── Track column preferences ──────────────────────────
+const TRACK_COLS_KEY = 'mrd_track_cols';
+const DEFAULT_TRACK_COLS = [
+  { key:'duration', label:'Duration', visible:true },
+  { key:'writers',  label:'Writers',  visible:true },
+  { key:'producers',label:'Producers',visible:false },
+  { key:'lyrics',   label:'Has Lyrics',visible:true },
+];
+function getTrackCols() {
+  try { return JSON.parse(localStorage.getItem(TRACK_COLS_KEY) || 'null') || JSON.parse(JSON.stringify(DEFAULT_TRACK_COLS)); }
+  catch(e) { return JSON.parse(JSON.stringify(DEFAULT_TRACK_COLS)); }
+}
+function saveTrackCols(cols) { localStorage.setItem(TRACK_COLS_KEY, JSON.stringify(cols)); }
+
+// ═══════════════════════════════════════════════════════
+// ENHANCED renderDetailTracks
+// ═══════════════════════════════════════════════════════
 function renderDetailTracks() {
   if (!currentRecord) return;
   const list = document.getElementById('d-track-list');
@@ -2035,17 +2562,346 @@ function renderDetailTracks() {
     list.innerHTML = '<li style="color:var(--text3);font-size:.85rem;padding:8px 0">No tracks added yet.</li>';
     return;
   }
-  list.innerHTML = tracks.map((t,i) => {
-    const isFav = (currentRecord.favTracks||[]).includes(i);
+  const cols = getTrackCols().filter(c => c.visible);
+  const favs = currentRecord.favTracks || [];
+
+  list.innerHTML = tracks.map((t, i) => {
+    const obj = trackObj(t);
+    const isFav = favs.includes(i);
     const adminDel = isAdmin() ? `<span class="track-del" onclick="removeTrack(${i},event)">✕</span>` : '';
-    return `<li class="track-item">
+    const enrichDot = obj.enriched ? '<span class="track-enriched-dot" title="Track data enriched"></span>' : '';
+
+    // Extra col data shown in the list
+    const extras = cols.map(c => {
+      if (c.key === 'duration' && obj.duration) return `<span class="track-col-extra">${obj.duration}</span>`;
+      if (c.key === 'writers' && obj.writers) return `<span class="track-col-extra" title="Writers">${obj.writers.split(',')[0].trim()}${obj.writers.includes(',') ? '…' : ''}</span>`;
+      if (c.key === 'lyrics' && obj.lyrics) return `<span class="track-col-extra" title="Has lyrics">🎤</span>`;
+      return '';
+    }).filter(Boolean).join(' ');
+
+    const hasPreview = !!obj.previewUrl;
+    const previewIcon = hasPreview ? '▶' : '♪';
+    return `<li class="track-item" onclick="openTrackPage(${i})" style="position:relative">
       <span class="track-num">${i+1}</span>
-      <span class="track-name">${t}</span>
+      <button class="preview-btn" id="prev-btn-${i}" data-has-preview="${hasPreview}" onclick="event.stopPropagation();toggleTrackPreview(${i})" title="${hasPreview ? '30s Preview' : 'Find & play preview'}">${previewIcon}</button>
+      <span class="track-name">${obj.name || obj}${enrichDot}</span>
+      <span style="flex:1;display:flex;align-items:center;gap:4px;justify-content:flex-end">${extras}</span>
       <span class="track-fav ${isFav?'on':''}" onclick="toggleTrackFav(${i},event)" title="Favourite track">★</span>
       ${adminDel}
     </li>`;
   }).join('');
 }
+
+// ═══════════════════════════════════════════════════════
+// TRACK PAGE
+// ═══════════════════════════════════════════════════════
+let currentTrackIdx = null;
+
+function openTrackPage(idx) {
+  if (!currentRecord) return;
+  currentTrackIdx = idx;
+  renderTrackPage(idx);
+  const modal = document.getElementById('trackpage-modal');
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'all';
+}
+
+function closeTrackPage() {
+  const modal = document.getElementById('trackpage-modal');
+  modal.style.opacity = '0';
+  modal.style.pointerEvents = 'none';
+  currentTrackIdx = null;
+}
+
+function renderTrackPage(idx) {
+  const r = currentRecord;
+  const tracks = r.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const name = obj.name || obj;
+  const isFav = (r.favTracks || []).includes(idx);
+  const total = tracks.length;
+
+  const geniusUrl = `https://genius.com/search?q=${encodeURIComponent(name + ' ' + r.artist)}`;
+  const whosampledUrl = `https://www.whosampled.com/search/?q=${encodeURIComponent(name + ' ' + r.artist)}`;
+  const discogsUrl = `https://www.discogs.com/search/?q=${encodeURIComponent(r.artist + ' ' + r.title)}&type=release`;
+
+  // Navigation
+  const prevBtn = idx > 0 ? `<button class="tp-action-btn" onclick="renderTrackPage(${idx-1});currentTrackIdx=${idx-1}">← Prev</button>` : '';
+  const nextBtn = idx < total-1 ? `<button class="tp-action-btn" onclick="renderTrackPage(${idx+1});currentTrackIdx=${idx+1}">Next →</button>` : '';
+
+  // Credits section
+  let creditsHtml = '';
+  if (obj.writers || obj.producers || obj.musicians) {
+    const rows = [];
+    if (obj.writers)   rows.push(`<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">${obj.writers}</span></div>`);
+    if (obj.producers) rows.push(`<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">${obj.producers}</span></div>`);
+    if (obj.musicians) rows.push(`<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">${obj.musicians}</span></div>`);
+    creditsHtml = `<div class="tp-section">
+      <div class="tp-section-label">Credits ${obj.enriched ? '<span class="tp-enriched-badge">enriched</span>' : ''}</div>
+      <div class="tp-credits">${rows.join('')}</div>
+    </div>`;
+  } else if (isAdmin()) {
+    creditsHtml = `<div class="tp-section">
+      <div class="tp-section-label">Credits</div>
+      <div style="color:var(--text3);font-size:.83rem">No credits yet. <button class="btn btn-ghost btn-sm" onclick="enrichSingleTrack(${idx})">⚡ Fetch from MusicBrainz</button></div>
+    </div>`;
+  }
+
+  // Lyrics section
+  let lyricsHtml = '';
+  if (obj.lyrics) {
+    lyricsHtml = `<div class="tp-section">
+      <div class="tp-section-label">Lyrics</div>
+      <div class="tp-lyrics">${obj.lyrics}</div>
+      ${obj.lyricsPartial ? '<div class="tp-lyrics-partial">Showing partial lyrics. <a href="' + geniusUrl + '" target="_blank" style="color:var(--accent)">Read full lyrics on Genius ↗</a></div>' : ''}
+    </div>`;
+  } else if (isAdmin()) {
+    lyricsHtml = `<div class="tp-section">
+      <div class="tp-section-label">Lyrics</div>
+      <div style="color:var(--text3);font-size:.83rem">No lyrics yet. <button class="btn btn-ghost btn-sm" onclick="fetchLyricsForTrack(${idx})">🎤 Fetch Lyrics</button></div>
+    </div>`;
+  }
+
+  // Admin edit fields
+  const adminEdit = isAdmin() ? `<div class="tp-section">
+    <div class="tp-section-label">Edit Track</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center"><label style="min-width:80px;font-size:.78rem;color:var(--text2)">Name</label><input type="text" value="${(obj.name||'').replace(/"/g,'&quot;')}" id="tp-name-${idx}" style="flex:1;font-size:.85rem"></div>
+      <div style="display:flex;gap:8px;align-items:center"><label style="min-width:80px;font-size:.78rem;color:var(--text2)">Duration</label><input type="text" value="${obj.duration||''}" id="tp-dur-${idx}" placeholder="e.g. 3:42" style="flex:1;font-size:.85rem"></div>
+      <div style="display:flex;gap:8px;align-items:center"><label style="min-width:80px;font-size:.78rem;color:var(--text2)">Writers</label><input type="text" value="${(obj.writers||'').replace(/"/g,'&quot;')}" id="tp-wri-${idx}" placeholder="e.g. Marvin Gaye" style="flex:1;font-size:.85rem"></div>
+      <div style="display:flex;gap:8px;align-items:center"><label style="min-width:80px;font-size:.78rem;color:var(--text2)">Producers</label><input type="text" value="${(obj.producers||'').replace(/"/g,'&quot;')}" id="tp-pro-${idx}" style="flex:1;font-size:.85rem"></div>
+      <div style="display:flex;gap:8px;align-items:center"><label style="min-width:80px;font-size:.78rem;color:var(--text2)">Musicians</label><input type="text" value="${(obj.musicians||'').replace(/"/g,'&quot;')}" id="tp-mus-${idx}" style="flex:1;font-size:.85rem"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px">
+        <button class="btn btn-ghost btn-sm" onclick="enrichSingleTrack(${idx})">⚡ Enrich from MusicBrainz</button>
+        <button class="btn btn-primary btn-sm" onclick="saveTrackEdit(${idx})">💾 Save</button>
+      </div>
+    </div>
+  </div>` : '';
+
+  // Build player HTML
+  const playerHtml = buildTrackPlayer(obj, idx);
+
+  document.getElementById('trackpage-content').innerHTML = `
+    <div class="tp-header">
+      <div class="tp-num">${idx + 1}</div>
+      <div style="flex:1;min-width:0">
+        <div class="tp-title">${name}</div>
+        <div class="tp-album">${r.artist} — ${r.title}${r.year ? ` (${r.year})` : ''}</div>
+        ${obj.duration ? `<div class="tp-duration">${obj.duration}</div>` : ''}
+      </div>
+    </div>
+    ${playerHtml}
+    <div class="tp-actions">
+      <span class="track-fav ${isFav?'on':''}" style="cursor:pointer;font-size:1.1rem;padding:5px 8px;border-radius:20px;border:1px solid var(--border)" onclick="toggleTrackFav(${idx},{stopPropagation:()=>{}});renderTrackPage(${idx})" title="Favourite">★</span>
+      <a class="tp-action-btn genius" href="${geniusUrl}" target="_blank">🎤 Genius</a>
+      <a class="tp-action-btn whosampled" href="${whosampledUrl}" target="_blank">🔁 WhoSampled</a>
+      <a class="tp-action-btn" href="${discogsUrl}" target="_blank">💿 Discogs</a>
+      ${prevBtn}${nextBtn}
+    </div>
+    ${creditsHtml}
+    ${lyricsHtml}
+    ${adminEdit}
+  `;
+  // Attach player events after render
+  attachTrackPlayerEvents(obj, idx);
+}
+
+function saveTrackEdit(idx) {
+  if (!currentRecord || !isAdmin()) return;
+  const tracks = currentRecord.trackList || [];
+  const obj = { ...trackObj(tracks[idx]) };
+  const nameEl = document.getElementById(`tp-name-${idx}`);
+  if (nameEl) obj.name = nameEl.value.trim();
+  const dur = document.getElementById(`tp-dur-${idx}`);
+  if (dur) obj.duration = dur.value.trim();
+  const wri = document.getElementById(`tp-wri-${idx}`);
+  if (wri) obj.writers = wri.value.trim();
+  const pro = document.getElementById(`tp-pro-${idx}`);
+  if (pro) obj.producers = pro.value.trim();
+  const mus = document.getElementById(`tp-mus-${idx}`);
+  if (mus) obj.musicians = mus.value.trim();
+  tracks[idx] = obj;
+  currentRecord.trackList = tracks;
+  saveRecord(currentRecord);
+  renderDetailTracks();
+  renderTrackPage(idx);
+  toast('Track saved ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// TRACK COLUMN MANAGER
+// ═══════════════════════════════════════════════════════
+function openTrackColManager() {
+  const cols = getTrackCols();
+  const list = document.getElementById('trackcol-list');
+  list.innerHTML = cols.map((c, i) => `
+    <div class="tc-row">
+      <span class="tc-label">${c.label}</span>
+      <div class="tc-toggle ${c.visible?'on':''}" onclick="toggleTrackCol(${i},this)"></div>
+    </div>`).join('');
+  const modal = document.getElementById('trackcol-modal');
+  modal.style.opacity = '1'; modal.style.pointerEvents = 'all';
+}
+
+function closeTrackColManager() {
+  const modal = document.getElementById('trackcol-modal');
+  modal.style.opacity = '0'; modal.style.pointerEvents = 'none';
+  renderDetailTracks();
+}
+
+function toggleTrackCol(i, el) {
+  const cols = getTrackCols();
+  cols[i].visible = !cols[i].visible;
+  el.classList.toggle('on', cols[i].visible);
+  saveTrackCols(cols);
+}
+
+function resetTrackCols() {
+  saveTrackCols(JSON.parse(JSON.stringify(DEFAULT_TRACK_COLS)));
+  openTrackColManager();
+}
+
+// ═══════════════════════════════════════════════════════
+// LYRICS FETCH (lyrics.ovh + Genius fallback link)
+// ═══════════════════════════════════════════════════════
+async function fetchLyricsForTrack(idx) {
+  if (!currentRecord || !isAdmin()) return;
+  const tracks = currentRecord.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const name = obj.name || obj;
+  toast(`🎤 Fetching lyrics for "${name}"…`);
+
+  try {
+    const res = await fetch(
+      `https://api.lyrics.ovh/v1/${encodeURIComponent(currentRecord.artist)}/${encodeURIComponent(name)}`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.lyrics && data.lyrics.trim().length > 20) {
+        tracks[idx] = { ...obj, lyrics: data.lyrics.trim(), lyricsPartial: false };
+        currentRecord.trackList = tracks;
+        saveRecord(currentRecord);
+        renderTrackPage(idx);
+        toast('Lyrics loaded ✓');
+        return;
+      }
+    }
+  } catch(e) {}
+
+  // Fallback: no lyrics found, update UI with Genius link
+  toast('Lyrics not found — try Genius link below', 'error');
+  renderTrackPage(idx); // re-render to show Genius button
+}
+
+// ═══════════════════════════════════════════════════════
+// TRACK ENRICHMENT (MusicBrainz credits)
+// ═══════════════════════════════════════════════════════
+async function enrichSingleTrack(idx) {
+  if (!currentRecord || !isAdmin()) return;
+  const tracks = currentRecord.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const name = obj.name || obj;
+  toast(`⚡ Enriching "${name}"…`);
+
+  try {
+    // Search for recording on MusicBrainz
+    const q = encodeURIComponent(`recording:"${name}" artist:"${currentRecord.artist}"`);
+    const res = await fetch(
+      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=3&fmt=json`,
+      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+    );
+    if (!res.ok) throw new Error('MB error');
+    const data = await res.json();
+    if (!data.recordings?.length) throw new Error('Not found');
+
+    const rec = data.recordings[0];
+    const duration = rec.length ? formatDuration(rec.length) : obj.duration;
+
+    // Fetch full recording details with relations
+    await new Promise(r => setTimeout(r, 400));
+    const detRes = await fetch(
+      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-credits+work-rels+recording-rels&fmt=json`,
+      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+    );
+    const det = await detRes.json();
+
+    // Extract writer info from relations
+    const writers = [];
+    const producers = [];
+    if (det.relations) {
+      det.relations.forEach(rel => {
+        if (['composer','lyricist','writer'].includes(rel.type)) {
+          if (rel.artist?.name) writers.push(rel.artist.name);
+        }
+        if (['producer','co-producer'].includes(rel.type)) {
+          if (rel.artist?.name) producers.push(rel.artist.name);
+        }
+      });
+    }
+
+    tracks[idx] = {
+      ...obj,
+      duration: duration || obj.duration,
+      writers: writers.length ? writers.join(', ') : obj.writers,
+      producers: producers.length ? producers.join(', ') : obj.producers,
+      mbid: rec.id,
+      enriched: true
+    };
+    currentRecord.trackList = tracks;
+    saveRecord(currentRecord);
+    renderDetailTracks();
+    renderTrackPage(idx);
+    toast(`✓ "${name}" enriched`);
+  } catch(e) {
+    toast(`Could not find credits for "${name}" on MusicBrainz`, 'error');
+  }
+}
+
+async function enrichAllTracks() {
+  if (!currentRecord || !isAdmin()) return;
+  const tracks = currentRecord.trackList || [];
+  const toEnrich = tracks.filter((t, i) => !trackObj(t).enriched);
+  if (!toEnrich.length) { toast('All tracks already enriched'); return; }
+  toast(`⚡ Enriching ${toEnrich.length} tracks — this may take a minute…`);
+  for (let i = 0; i < tracks.length; i++) {
+    if (!trackObj(tracks[i]).enriched) {
+      await enrichSingleTrack(i);
+      await new Promise(r => setTimeout(r, 1000));
+    }
+  }
+  toast(`✓ All tracks enriched`);
+}
+
+function formatDuration(ms) {
+  const s = Math.round(ms / 1000);
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════════════════════
+// ADMIN API KEYS
+// ═══════════════════════════════════════════════════════
+function openAdmin() {
+  if (!isAdmin()) return;
+  // Pre-fill API key fields
+  const keys = getApiKeys();
+  const lfEl = document.getElementById('key-lastfm');
+  const dgEl = document.getElementById('key-discogs');
+  if (lfEl) lfEl.value = keys.lastfm || '';
+  if (dgEl) dgEl.value = keys.discogs || '';
+  renderUserList();
+  document.getElementById('admin-modal').classList.add('open');
+}
+
+function saveApiKeysFromAdmin() {
+  const keys = {
+    lastfm:  document.getElementById('key-lastfm')?.value.trim() || '',
+    discogs: document.getElementById('key-discogs')?.value.trim() || ''
+  };
+  saveApiKeys(keys);
+  toast('API keys saved ✓');
+}
+
+
 
 function toggleListened() {
   if (!currentRecord || !isAdmin()) { if(!isAdmin()) toast('Admin access required','error'); return; }
@@ -2691,11 +3547,7 @@ async function resetWheelListened() {
 // ═══════════════════════════════════════════════════════
 // ADMIN PANEL
 // ═══════════════════════════════════════════════════════
-function openAdmin() {
-  if (!isAdmin()) return;
-  renderUserList();
-  document.getElementById('admin-modal').classList.add('open');
-}
+// openAdmin now in track_features.js
 
 function closeAdmin() {
   document.getElementById('admin-modal').classList.remove('open');
@@ -2838,12 +3690,20 @@ function verifyDesc() {
 let bfMode = 'art'; // 'art' | 'bio' | 'desc'
 
 const BF_CONFIG = {
-  art:  { label:'🖼 Album Art',   desc:'Searches iTunes for album covers. Only fetches records with no art yet.',
-          skip: r => r.albumArt && r.albumArt.trim().length > 0, statusKey: 'artStatus' },
-  bio:  { label:'👤 Artist Bio',  desc:'Fetches artist biographies from Wikipedia. Only fetches records with no bio yet.',
-          skip: r => r.artistBio && r.artistBio.trim().length > 0, statusKey: 'bioStatus' },
-  desc: { label:'📝 Album Info',  desc:'Fetches album descriptions from Wikipedia. Only fetches records with no description yet.',
-          skip: r => r.albumDesc && r.albumDesc.trim().length > 0, statusKey: 'descStatus' }
+  art:     { label:'🖼 Album Art',     desc:'Searches iTunes for album art. Paced at ~1/sec (~3 min full catalogue). Only fetches records with NO art.',
+             skip: r => !!(r.albumArt && r.albumArt.trim()), statusKey: 'artStatus', trackLevel: false },
+  bio:     { label:'👤 Artist Bio',    desc:'Fetches artist biographies from Wikipedia. Only fetches records with NO bio text.',
+             skip: r => !!(r.artistBio && r.artistBio.trim()), statusKey: 'bioStatus', trackLevel: false },
+  desc:    { label:'📝 Album Info',    desc:'Fetches album descriptions from Wikipedia. Only fetches records with NO description.',
+             skip: r => !!(r.albumDesc && r.albumDesc.trim()), statusKey: 'descStatus', trackLevel: false },
+  tracks:  { label:'🎵 Tracklists',    desc:'Fetches track listings from MusicBrainz. Only fetches records with NO tracks.',
+             skip: r => !!(r.trackList && r.trackList.length > 0), statusKey: null, trackLevel: false },
+  credits: { label:'🎼 Track Credits', desc:'Enriches each track with writers, producers and duration from MusicBrainz. Skips tracks already enriched. ~2s per track.',
+             skip: r => !(r.trackList && r.trackList.length > 0), statusKey: null, trackLevel: true,
+             trackSkip: t => !!trackObj(t).enriched },
+  lyrics:  { label:'🎤 Track Lyrics',  desc:'Fetches lyrics from lyrics.ovh for each track. Skips tracks that already have lyrics. ~800ms per track.',
+             skip: r => !(r.trackList && r.trackList.length > 0), statusKey: null, trackLevel: true,
+             trackSkip: t => !!trackObj(t).lyrics }
 };
 
 function setBfTab(mode) {
@@ -2857,8 +3717,17 @@ function setBfTab(mode) {
 
 function resetBfCounts() {
   const cfg = BF_CONFIG[bfMode];
-  const toFetch = DB.filter(r => !cfg.skip(r));
-  document.getElementById('bf-n-pending').textContent = toFetch.length;
+  let pending = 0;
+  if (cfg.trackLevel) {
+    // Count individual tracks that need fetching
+    DB.forEach(r => {
+      if (cfg.skip(r)) return;
+      (r.trackList || []).forEach(t => { if (!cfg.trackSkip(t)) pending++; });
+    });
+  } else {
+    pending = DB.filter(r => !cfg.skip(r)).length;
+  }
+  document.getElementById('bf-n-pending').textContent = pending;
   document.getElementById('bf-n-found').textContent = '0';
   document.getElementById('bf-n-notfound').textContent = '0';
   document.getElementById('bf-n-done').textContent = '0';
@@ -2907,49 +3776,108 @@ async function startBulkFetch() {
   document.getElementById('bf-stop-btn').style.display = 'inline-flex';
   document.getElementById('bf-log').innerHTML = '';
 
-  const toFetch = DB.filter(r => !cfg.skip(r));
-  const total = toFetch.length;
-  let found = 0, notFound = 0, skipped = 0, done = 0;
-  document.getElementById('bf-n-pending').textContent = total;
+  let found = 0, notFound = 0, skipped = 0, done = 0, total = 0;
 
-  for (let i = 0; i < toFetch.length; i++) {
-    if (bulkFetchAborted) { bfLog('⏹ Stopped by user.', 'fail'); break; }
+  // ── Track-level modes (credits, lyrics) ─────────────
+  if (cfg.trackLevel) {
+    // Count total tracks to process
+    const recordsWithTracks = DB.filter(r => !cfg.skip(r));
+    recordsWithTracks.forEach(r => {
+      (r.trackList || []).forEach(t => { if (!cfg.trackSkip(t)) total++; });
+    });
+    document.getElementById('bf-n-pending').textContent = total;
 
-    const r = toFetch[i];
-    document.getElementById('bf-progress').style.width = Math.round((i/total)*100) + '%';
-    document.getElementById('bf-current').textContent = `[${i+1}/${total}] ${r.artist} — ${r.title}`;
+    for (const r of recordsWithTracks) {
+      if (bulkFetchAborted) { bfLog('⏹ Stopped by user.', 'fail'); break; }
+      const tracks = r.trackList || [];
+      let recordChanged = false;
 
-    if (cfg.skip(r)) {
-      skipped++; done++;
-      document.getElementById('bf-n-done').textContent = skipped;
-      bfLog(`⤼ ${r.artist} — ${r.title} (already has ${bfMode === 'art' ? 'verified art' : bfMode === 'bio' ? 'bio' : 'description'})`, 'skip');
-      continue;
+      for (let i = 0; i < tracks.length; i++) {
+        if (bulkFetchAborted) break;
+        const t = tracks[i];
+        if (cfg.trackSkip(t)) continue; // already has data
+
+        const obj = trackObj(t);
+        const tname = obj.name || t;
+        document.getElementById('bf-progress').style.width = Math.round((done / Math.max(total,1)) * 100) + '%';
+        document.getElementById('bf-current').textContent = `${r.artist} — "${tname}"`;
+
+        let result = null;
+        if (bfMode === 'credits') result = await fetchCreditsForTrack(r, tname, i);
+        if (bfMode === 'lyrics')  result = await fetchLyricsForTrackBulk(r, tname, i);
+
+        if (result) {
+          tracks[i] = result;
+          found++;
+          recordChanged = true;
+          document.getElementById('bf-n-found').textContent = found;
+          bfLog(`✓ ${r.artist} / "${tname}"`, 'ok');
+        } else {
+          notFound++;
+          document.getElementById('bf-n-notfound').textContent = notFound;
+          bfLog(`✗ ${r.artist} / "${tname}"`, 'fail');
+        }
+
+        done++;
+        document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
+
+        const delay = bfMode === 'credits' ? 1800 : 800;
+        await new Promise(res => setTimeout(res, delay));
+      }
+
+      if (recordChanged) {
+        r.trackList = tracks;
+        saveRecord(r);
+      }
     }
 
-    let result = null;
-    if (bfMode === 'art')  result = await fetchArtForRecord(r);
-    if (bfMode === 'bio')  result = await fetchBioForRecord(r);
-    if (bfMode === 'desc') result = await fetchDescForRecord(r);
+  // ── Record-level modes (art, bio, desc, tracks) ──────
+  } else {
+    const toFetch = DB.filter(r => !cfg.skip(r));
+    total = toFetch.length;
+    document.getElementById('bf-n-pending').textContent = total;
 
-    if (result) {
-      if (bfMode === 'art')  { r.albumArt  = result; r.artStatus  = 'auto'; }
-      if (bfMode === 'bio')  { r.artistBio = result; r.bioStatus  = 'auto'; }
-      if (bfMode === 'desc') { r.albumDesc = result; r.descStatus = 'auto'; }
-      found++;
-      document.getElementById('bf-n-found').textContent = found;
-      bfLog(`✓ ${r.artist} — ${r.title}`, 'ok');
-      saveRecord(r);
-    } else {
-      notFound++;
-      document.getElementById('bf-n-notfound').textContent = notFound;
-      bfLog(`✗ ${r.artist} — ${r.title}`, 'fail');
+    for (let i = 0; i < toFetch.length; i++) {
+      if (bulkFetchAborted) { bfLog('⏹ Stopped by user.', 'fail'); break; }
+
+      const r = toFetch[i];
+      document.getElementById('bf-progress').style.width = Math.round((i/total)*100) + '%';
+      document.getElementById('bf-current').textContent = `[${i+1}/${total}] ${r.artist} — ${r.title}`;
+
+      if (cfg.skip(r)) {
+        skipped++; done++;
+        document.getElementById('bf-n-done').textContent = skipped;
+        bfLog(`⤼ ${r.artist} — ${r.title} (already has data)`, 'skip');
+        continue;
+      }
+
+      let result = null;
+      if (bfMode === 'art')    result = await fetchArtForRecord(r);
+      if (bfMode === 'bio')    result = await fetchBioForRecord(r);
+      if (bfMode === 'desc')   result = await fetchDescForRecord(r);
+      if (bfMode === 'tracks') result = await fetchTracklistForRecord(r);
+
+      if (result) {
+        if (bfMode === 'art')    { r.albumArt  = result; r.artStatus  = 'auto'; }
+        if (bfMode === 'bio')    { r.artistBio = result; r.bioStatus  = 'auto'; }
+        if (bfMode === 'desc')   { r.albumDesc = result; r.descStatus = 'auto'; }
+        if (bfMode === 'tracks') { r.trackList = result; }
+        found++;
+        document.getElementById('bf-n-found').textContent = found;
+        bfLog(`✓ ${r.artist} — ${r.title}`, 'ok');
+        saveRecord(r);
+      } else {
+        notFound++;
+        document.getElementById('bf-n-notfound').textContent = notFound;
+        bfLog(`✗ ${r.artist} — ${r.title}`, 'fail');
+      }
+
+      done++;
+      document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
+
+      const delay = bfMode === 'art' ? 1200 : bfMode === 'tracks' ? 1000 : 700;
+      await new Promise(res => setTimeout(res, delay));
     }
-
-    done++;
-    document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
-
-    // Throttle: bio/desc hit Wikipedia so need more delay
-    await new Promise(res => setTimeout(res, bfMode === 'art' ? 300 : 600));
   }
 
   document.getElementById('bf-progress').style.width = '100%';
@@ -2961,21 +3889,56 @@ async function startBulkFetch() {
   toast(`${BF_CONFIG[bfMode].label}: ${found} found, ${notFound} not found`);
 }
 
-async function fetchArtForRecord(r) {
+async function fetchArtForRecord(r, attempt = 0) {
   try {
     const res = await fetch(
       `https://itunes.apple.com/search?term=${encodeURIComponent(r.artist+' '+r.title)}&entity=album&limit=5&media=music`
     );
+
+    // Rate limited — iTunes returns 403 or non-ok when throttled
+    if (res.status === 403 || res.status === 429) {
+      if (attempt < 3) {
+        const wait = (attempt + 1) * 3000; // 3s, 6s, 9s backoff
+        bfLog(`⏳ Rate limited — waiting ${wait/1000}s before retry…`, 'skip');
+        document.getElementById('bf-current').textContent = `Rate limit hit — pausing ${wait/1000}s…`;
+        await new Promise(res => setTimeout(res, wait));
+        return fetchArtForRecord(r, attempt + 1);
+      }
+      return null;
+    }
+
     if (!res.ok) return null;
     const data = await res.json();
-    if (!data.results?.length) return null;
+
+    // Empty results can also mean rate limiting — check resultCount
+    if (!data.results?.length) {
+      // If resultCount is 0 but we'd expect results, might be throttled
+      if (attempt < 1) {
+        await new Promise(res => setTimeout(res, 2000));
+        return fetchArtForRecord(r, attempt + 1);
+      }
+      return null;
+    }
+
     let best = data.results[0];
     if (r.year) {
       const ym = data.results.find(x => x.releaseDate?.startsWith(String(r.year)));
       if (ym) best = ym;
     }
+    // Also try matching artist name for better accuracy
+    const artistMatch = data.results.find(x =>
+      x.artistName?.toLowerCase().includes(r.artist.toLowerCase().split(' ')[0])
+    );
+    if (artistMatch) best = artistMatch;
+
     return best.artworkUrl100 ? best.artworkUrl100.replace('100x100bb','600x600bb') : null;
-  } catch(e) { return null; }
+  } catch(e) {
+    if (attempt < 2) {
+      await new Promise(res => setTimeout(res, 2000));
+      return fetchArtForRecord(r, attempt + 1);
+    }
+    return null;
+  }
 }
 
 async function fetchBioForRecord(r) {
@@ -3020,6 +3983,122 @@ async function fetchDescForRecord(r) {
     } catch(e) {}
   }
   return null;
+}
+
+// Returns array of track names or null
+async function fetchTracklistForRecord(r) {
+  const MB_HEADERS = { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' };
+
+  // Try strict search first: quoted title + artist
+  const queries = [
+    `release:"${r.title}" artist:"${r.artist}"`,
+    `${r.title} ${r.artist}`,
+    `${r.title}`
+  ];
+
+  for (const q of queries) {
+    try {
+      const res = await fetch(
+        `https://musicbrainz.org/ws/2/release/?query=${encodeURIComponent(q)}&limit=5&fmt=json`,
+        { headers: MB_HEADERS }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (!data.releases?.length) continue;
+
+      // Prefer releases that match the year if we have one
+      let releases = data.releases;
+      if (r.year) {
+        const yearMatches = releases.filter(x => x.date?.startsWith(String(r.year)));
+        if (yearMatches.length) releases = yearMatches;
+      }
+
+      for (const rel of releases.slice(0, 3)) {
+        try {
+          await new Promise(res => setTimeout(res, 400)); // respect MB rate limit
+          const detRes = await fetch(
+            `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
+            { headers: MB_HEADERS }
+          );
+          if (!detRes.ok) continue;
+          const det = await detRes.json();
+          const tracks = [];
+          if (det.media) det.media.forEach(m => m.tracks?.forEach(t => tracks.push(t.title)));
+          if (tracks.length >= 2) return tracks; // need at least 2 tracks to be valid
+        } catch(e2) {}
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
+// ── Bulk credits fetch per track (returns enriched track obj or null) ──
+async function fetchCreditsForTrack(record, trackName, idx) {
+  const MB_HEADERS = { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' };
+  const obj = { ...trackObj(record.trackList[idx]) };
+  try {
+    const q = encodeURIComponent(`recording:"${trackName}" artist:"${record.artist}"`);
+    const res = await fetch(
+      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=3&fmt=json`,
+      { headers: MB_HEADERS }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.recordings?.length) return null;
+
+    // Try to find best match with year context
+    let rec = data.recordings[0];
+    if (record.year) {
+      const ym = data.recordings.find(x =>
+        x.releases?.some(rel => rel.date?.startsWith(String(record.year)))
+      );
+      if (ym) rec = ym;
+    }
+
+    const duration = rec.length ? formatDuration(rec.length) : obj.duration;
+    await new Promise(r => setTimeout(r, 500));
+
+    // Fetch full recording with relations
+    const detRes = await fetch(
+      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-credits+work-rels+recording-rels&fmt=json`,
+      { headers: MB_HEADERS }
+    );
+    if (!detRes.ok) return { ...obj, duration: duration || obj.duration, enriched: true };
+    const det = await detRes.json();
+
+    const writers = [], producers = [];
+    if (det.relations) {
+      det.relations.forEach(rel => {
+        if (['composer','lyricist','writer'].includes(rel.type) && rel.artist?.name)
+          writers.push(rel.artist.name);
+        if (['producer','co-producer'].includes(rel.type) && rel.artist?.name)
+          producers.push(rel.artist.name);
+      });
+    }
+
+    return {
+      ...obj,
+      duration:  duration || obj.duration,
+      writers:   writers.length   ? writers.join(', ')   : obj.writers,
+      producers: producers.length ? producers.join(', ') : obj.producers,
+      mbid:      rec.id,
+      enriched:  true
+    };
+  } catch(e) { return null; }
+}
+
+// ── Bulk lyrics fetch per track (returns enriched track obj or null) ──
+async function fetchLyricsForTrackBulk(record, trackName, idx) {
+  const obj = { ...trackObj(record.trackList[idx]) };
+  try {
+    const res = await fetch(
+      `https://api.lyrics.ovh/v1/${encodeURIComponent(record.artist)}/${encodeURIComponent(trackName)}`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.lyrics || data.lyrics.trim().length < 20) return null;
+    return { ...obj, lyrics: data.lyrics.trim(), lyricsPartial: false };
+  } catch(e) { return null; }
 }
 
 
@@ -3373,6 +4452,659 @@ function renderDetailTags(r) {
 }
 
 // Tag filter is handled inline in getFiltered
+
+
+// ═══════════════════════════════════════════════════════
+// AUDIO PREVIEW — singleton player
+// ═══════════════════════════════════════════════════════
+let _audio = null;
+let _playingTrackIdx = null;   // index in current record's trackList
+let _previewInterval = null;
+
+function getAudio() {
+  if (!_audio) {
+    _audio = new Audio();
+    _audio.volume = 0.8;
+    _audio.addEventListener('ended', () => stopPreview());
+    _audio.addEventListener('timeupdate', updatePreviewProgress);
+    _audio.addEventListener('loadedmetadata', () => {
+      const dur = document.getElementById('tp-dur-display');
+      if (dur) dur.textContent = formatDuration(_audio.duration * 1000);
+    });
+  }
+  return _audio;
+}
+
+function stopPreview(keepBtn) {
+  if (_audio) { _audio.pause(); _audio.currentTime = 0; }
+  clearInterval(_previewInterval);
+  // Reset all preview buttons
+  document.querySelectorAll('.preview-btn').forEach(b => {
+    b.textContent = b.dataset.hasPreview === 'true' ? '▶' : '♪';
+    b.classList.remove('playing', 'loading');
+  });
+  // Reset track page player
+  const tpBtn = document.getElementById('tp-play-btn-main');
+  if (tpBtn) { tpBtn.textContent = '▶'; tpBtn.classList.remove('loading'); }
+  const fill = document.getElementById('tp-prog-fill');
+  const handle = document.getElementById('tp-prog-handle');
+  if (fill) fill.style.width = '0%';
+  if (handle) handle.style.left = '0%';
+  const cur = document.getElementById('tp-time-cur');
+  if (cur) cur.textContent = '0:00';
+  _playingTrackIdx = null;
+}
+
+function updatePreviewProgress() {
+  if (!_audio || !_audio.duration) return;
+  const pct = (_audio.currentTime / _audio.duration * 100).toFixed(1) + '%';
+  const fill = document.getElementById('tp-prog-fill');
+  const handle = document.getElementById('tp-prog-handle');
+  const cur = document.getElementById('tp-time-cur');
+  if (fill) fill.style.width = pct;
+  if (handle) handle.style.left = pct;
+  if (cur) cur.textContent = formatDuration(_audio.currentTime * 1000);
+}
+
+// ── Fetch preview URL from iTunes ─────────────────────
+async function getPreviewUrl(trackName, artist, title) {
+  // Check stored preview first
+  if (!currentRecord) return null;
+  const tracks = currentRecord.trackList || [];
+  const obj = trackObj(tracks.find((t,i) => trackName === (trackObj(t).name || t)));
+  if (obj.previewUrl) return obj.previewUrl;
+
+  try {
+    const q = encodeURIComponent(`${trackName} ${artist}`);
+    const res = await fetch(`https://itunes.apple.com/search?term=${q}&entity=song&limit=5&media=music`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.results?.length) return null;
+
+    // Find best match — prefer one that matches the album
+    let best = data.results.find(x =>
+      x.trackName?.toLowerCase().includes(trackName.toLowerCase().split(' ').slice(0,3).join(' '))
+    ) || data.results[0];
+
+    return best?.previewUrl || null;
+  } catch(e) { return null; }
+}
+
+// ── Toggle preview from tracklist ─────────────────────
+async function toggleTrackPreview(idx) {
+  if (!currentRecord) return;
+  const tracks = currentRecord.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const name = obj.name || obj;
+  const btn = document.getElementById(`prev-btn-${idx}`);
+
+  // If this track is already playing — stop
+  if (_playingTrackIdx === idx && _audio && !_audio.paused) {
+    stopPreview();
+    return;
+  }
+
+  // Stop any current playback
+  stopPreview();
+  _playingTrackIdx = idx;
+
+  if (btn) { btn.classList.add('loading'); btn.textContent = '…'; }
+
+  // Get or fetch preview URL
+  let url = obj.previewUrl;
+  if (!url) {
+    url = await getPreviewUrl(name, currentRecord.artist, currentRecord.title);
+    if (url) {
+      // Cache it on the track object
+      tracks[idx] = { ...obj, previewUrl: url };
+      currentRecord.trackList = tracks;
+      saveRecord(currentRecord);
+    }
+  }
+
+  if (!url) {
+    if (btn) { btn.classList.remove('loading'); btn.textContent = '♪'; }
+    toast(`No 30s preview found for "${name}"`, 'error');
+    _playingTrackIdx = null;
+    return;
+  }
+
+  const audio = getAudio();
+  audio.src = url;
+  try {
+    await audio.play();
+    if (btn) {
+      btn.textContent = '⏸';
+      btn.classList.remove('loading');
+      btn.classList.add('playing');
+      btn.dataset.hasPreview = 'true';
+    }
+  } catch(e) {
+    stopPreview();
+    toast('Preview playback failed', 'error');
+  }
+}
+
+// ── Build track page player HTML ──────────────────────
+function buildTrackPlayer(obj, idx) {
+  const hasStored = !!obj.previewUrl;
+  return `<div class="tp-player" id="tp-player-${idx}">
+    <button class="tp-player-btn" id="tp-play-btn-main" onclick="tpTogglePlay(${idx})" title="30-second preview">▶</button>
+    <div style="flex:1;min-width:0">
+      <div class="tp-progress-wrap" onclick="tpSeek(event)">
+        <div class="tp-progress-bar" id="tp-prog-bar">
+          <div class="tp-progress-fill" id="tp-prog-fill"></div>
+          <div class="tp-progress-handle" id="tp-prog-handle"></div>
+        </div>
+      </div>
+      <div class="tp-time">
+        <span id="tp-time-cur">0:00</span>
+        <span class="tp-preview-label">30s iTunes preview</span>
+        <span id="tp-dur-display">0:30</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function attachTrackPlayerEvents(obj, idx) {
+  // If this track is currently playing, sync the UI
+  if (_playingTrackIdx === idx && _audio && !_audio.paused) {
+    const btn = document.getElementById('tp-play-btn-main');
+    if (btn) btn.textContent = '⏸';
+    updatePreviewProgress();
+  }
+}
+
+async function tpTogglePlay(idx) {
+  if (!currentRecord) return;
+  const tracks = currentRecord.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const btn = document.getElementById('tp-play-btn-main');
+
+  // If already playing this track — pause/resume
+  if (_playingTrackIdx === idx && _audio) {
+    if (_audio.paused) {
+      await _audio.play();
+      if (btn) btn.textContent = '⏸';
+    } else {
+      _audio.pause();
+      if (btn) btn.textContent = '▶';
+    }
+    return;
+  }
+
+  // Stop whatever is playing
+  stopPreview();
+  _playingTrackIdx = idx;
+  if (btn) { btn.classList.add('loading'); btn.textContent = '…'; }
+
+  let url = obj.previewUrl;
+  if (!url) {
+    url = await getPreviewUrl(obj.name || obj, currentRecord.artist, currentRecord.title);
+    if (url) {
+      tracks[idx] = { ...obj, previewUrl: url };
+      currentRecord.trackList = tracks;
+      saveRecord(currentRecord);
+      renderDetailTracks();
+    }
+  }
+
+  if (!url) {
+    if (btn) { btn.classList.remove('loading'); btn.textContent = '▶'; }
+    // Replace player with "no preview" message
+    const player = document.getElementById(`tp-player-${idx}`);
+    if (player) player.outerHTML = `<div class="tp-no-preview">No 30s preview available for this track on iTunes. <a href="https://music.apple.com/search?term=${encodeURIComponent((obj.name||obj)+' '+currentRecord.artist)}" target="_blank" style="color:var(--accent)">Search Apple Music ↗</a></div>`;
+    _playingTrackIdx = null;
+    return;
+  }
+
+  const audio = getAudio();
+  audio.src = url;
+  try {
+    await audio.play();
+    if (btn) { btn.textContent = '⏸'; btn.classList.remove('loading'); }
+    // Sync the list button too
+    const listBtn = document.getElementById(`prev-btn-${idx}`);
+    if (listBtn) { listBtn.textContent = '⏸'; listBtn.classList.add('playing'); }
+  } catch(e) {
+    stopPreview();
+    if (btn) { btn.textContent = '▶'; btn.classList.remove('loading'); }
+  }
+}
+
+function tpSeek(e) {
+  if (!_audio || !_audio.duration || _playingTrackIdx === null) return;
+  const bar = document.getElementById('tp-prog-bar');
+  if (!bar) return;
+  const rect = bar.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  _audio.currentTime = pct * _audio.duration;
+  updatePreviewProgress();
+}
+
+// Stop audio when closing modals
+const _origCloseTrackPage = typeof closeTrackPage !== 'undefined' ? closeTrackPage : null;
+function closeTrackPage() {
+  stopPreview();
+  const modal = document.getElementById('trackpage-modal');
+  modal.style.opacity = '0';
+  modal.style.pointerEvents = 'none';
+  currentTrackIdx = null;
+}
+
+function closeDetail() {
+  stopPreview();
+  document.getElementById('detail-modal').classList.remove('open');
+  currentRecord = null;
+}
+
+
+// ═══════════════════════════════════════════════════════
+// VERSION
+// ═══════════════════════════════════════════════════════
+const APP_VERSION = 'v2.0';
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════
+const SETTINGS_KEY = 'mrd_settings';
+function getSettings() {
+  try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveSetting(key, val) {
+  const s = getSettings(); s[key] = val; localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  if (key === 'pickMode') renderDailyPick();
+}
+function getSetting(key, def) { return getSettings()[key] ?? def; }
+
+// ═══════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════
+function setTheme(name) {
+  document.body.classList.remove('theme-magazine','theme-crate','theme-streaming');
+  if (name !== 'dark') document.body.classList.add('theme-' + name);
+  saveSetting('theme', name);
+  document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+  const opt = document.getElementById('theme-opt-' + name);
+  if (opt) opt.classList.add('active');
+}
+function applyTheme() {
+  const t = getSetting('theme','dark');
+  setTheme(t);
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+const PAGES = ['home','catalogue','discover','sessions','settings'];
+let currentPage = 'home';
+
+function navTo(page) {
+  if (!PAGES.includes(page)) page = 'home';
+  currentPage = page;
+  // Save last page
+  saveSetting('lastPage', page);
+
+  // Show/hide pages
+  PAGES.forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if (el) el.classList.toggle('active', p === page);
+  });
+
+  // Update nav tabs — top
+  PAGES.forEach(p => {
+    const t = document.getElementById('ntop-' + p);
+    if (t) t.classList.toggle('active', p === page);
+    const b = document.getElementById('nbot-' + p);
+    if (b) b.classList.toggle('active', p === page);
+  });
+
+  // Render page content
+  if (page === 'home')     renderHomePage();
+  if (page === 'discover') renderDiscoverPage();
+  if (page === 'sessions') renderSessionsPage();
+  if (page === 'settings') renderSettingsPage();
+  if (page === 'catalogue') {
+    // Make sure catalogue sidebar is visible on desktop
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && window.innerWidth > 768) sidebar.style.display = '';
+  }
+
+  window.scrollTo(0, 0);
+}
+
+function getStartPage() {
+  const startPref = getSetting('startPage', 'last');
+  if (startPref === 'home') return 'home';
+  if (startPref === 'catalogue') return 'catalogue';
+  // 'last' — return last visited
+  return getSetting('lastPage', 'home');
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME PAGE
+// ═══════════════════════════════════════════════════════
+function renderHomePage() {
+  renderHero();
+  renderDailyPick();
+  renderShelfUnplayed();
+  renderShelfRecent();
+  renderShelfFavs();
+}
+
+function renderHero() {
+  const sessions = JSON.parse(localStorage.getItem('mrd_sessions') || '[]');
+  let heroRecord = null;
+  let heroLabel = 'Last played';
+
+  if (sessions.length) {
+    heroRecord = DB.find(r => r.id === sessions[0].id);
+  }
+  if (!heroRecord) {
+    // Pick a favourite or random record with art
+    const favs = DB.filter(r => r.favourite && r.albumArt);
+    heroRecord = favs.length ? favs[Math.floor(Math.random() * favs.length)]
+      : DB.find(r => r.albumArt) || DB[0];
+    heroLabel = heroRecord?.favourite ? '⭐ Featured Favourite' : '🎵 Featured Record';
+  }
+
+  if (!heroRecord) return;
+
+  const bg = document.getElementById('home-hero-bg');
+  const artWrap = document.getElementById('home-hero-art-wrap');
+  const label = document.getElementById('home-hero-label');
+  const artist = document.getElementById('home-hero-artist');
+  const title = document.getElementById('home-hero-title');
+  const actions = document.getElementById('home-hero-actions');
+
+  if (heroRecord.albumArt) {
+    bg.style.backgroundImage = `url(${heroRecord.albumArt})`;
+    artWrap.innerHTML = `<img class="home-hero-art" src="${heroRecord.albumArt}" alt="" onclick="openDetail('${heroRecord.id}')">`;
+  } else {
+    bg.style.backgroundImage = 'none';
+    bg.style.background = `linear-gradient(135deg, ${getGenreColor(heroRecord.genre)}44, var(--surface2))`;
+    artWrap.innerHTML = `<div class="home-hero-art-placeholder" onclick="openDetail('${heroRecord.id}')">${getArtistEmoji(heroRecord.genre)}</div>`;
+  }
+
+  label.textContent = heroLabel;
+  artist.textContent = heroRecord.artist;
+  title.textContent = heroRecord.title;
+  actions.innerHTML = `
+    <button class="btn btn-primary btn-sm" onclick="openDetail('${heroRecord.id}')">Open Record</button>
+    <button class="btn btn-ghost btn-sm" onclick="currentRecord=DB.find(r=>r.id==='${heroRecord.id}');openNowPlaying()">▶ Now Playing</button>
+  `;
+}
+
+function renderShelf(containerId, records, emptyMsg) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (!records.length) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:.82rem;padding:8px 0">${emptyMsg}</div>`;
+    return;
+  }
+  el.innerHTML = records.slice(0, 12).map(r => `
+    <div class="shelf-card" onclick="openDetail('${r.id}')">
+      <div class="shelf-art">
+        ${r.albumArt ? `<img src="${r.albumArt}" alt="" loading="lazy" onerror="this.parentNode.textContent='${getArtistEmoji(r.genre)}'">` : getArtistEmoji(r.genre)}
+      </div>
+      <div class="shelf-artist">${r.artist}</div>
+      <div class="shelf-title">${r.title}</div>
+      ${r.year ? `<div class="shelf-tag">${r.year}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderShelfUnplayed() {
+  const unplayed = DB.filter(r => !r.listened).sort(() => Math.random() - .5).slice(0, 20);
+  renderShelf('shelf-unplayed', unplayed, 'You\'ve listened to everything! 🎉');
+}
+
+function renderShelfRecent() {
+  const sessions = JSON.parse(localStorage.getItem('mrd_sessions') || '[]');
+  const seen = new Set();
+  const recentIds = sessions.map(s => s.id).filter(id => { if (seen.has(id)) return false; seen.add(id); return true; }).slice(0, 12);
+  const recent = recentIds.map(id => DB.find(r => r.id === id)).filter(Boolean);
+  renderShelf('shelf-recent', recent, 'No sessions yet — play a record to get started');
+}
+
+function renderShelfFavs() {
+  const favs = DB.filter(r => r.favourite).sort(() => Math.random() - .5);
+  renderShelf('shelf-favs', favs, 'No favourites yet — star a record you love');
+}
+
+// ── Daily Pick ─────────────────────────────────────────
+let dailyPickRecord = null;
+
+function setPickMode(mode, btn) {
+  saveSetting('pickMode', mode);
+  document.querySelectorAll('.pick-mode-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDailyPick();
+}
+
+function refreshDailyPick() {
+  dailyPickRecord = null;
+  renderDailyPick();
+}
+
+function renderDailyPick() {
+  const mode = getSetting('pickMode','comfort');
+
+  // Sync mode buttons
+  document.getElementById('pick-comfort')?.classList.toggle('active', mode === 'comfort');
+  document.getElementById('pick-discovery')?.classList.toggle('active', mode === 'discovery');
+
+  // Select pick
+  if (!dailyPickRecord) {
+    if (mode === 'comfort') {
+      // Comfort: prioritise favourites, most played, recently listened
+      const pool = DB.filter(r => r.favourite || r.playCount > 0);
+      dailyPickRecord = pool.length ? pool[Math.floor(Math.random() * pool.length)] : DB[Math.floor(Math.random() * DB.length)];
+    } else {
+      // Discovery: prioritise never played, records with no play count
+      const pool = DB.filter(r => !r.listened && !r.playCount);
+      dailyPickRecord = pool.length ? pool[Math.floor(Math.random() * pool.length)] : DB.find(r => !r.listened) || DB[0];
+    }
+  }
+
+  const r = dailyPickRecord;
+  if (!r) return;
+
+  const reasons = {
+    comfort: r.favourite ? '⭐ One of your favourites' : r.playCount > 1 ? `▶ You've played this ${r.playCount} times` : '🎵 A familiar record',
+    discovery: !r.listened ? '◎ You\'ve never played this one' : `${r.genre || 'Music'} · ${r.year || ''}`
+  };
+
+  const container = document.getElementById('daily-pick-container');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="daily-pick-card" onclick="openDetail('${r.id}')">
+      ${r.albumArt
+        ? `<img class="daily-pick-art" src="${r.albumArt}" alt="" onerror="this.outerHTML='<div class=daily-pick-art-ph>${getArtistEmoji(r.genre)}</div>'">`
+        : `<div class="daily-pick-art-ph">${getArtistEmoji(r.genre)}</div>`}
+      <div class="daily-pick-info">
+        <div class="daily-pick-label">${mode === 'comfort' ? '😌 Comfort Pick' : '🔍 Discovery Pick'}</div>
+        <div class="daily-pick-artist">${r.artist}</div>
+        <div class="daily-pick-title">${r.title}${r.year ? ` · ${r.year}` : ''}</div>
+        <div class="daily-pick-reason">${reasons[mode]}</div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// DISCOVER PAGE
+// ═══════════════════════════════════════════════════════
+function renderDiscoverPage() {
+  const el = document.getElementById('discover-content');
+  if (!el) return;
+
+  const sections = [];
+
+  // Unplayed gems — never listened
+  const unplayed = DB.filter(r => !r.listened && !r.playCount);
+  if (unplayed.length) {
+    sections.push({ title: '💎 Unplayed Gems', subtitle: 'Records you own but have never played', records: shuffle(unplayed).slice(0,6) });
+  }
+
+  // Deep cuts — low play count from most-played genres
+  const topGenre = getMostPlayedGenre();
+  if (topGenre) {
+    const genreUnplayed = DB.filter(r => !r.listened && r.genre?.toLowerCase().includes(topGenre.toLowerCase()));
+    if (genreUnplayed.length) {
+      sections.push({ title: `🎷 More ${topGenre}`, subtitle: `You love ${topGenre} — here's what you haven't heard yet`, records: shuffle(genreUnplayed).slice(0,6) });
+    }
+  }
+
+  // Label deep dive
+  const topLabel = getMostPlayedLabel();
+  if (topLabel) {
+    const labelUnplayed = DB.filter(r => !r.listened && r.label === topLabel);
+    if (labelUnplayed.length) {
+      sections.push({ title: `💿 More from ${topLabel}`, subtitle: `Unplayed records from a label you keep coming back to`, records: shuffle(labelUnplayed).slice(0,6) });
+    }
+  }
+
+  // Era exploration
+  const topDecade = getMostPlayedDecade();
+  if (topDecade) {
+    const eraUnplayed = DB.filter(r => !r.listened && r.year >= topDecade && r.year < topDecade+10);
+    if (eraUnplayed.length) {
+      sections.push({ title: `📅 More from the ${topDecade}s`, subtitle: `Unplayed records from your favourite era`, records: shuffle(eraUnplayed).slice(0,6) });
+    }
+  }
+
+  // Random unplayed
+  const wildcard = shuffle(DB.filter(r => !r.listened)).slice(0,6);
+  if (wildcard.length) {
+    sections.push({ title: '🎲 Surprise Me', subtitle: 'Random picks from your unplayed collection', records: wildcard });
+  }
+
+  if (!sections.length) {
+    el.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text3)">
+      <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+      <p>You've listened to your whole collection!</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = sections.map(s => `
+    <div class="discover-section">
+      <h3>${s.title}</h3>
+      <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">${s.subtitle}</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+        ${s.records.map(r => `
+          <div class="discover-card" onclick="openDetail('${r.id}')">
+            <div class="discover-card-art">
+              ${r.albumArt
+                ? `<img src="${r.albumArt}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=discover-card-art-ph>${getArtistEmoji(r.genre)}</div>'">`
+                : `<div class="discover-card-art-ph">${getArtistEmoji(r.genre)}</div>`}
+            </div>
+            <div class="discover-card-body">
+              <div class="discover-card-label">${r.genre?.split(/[,\/]/)[0]?.trim() || ''}</div>
+              <div class="discover-card-title">${r.artist}</div>
+              <div class="discover-card-sub">${r.title}${r.year ? ` · ${r.year}` : ''}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
+
+function getMostPlayedGenre() {
+  const counts = {};
+  DB.filter(r => r.playCount > 0 || r.listened).forEach(r => {
+    const g = r.genre?.split(/[,\/]/)[0]?.trim();
+    if (g) counts[g] = (counts[g]||0) + 1;
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+}
+
+function getMostPlayedLabel() {
+  const counts = {};
+  DB.filter(r => r.playCount > 0 || r.listened).forEach(r => {
+    if (r.label) counts[r.label] = (counts[r.label]||0) + 1;
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0]?.[0];
+}
+
+function getMostPlayedDecade() {
+  const counts = {};
+  DB.filter(r => (r.playCount > 0 || r.listened) && r.year).forEach(r => {
+    const d = Math.floor(r.year/10)*10;
+    counts[d] = (counts[d]||0) + 1;
+  });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  return top ? +top[0] : null;
+}
+
+// ═══════════════════════════════════════════════════════
+// SESSIONS PAGE
+// ═══════════════════════════════════════════════════════
+function renderSessionsPage() {
+  const el = document.getElementById('sessions-content');
+  if (!el) return;
+  const sessions = JSON.parse(localStorage.getItem('mrd_sessions') || '[]');
+
+  if (!sessions.length) {
+    el.innerHTML = `<div class="sessions-empty"><div class="ei">📖</div><p>No sessions yet.<br>Play a record and mark it as listened to start your diary.</p></div>`;
+    return;
+  }
+
+  // Group by date
+  const grouped = {};
+  sessions.forEach(s => {
+    const d = new Date(s.ts);
+    const key = d.toLocaleDateString('en-GB', {weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(s);
+  });
+
+  el.innerHTML = Object.entries(grouped).map(([date, items]) => `
+    <div style="margin-bottom:24px">
+      <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${date}</div>
+      ${items.map(s => {
+        const r = DB.find(x => x.id === s.id);
+        const time = new Date(s.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+        return `<div class="session-entry" onclick="openDetail('${s.id}')">
+          <div class="session-art">
+            ${r?.albumArt ? `<img src="${r.albumArt}" style="width:48px;height:48px;object-fit:cover;border-radius:6px" onerror="this.parentNode.textContent='🎵'">` : '🎵'}
+          </div>
+          <div class="session-info">
+            <div class="session-artist">${s.artist}</div>
+            <div class="session-title">${s.title}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <span class="session-time">${time}</span>
+            ${r?.playCount > 1 ? `<span class="session-count-badge">▶ ${r.playCount}×</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS PAGE
+// ═══════════════════════════════════════════════════════
+function renderSettingsPage() {
+  const vEl = document.getElementById('settings-version');
+  if (vEl) vEl.textContent = APP_VERSION;
+  const uEl = document.getElementById('settings-user-display');
+  if (uEl) uEl.textContent = currentUser ? ` ${currentUser.username} (${currentUser.role})` : 'Guest';
+  const spEl = document.getElementById('setting-startpage');
+  if (spEl) spEl.value = getSetting('startPage','last');
+  const pmEl = document.getElementById('setting-pickmode');
+  if (pmEl) pmEl.value = getSetting('pickMode','comfort');
+  // Sync theme buttons
+  const t = getSetting('theme','dark');
+  document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
+  const opt = document.getElementById('theme-opt-' + t);
+  if (opt) opt.classList.add('active');
+  // Show admin-only settings elements
+  if (isAdmin()) {
+    document.querySelectorAll('#page-settings .admin-only').forEach(el => el.style.display = 'flex');
+  }
+}
+
 
 function exportCSV() {
   const headers = ['ID','Artist','Title','Genre','Year','Label','Notes','Favourite','Listened','Tracks','FavTracks'];
