@@ -62,23 +62,26 @@ select option { background: var(--surface2); }
 .btn-icon.active { border-color: var(--accent); color: var(--accent); background: rgba(232,197,71,.12); }
 
 /* ── Login ── */
-#login-screen {
+/* ── Admin login modal ── */
+#admin-login-modal {
   position: fixed; inset: 0; z-index: 999;
-  background: var(--bg);
+  background: rgba(0,0,0,.85); backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
 }
+#admin-login-modal.open { opacity: 1; pointer-events: all; }
 .login-box {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 48px 40px; width: 360px; max-width: 90vw;
-  text-align: center;
+  border-radius: 16px; padding: 40px 36px; width: 340px; max-width: 92vw;
+  text-align: center; transform: scale(.96); transition: transform .25s;
 }
-.login-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; color: var(--accent); letter-spacing: .1em; margin-bottom: 4px; }
-.login-box p { color: var(--text2); font-size: .9rem; margin-bottom: 32px; }
-.login-box input { width: 100%; margin-bottom: 12px; padding: 12px 16px; font-size: 1rem; }
-.login-box .btn { width: 100%; justify-content: center; padding: 12px; font-size: 1rem; margin-bottom: 8px; }
-#login-error { color: var(--danger); font-size: .82rem; min-height: 20px; margin-top: 4px; }
-.login-hint { margin-top: 20px; font-size: .78rem; color: var(--text3); border-top: 1px solid var(--border); padding-top: 16px; text-align: left; }
-.login-hint b { color: var(--text2); }
+#admin-login-modal.open .login-box { transform: scale(1); }
+.login-box h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); letter-spacing: .1em; margin-bottom: 4px; }
+.login-box p { color: var(--text2); font-size: .88rem; margin-bottom: 24px; }
+.login-box input { width: 100%; margin-bottom: 10px; padding: 11px 14px; font-size: .95rem; }
+.login-box .btn { width: 100%; justify-content: center; padding: 11px; font-size: .95rem; margin-bottom: 8px; }
+#login-error { color: var(--danger); font-size: .82rem; min-height: 18px; margin-top: 4px; }
+.trusted-badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; color: var(--success); background: rgba(82,196,120,.12); border: 1px solid rgba(82,196,120,.3); border-radius: 20px; padding: 3px 10px; margin-top: 8px; }
 
 /* ── Layout ── */
 #app { display: flex; height: calc(100vh - 57px); }
@@ -477,24 +480,227 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 .bf-log-row.fail { color: var(--text3); }
 .bf-log-row.skip { color: var(--text3); font-style: italic; }
 .bf-controls { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+/* ── Multi-select pill filters ── */
+.pill-list {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  max-height: 120px; overflow-y: auto; padding: 2px 0;
+}
+.pill-list::-webkit-scrollbar { width: 3px; }
+.filter-pill {
+  font-size: .7rem; padding: 3px 9px; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--text2);
+  cursor: pointer; transition: all .12s; white-space: nowrap;
+  user-select: none;
+}
+.filter-pill:hover { border-color: var(--accent); color: var(--text); }
+.filter-pill.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+.filter-pill.decade { background: rgba(232,197,71,.08); }
+
+/* ── Grid card info overlay (always-visible metadata) ── */
+.card-info-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.7) 60%, transparent 100%);
+  padding: 32px 8px 8px;
+  transform: translateY(0);
+}
+.cio-artist { font-size: .68rem; color: var(--accent); font-weight: 700; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cio-title { font-size: .72rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.cio-meta { display: flex; flex-direction: column; gap: 1px; }
+.card-meta-row { display: flex; justify-content: space-between; gap: 4px; }
+.card-meta-label { font-size: .58rem; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
+.card-meta-val { font-size: .6rem; color: var(--text2); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; }
+
+/* ── Column order modal ── */
+#colorder-modal {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.85); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+#colorder-modal.open { opacity: 1; pointer-events: all; }
+.colorder-box {
+  background: var(--surface); border-radius: 16px; padding: 28px;
+  width: 380px; max-width: 95vw;
+}
+.colorder-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent); margin-bottom: 4px; }
+.colorder-box p { font-size: .78rem; color: var(--text2); margin-bottom: 16px; }
+.col-drag-list { list-style: none; }
+.col-drag-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; margin-bottom: 4px;
+  background: var(--surface2); border-radius: 8px;
+  border: 1px solid var(--border); cursor: grab; user-select: none;
+  transition: background .15s;
+}
+.col-drag-item:active { cursor: grabbing; background: var(--surface3); }
+.col-drag-item.dragging { opacity: .4; }
+.col-drag-item.drag-over { border-color: var(--accent); background: rgba(232,197,71,.08); }
+.col-drag-handle { color: var(--text3); font-size: 1rem; }
+.col-drag-name { flex: 1; font-size: .85rem; }
+.col-drag-toggle { width: 32px; height: 18px; border-radius: 9px; background: var(--surface3); border: 1px solid var(--border); position: relative; cursor: pointer; transition: background .15s; flex-shrink: 0; }
+.col-drag-toggle.on { background: var(--accent); border-color: var(--accent); }
+.col-drag-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--text3); transition: all .15s; }
+.col-drag-toggle.on::after { left: 16px; background: #000; }
+
+/* ── Bulk fetch tabs ── */
+.bf-tab-btn {
+  flex: 1; padding: 7px 10px; border-radius: 6px; font-size: .8rem;
+  color: var(--text2); transition: all .15s; font-weight: 500;
+}
+.bf-tab-btn.active { background: var(--accent); color: #000; }
+.bf-tab-btn:hover:not(.active) { color: var(--text); }
+
+/* ── Verification badges for bio/desc ── */
+.bio-status-badge, .desc-status-badge {
+  display: inline-block; font-size: .65rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; letter-spacing: .06em;
+  text-transform: uppercase; margin-left: 6px; vertical-align: middle;
+}
+.status-auto { background: rgba(196,123,46,.2); color: #c47b2e; border: 1px solid rgba(196,123,46,.4); }
+.status-verified { background: rgba(82,196,120,.2); color: var(--success); border: 1px solid rgba(82,196,120,.4); }
+
+/* ── Now Playing ── */
+#nowplaying-modal {
+  position: fixed; inset: 0; z-index: 500;
+  background: #000;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none; transition: opacity .4s;
+}
+#nowplaying-modal.open { opacity: 1; pointer-events: all; }
+.np-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: blur(40px) brightness(.35) saturate(1.4);
+  transform: scale(1.1);
+}
+.np-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; height: 100%; padding: 40px 24px;
+  text-align: center;
+}
+.np-art {
+  width: min(280px, 60vw); height: min(280px, 60vw);
+  border-radius: 12px; object-fit: cover;
+  box-shadow: 0 20px 80px rgba(0,0,0,.8);
+  margin-bottom: 28px;
+  animation: npSpin 20s linear infinite paused;
+}
+.np-art.spinning { animation-play-state: running; }
+@keyframes npSpin { to { transform: rotate(360deg); } }
+.np-no-art {
+  width: min(280px, 60vw); height: min(280px, 60vw);
+  border-radius: 50%; background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 5rem; margin-bottom: 28px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.8);
+}
+.np-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem,5vw,2.8rem); color: var(--accent); letter-spacing: .08em; }
+.np-title  { font-size: clamp(.95rem,2.5vw,1.4rem); color: var(--text); margin-bottom: 6px; }
+.np-meta   { font-size: .82rem; color: var(--text2); margin-bottom: 28px; }
+.np-tracks { width: 100%; max-width: 440px; max-height: 200px; overflow-y: auto; margin-bottom: 24px; }
+.np-track {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  transition: background .15s; text-align: left;
+}
+.np-track:hover { background: rgba(255,255,255,.08); }
+.np-track.active { background: rgba(232,197,71,.15); }
+.np-track-num { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); width: 20px; flex-shrink: 0; }
+.np-track-name { flex: 1; font-size: .88rem; }
+.np-track-check { font-size: .9rem; color: var(--success); opacity: 0; transition: opacity .15s; }
+.np-track.done .np-track-check { opacity: 1; }
+.np-controls { display: flex; gap: 14px; align-items: center; }
+.np-btn { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid rgba(255,255,255,.2); transition: all .15s; }
+.np-btn:hover { background: rgba(255,255,255,.1); }
+.np-btn-main { width: 64px; height: 64px; font-size: 1.6rem; background: var(--accent); color: #000; border: none; }
+.np-btn-main:hover { background: #f0d060; transform: scale(1.05); }
+.np-close { position: absolute; top: 20px; right: 20px; z-index: 2; font-size: 1.4rem; color: var(--text2); opacity: .6; }
+.np-close:hover { opacity: 1; }
+.np-timer { font-family: 'DM Mono', monospace; font-size: 1.1rem; color: var(--text2); letter-spacing: .1em; margin-bottom: 20px; }
+
+/* ── Analytics ── */
+#analytics-modal {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.88); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s; padding: 20px;
+}
+#analytics-modal.open { opacity: 1; pointer-events: all; }
+.analytics-box {
+  background: var(--surface); border-radius: 16px;
+  width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto;
+  padding: 28px;
+}
+.analytics-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); margin-bottom: 20px; }
+.an-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-bottom: 24px; }
+.an-stat { background: var(--surface2); border-radius: 10px; padding: 16px; text-align: center; }
+.an-stat .n { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--accent); }
+.an-stat .l { font-size: .72rem; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; }
+.an-section { margin-bottom: 24px; }
+.an-section h4 { font-size: .82rem; color: var(--text2); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; font-family: 'DM Mono', monospace; }
+.an-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.an-bar-label { font-size: .78rem; color: var(--text2); width: 130px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-bar { flex: 1; height: 20px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+.an-bar-fill { height: 100%; border-radius: 4px; background: var(--accent); transition: width .6s ease; }
+.an-bar-count { font-size: .72rem; color: var(--text3); width: 30px; text-align: right; font-family: 'DM Mono', monospace; }
+.an-session-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(51,51,51,.5); }
+.an-session-art { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; background: var(--surface2); flex-shrink: 0; display:flex;align-items:center;justify-content:center;font-size:1.1rem; }
+.an-session-info { flex: 1; }
+.an-session-title { font-size: .85rem; font-weight: 600; }
+.an-session-sub { font-size: .72rem; color: var(--text2); }
+.an-session-time { font-size: .7rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* ── Tags / Playlists ── */
+#tags-modal {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0,0,0,.88); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+#tags-modal.open { opacity: 1; pointer-events: all; }
+.tags-box {
+  background: var(--surface); border-radius: 16px;
+  width: 480px; max-width: 95vw; max-height: 85vh; overflow-y: auto;
+  padding: 28px;
+}
+.tags-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--accent); margin-bottom: 16px; }
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .75rem; padding: 4px 10px; border-radius: 20px;
+  background: var(--surface2); border: 1px solid var(--border);
+  cursor: pointer; transition: all .15s; margin: 3px;
+}
+.tag-chip:hover { border-color: var(--accent); }
+.tag-chip.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+.tag-chip .tag-x { opacity: .5; margin-left: 2px; }
+.tag-chip:hover .tag-x { opacity: 1; }
+.tag-add-row { display: flex; gap: 8px; margin: 12px 0; }
+.tag-add-row input { flex: 1; }
+.tag-record-count { font-size: .72rem; color: var(--text3); margin-left: 4px; }
+
 </style>
 </head>
 <body>
 
 <!-- Login Screen -->
-<div id="login-screen">
+<!-- Admin Login Modal -->
+<div id="admin-login-modal" onclick="if(event.target===this)closeAdminLogin()">
   <div class="login-box">
-    <h2>🎵 MRD</h2>
-    <p>Records Catalogue</p>
-    <input type="text" id="login-user" placeholder="Username" autocomplete="username">
+    <h2>⚡ Admin</h2>
+    <p>Enter your admin password to unlock editing.</p>
+    <input type="text" id="login-user" placeholder="Username" autocomplete="username" value="admin">
     <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password">
-    <button class="btn btn-primary" onclick="doLogin()">Enter the Vault</button>
+    <button class="btn btn-primary" onclick="doLogin()">Unlock Admin Mode</button>
     <div id="login-error"></div>
-    <div class="login-hint">
-      <b>Admin:</b> admin / vinyl2024<br>
-      <b>Read-only:</b> guest / listen<br>
-      <small>Passwords can be changed in the Admin panel.</small>
+    <div style="margin-top:12px">
+      <label style="display:flex;align-items:center;gap:8px;justify-content:center;font-size:.8rem;color:var(--text2);cursor:pointer">
+        <input type="checkbox" id="trust-device" checked style="width:auto;margin:0">
+        Remember this device
+      </label>
     </div>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="closeAdminLogin()">Cancel — stay as guest</button>
   </div>
 </div>
 
@@ -506,8 +712,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div class="header-actions">
     <span id="user-badge-display"></span>
     <button class="btn btn-ghost btn-sm" onclick="openWheel()">🎲 Spin</button>
+    <button class="btn btn-ghost btn-sm" onclick="openAnalytics()">📊</button>
+    <button class="btn btn-ghost btn-sm" onclick="openTagsModal()">🏷</button>
     <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">⚙️ Admin</button>
-    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Logout</button>
+    <button class="btn btn-ghost btn-sm" id="admin-switch-btn" onclick="openAdminLogin()" style="display:none">🔐 Admin Login</button>
+    <button class="btn btn-ghost btn-sm admin-only" id="drop-admin-btn" onclick="dropToGuest()" title="Switch back to guest mode">👁 Guest Mode</button>
   </div>
 </div>
 
@@ -539,33 +748,37 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="sidebar-section">
       <div class="sidebar-title">Filters</div>
       <div class="filter-group">
-        <label>Genre</label>
-        <select id="genre-filter" onchange="applyFilters()">
-          <option value="">All genres</option>
-        </select>
+        <label>Genre <span id="genre-count" style="color:var(--accent);font-size:.7rem"></span></label>
+        <input type="text" id="genre-search" placeholder="Search genres…" oninput="filterPillList('genre')" style="width:100%;font-size:.78rem;margin-bottom:6px">
+        <div class="pill-list" id="genre-pills"></div>
       </div>
       <div class="filter-group">
-        <label>Label</label>
-        <select id="label-filter" onchange="applyFilters()">
-          <option value="">All labels</option>
-        </select>
+        <label>Artist <span id="artist-count" style="color:var(--accent);font-size:.7rem"></span></label>
+        <input type="text" id="artist-search" placeholder="Search artists…" oninput="filterPillList('artist')" style="width:100%;font-size:.78rem;margin-bottom:6px">
+        <div class="pill-list" id="artist-pills"></div>
       </div>
       <div class="filter-group">
-        <label>Year Range</label>
-        <div class="range-row">
-          <input type="number" id="year-from" placeholder="From" min="1950" max="2030" onchange="applyFilters()">
-          <input type="number" id="year-to" placeholder="To" min="1950" max="2030" onchange="applyFilters()">
+        <label>Label <span id="label-count" style="color:var(--accent);font-size:.7rem"></span></label>
+        <input type="text" id="label-search" placeholder="Search labels…" oninput="filterPillList('label')" style="width:100%;font-size:.78rem;margin-bottom:6px">
+        <div class="pill-list" id="label-pills"></div>
+      </div>
+      <div class="filter-group">
+        <label>Year</label>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="number" id="year-from" placeholder="From" min="1950" max="2030" oninput="applyFilters()" style="width:50%">
+          <input type="number" id="year-to" placeholder="To" min="1950" max="2030" oninput="applyFilters()" style="width:50%">
         </div>
+        <div class="pill-list" id="year-pills" style="max-height:80px"></div>
       </div>
       <div class="filter-group">
         <label>Has Art</label>
-        <select id="art-filter" onchange="applyFilters()">
+        <select id="art-filter" onchange="applyFilters()" style="width:100%;font-size:.82rem">
           <option value="">All</option>
           <option value="yes">With art</option>
           <option value="no">Without art</option>
         </select>
       </div>
-      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="clearFilters()">Clear filters</button>
+      <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:8px" onclick="clearFilters()">✕ Clear all filters</button>
     </div>
     <div class="sidebar-sep"></div>
     <div class="sidebar-section">
@@ -582,9 +795,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="exportCSV()">⬇ Export CSV</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:6px" onclick="exportJSON()">⬇ Export JSON</button>
       <div class="sidebar-sep" style="margin-top:10px"></div>
-      <div class="sidebar-title">Album Art</div>
-      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center" onclick="openBulkFetch()">🖼 Fetch All Art</button>
-      <div style="font-size:.7rem;color:var(--text3);margin-top:6px;padding:0 2px" id="art-coverage-label"></div>
+      <div class="sidebar-title">Bulk Fetch (Admin)</div>
+      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center" onclick="openBulkFetch('art')">🖼 Fetch All Art</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('bio')">👤 Fetch All Bios</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('desc')">📝 Fetch All Info</button>
+      <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding:0 2px;line-height:1.6" id="art-coverage-label"></div>
     </div>
     <div class="sidebar-count" id="sidebar-count"></div>
   </div>
@@ -606,6 +821,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
         <button class="btn-icon" id="view-list" onclick="setView('list')" title="List view">≡</button>
       </div>
       <div class="toolbar-info" id="toolbar-info"></div>
+      <button class="btn-icon" onclick="openColOrder()" title="Arrange columns">⊟</button>
     </div>
     <div id="catalogue-grid"></div>
     <div id="catalogue-list" class="hidden">
@@ -651,6 +867,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
         <div class="detail-actions">
           <button class="btn btn-ghost btn-sm" id="d-listen-btn" onclick="toggleListened()"></button>
           <button class="btn btn-ghost btn-sm" id="d-fav-btn" onclick="toggleFavourite()"></button>
+          <button class="btn btn-primary btn-sm" onclick="openNowPlaying()" title="Now Playing mode">▶ Now Playing</button>
+          <span id="d-play-count" style="font-size:.75rem;color:var(--text3);align-self:center"></span>
           <button class="btn btn-ghost btn-sm admin-only" onclick="openArtPicker()">🖼 Art</button>
           <button class="btn btn-ghost btn-sm admin-only" id="d-tracks-btn" onclick="switchTab('tracks')">🎵 Tracks</button>
         </div>
@@ -666,7 +884,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       </div>
       <!-- Info Tab -->
       <div class="tab-pane active" id="tab-info">
-        <div class="section-label">Album Description</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="section-label" style="margin-bottom:0">Album Description</div>
+          <span id="d-desc-status-badge"></span>
+          <button class="verify-btn admin-only" id="d-verify-desc-btn" onclick="verifyDesc()" style="display:none;padding:3px 9px;font-size:.7rem">✓ Verify</button>
+        </div>
         <div class="bio-text" id="d-album-desc"><em style="color:var(--text3)">No description yet.</em></div>
         <div class="admin-only" style="margin-top:12px;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="fetchAlbumDesc()">🔍 Fetch Description</button>
@@ -690,7 +912,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       </div>
       <!-- Bio Tab -->
       <div class="tab-pane" id="tab-bio">
-        <div class="section-label">Artist Biography</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="section-label" style="margin-bottom:0">Artist Biography</div>
+          <span id="d-bio-status-badge"></span>
+          <button class="verify-btn admin-only" id="d-verify-bio-btn" onclick="verifyBio()" style="display:none;padding:3px 9px;font-size:.7rem">✓ Verify</button>
+        </div>
         <div class="bio-text" id="d-artist-bio"><em style="color:var(--text3)">No biography yet.</em></div>
         <div class="admin-only" style="margin-top:12px;gap:8px">
           <button class="btn btn-ghost btn-sm" onclick="fetchArtistBio()">🔍 Fetch Biography</button>
@@ -698,6 +924,13 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       </div>
       <!-- Notes Tab -->
       <div class="tab-pane" id="tab-notes">
+        <div class="section-label" style="margin-bottom:8px">Tags</div>
+        <div id="d-tags-display" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px"></div>
+        <div class="admin-only" style="gap:6px;margin-bottom:16px;flex-wrap:wrap" id="d-tags-admin">
+          <input type="text" id="d-tag-quick" placeholder="Add tag…" style="font-size:.8rem;padding:4px 10px;width:140px" onkeydown="if(event.key==='Enter')quickAddTag()">
+          <button class="btn btn-ghost btn-sm" onclick="quickAddTag()">+ Add</button>
+          <button class="btn btn-ghost btn-sm" onclick="openTagsModal()">Manage Tags</button>
+        </div>
         <div class="section-label">Personal Notes</div>
         <textarea class="notes-area admin-only-ta" id="d-notes-area" placeholder="Add your notes about this record…" oninput="saveNotes()" rows="5"></textarea>
         <div id="d-notes-readonly" class="bio-text" style="display:none;color:var(--text2)"></div>
@@ -743,11 +976,16 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   </div>
 </div>
 
-<!-- Bulk Art Fetch Modal -->
+<!-- Bulk Fetch Modal -->
 <div id="bulkfetch-modal">
   <div class="bulkfetch-box">
-    <h3>🖼 Bulk Art Fetch</h3>
-    <p>Automatically searches iTunes for album art for every record without verified art. Results are marked <strong style="color:#c47b2e">Auto</strong> until you review and verify them.</p>
+    <h3>⚡ Bulk Fetch</h3>
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--surface2);border-radius:8px;padding:4px">
+      <button class="bf-tab-btn active" id="bf-tab-art" onclick="setBfTab('art')">🖼 Album Art</button>
+      <button class="bf-tab-btn" id="bf-tab-bio" onclick="setBfTab('bio')">👤 Artist Bio</button>
+      <button class="bf-tab-btn" id="bf-tab-desc" onclick="setBfTab('desc')">📝 Album Info</button>
+    </div>
+    <p id="bf-description" style="color:var(--text2);font-size:.83rem;margin-bottom:16px"></p>
     <div class="bf-progress-wrap">
       <div class="bf-counts">
         <div class="bf-count pending"><div class="n" id="bf-n-pending">—</div><div class="l">Remaining</div></div>
@@ -760,12 +998,12 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     </div>
     <div class="bf-log" id="bf-log"></div>
     <div class="bf-controls">
-      <button class="btn btn-primary" id="bf-start-btn" onclick="startBulkFetch()">▶ Start Fetching</button>
+      <button class="btn btn-primary" id="bf-start-btn" onclick="startBulkFetch()">▶ Start</button>
       <button class="btn btn-danger btn-sm" id="bf-stop-btn" onclick="stopBulkFetch()" style="display:none">⏹ Stop</button>
       <button class="btn btn-ghost btn-sm" onclick="closeBulkFetch()">Close</button>
     </div>
-    <div style="font-size:.72rem;color:var(--text3);margin-top:12px">
-      ⚠ Only fetches records without verified art. Fetched art is marked <strong style="color:#c47b2e">Auto</strong> — visit each record to verify or replace it.
+    <div style="font-size:.72rem;color:var(--text3);margin-top:10px">
+      ⚠ Skips records already verified. Results marked <strong style="color:#c47b2e">Auto</strong> until you review them.
     </div>
   </div>
 </div>
@@ -810,6 +1048,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup All Data</button>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input').click()">📂 Restore Backup</button>
       <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
+      <button class="btn btn-ghost btn-sm" onclick="forgetDevice()" style="margin-top:6px;color:var(--danger)">🔓 Forget This Device</button>
     </div>
     <p style="font-size:.72rem;color:var(--text3);margin-top:8px">Backup saves all records, art, tracks, and bios to a JSON file.</p>
   </div>
@@ -834,6 +1073,93 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   </div>
 </div>
 
+<!-- Column Order Modal -->
+<div id="colorder-modal" onclick="if(event.target===this)closeColOrder()">
+  <div class="colorder-box">
+    <h3>⊟ Grid Columns</h3>
+    <p>Drag to reorder. Toggle to show/hide. Saved automatically.</p>
+    <ul class="col-drag-list" id="col-drag-list"></ul>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="resetColOrder()">Reset</button>
+      <button class="btn btn-primary btn-sm" onclick="closeColOrder()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Now Playing Modal -->
+<div id="nowplaying-modal">
+  <div class="np-bg" id="np-bg"></div>
+  <button class="np-close" onclick="closeNowPlaying()">✕</button>
+  <div class="np-content">
+    <img class="np-art" id="np-art" src="" alt="" style="display:none">
+    <div class="np-no-art" id="np-no-art" style="display:none"></div>
+    <div class="np-artist" id="np-artist"></div>
+    <div class="np-title" id="np-title"></div>
+    <div class="np-meta" id="np-meta"></div>
+    <div class="np-timer" id="np-timer">0:00</div>
+    <div class="np-tracks" id="np-tracks"></div>
+    <div class="np-controls">
+      <button class="np-btn" onclick="toggleNpSpin()" id="np-spin-btn" title="Toggle spin">⟳</button>
+      <button class="np-btn np-btn-main" id="np-play-btn" onclick="toggleNpPlay()">▶</button>
+      <button class="np-btn admin-only" onclick="closeNowPlaying();toggleListened()" title="Mark as listened" style="font-size:.85rem">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Analytics Modal -->
+<div id="analytics-modal" onclick="if(event.target===this)closeAnalytics()">
+  <div class="analytics-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0">📊 Collection Analytics</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeAnalytics()">✕ Close</button>
+    </div>
+    <div class="an-grid" id="an-stats"></div>
+    <div class="an-section">
+      <h4>By Decade</h4>
+      <div id="an-decades"></div>
+    </div>
+    <div class="an-section">
+      <h4>Top Genres</h4>
+      <div id="an-genres"></div>
+    </div>
+    <div class="an-section">
+      <h4>Top Labels</h4>
+      <div id="an-labels"></div>
+    </div>
+    <div class="an-section">
+      <h4>Most Played</h4>
+      <div id="an-mostplayed"></div>
+    </div>
+    <div class="an-section">
+      <h4>Recent Listening</h4>
+      <div id="an-sessions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tags / Playlists Modal -->
+<div id="tags-modal" onclick="if(event.target===this)closeTagsModal()">
+  <div class="tags-box">
+    <h3>🏷 Tags &amp; Playlists</h3>
+    <p style="font-size:.83rem;color:var(--text2);margin-bottom:16px">Create custom tags to group records into playlists. Click a tag to filter the catalogue.</p>
+    <div class="tag-add-row admin-only">
+      <input type="text" id="new-tag-input" placeholder="New tag name…" onkeydown="if(event.key==='Enter')createTag()">
+      <button class="btn btn-primary btn-sm" onclick="createTag()">+ Add</button>
+    </div>
+    <div id="all-tags-list" style="margin-bottom:16px"></div>
+    <div id="tag-record-section" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="section-label" id="tag-section-title" style="margin-bottom:0"></div>
+        <button class="btn btn-ghost btn-sm" onclick="clearTagFilter()">✕ Clear filter</button>
+      </div>
+      <div id="tag-record-list"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeTagsModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast container -->
 <div id="toast-container"></div>
 
@@ -847,7 +1173,7 @@ let DB = [];
 let currentRecord = null;
 let filteredRecords = [];
 let currentView = 'grid';
-let activeFilters = { search:'', genre:'', label:'', yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
+let activeFilters = { search:'', genres:[], artists:[], labels:[], years:[], yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
 let sortBy = 'artist';
 let currentUser = null;
 let users = {};
@@ -855,6 +1181,7 @@ let selectedArtUrl = null;
 let wheelSpinning = false;
 let ocrExtractedTracks = [];
 let bulkFetchAborted = false;
+let activeTagFilter = null;
 // artStatus: null=no art, "auto"=fetched automatically (unverified), "verified"=admin confirmed
 
 const SUPABASE_URL = 'https://uaqvqvrflzxulixdrmna.supabase.co';
@@ -895,10 +1222,14 @@ function recordToRow(r) {
     listened:    r.listened   || false,
     album_art:   r.albumArt   || null,
     art_status:  r.artStatus  || null,
+    bio_status:  r.bioStatus   || null,
+    desc_status: r.descStatus  || null,
     track_list:  r.trackList  || [],
     fav_tracks:  r.favTracks  || [],
     artist_bio:  r.artistBio  || '',
-    album_desc:  r.albumDesc  || ''
+    album_desc:  r.albumDesc  || '',
+    play_count:  r.playCount  || 0,
+    tags:        r.tags       || []
   };
 }
 
@@ -918,10 +1249,14 @@ function rowToRecord(row) {
     listened:   row.listened   ?? false,
     albumArt:   row.album_art  ?? null,
     artStatus:  row.art_status ?? null,
+    bioStatus:  row.bio_status  ?? null,
+    descStatus: row.desc_status ?? null,
     trackList:  row.track_list ?? [],
     favTracks:  row.fav_tracks ?? [],
     artistBio:  row.artist_bio ?? '',
-    albumDesc:  row.album_desc ?? ''
+    albumDesc:  row.album_desc ?? '',
+    playCount:  row.play_count  ?? 0,
+    tags:       row.tags        ?? []
   };
 }
 
@@ -930,12 +1265,22 @@ function rowToRecord(row) {
 // ═══════════════════════════════════════════════════════
 async function init() {
   loadUsers();
-  showAppLoading('Connecting to database…');
+  // Always start as guest immediately — no login wall
+  loginAsGuest();
+  showAppLoading('Loading your collection…');
   await loadDB();
   populateFilterDropdowns();
+  // Check if this device has a saved admin token — auto-elevate if so
+  if (checkTrustedDevice()) {
+    toast('⚡ Admin mode — trusted device', 'success');
+  }
+  // Show admin login button for non-admin users
+  const switchBtn = document.getElementById('admin-switch-btn');
+  if (switchBtn && !isAdmin()) switchBtn.style.display = 'flex';
   renderAll();
   updateStats();
   hideAppLoading();
+  setBfTab('art');
   if (window.innerWidth <= 768) {
     document.getElementById('mobile-sidebar-btn').style.display = 'flex';
   }
@@ -1070,38 +1415,115 @@ function saveUsers() {
 // ═══════════════════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════════════════
+const DEVICE_KEY = 'mrd_trusted_device';
+
+// ── Apply a session role (guest or admin) ────────────────
+function applyRole(role, username) {
+  currentUser = { username: username || (role === 'admin' ? 'admin' : 'guest'), role };
+  const isAdm = role === 'admin';
+  document.body.classList.toggle('is-admin', isAdm);
+
+  // Badge
+  const badge = document.getElementById('user-badge-display');
+  badge.innerHTML = isAdm
+    ? `<span class="user-badge badge-admin">⚡ Admin</span>`
+    : `<span class="user-badge badge-readonly">👁 Browsing</span>`;
+
+  // Header buttons
+  const switchBtn = document.getElementById('admin-switch-btn');
+  if (switchBtn) switchBtn.style.display = isAdm ? 'none' : 'flex';
+
+  // Admin-only elements
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdm ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.admin-only-ta').forEach(el => {
+    el.style.display = isAdm ? 'block' : 'none';
+  });
+  document.querySelectorAll('.admin-only-inline').forEach(el => {
+    el.style.display = isAdm ? 'inline-flex' : 'none';
+  });
+}
+
+// ── Guest auto-login (always happens on load) ────────────
+function loginAsGuest() {
+  applyRole('readonly', 'guest');
+  renderAll();
+}
+
+// ── Admin login modal ────────────────────────────────────
+function openAdminLogin() {
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('admin-login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('login-pass').focus(), 200);
+}
+
+function closeAdminLogin() {
+  document.getElementById('admin-login-modal').classList.remove('open');
+}
+
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
-  if (users[u] && users[u].password === p) {
-    currentUser = { username: u, role: users[u].role };
-    document.getElementById('login-screen').classList.add('hidden');
-    document.body.classList.toggle('is-admin', currentUser.role === 'admin');
-    const badge = document.getElementById('user-badge-display');
-    badge.innerHTML = `<span class="user-badge ${currentUser.role === 'admin' ? 'badge-admin' : 'badge-readonly'}">${currentUser.role === 'admin' ? '⚡ Admin' : '👁 View Only'}</span>`;
-    // Show admin-only elements
-    document.querySelectorAll('.admin-only').forEach(el => {
-      if (currentUser.role === 'admin') el.style.display = 'flex';
-    });
-    document.querySelectorAll('.admin-only-ta').forEach(el => {
-      el.style.display = currentUser.role === 'admin' ? 'block' : 'none';
-    });
+  const errEl = document.getElementById('login-error');
+
+  if (users[u] && users[u].password === p && users[u].role === 'admin') {
+    // Check "remember this device"
+    if (document.getElementById('trust-device').checked) {
+      const token = btoa(`${u}:${p}:${navigator.userAgent.slice(0,40)}`);
+      localStorage.setItem(DEVICE_KEY, JSON.stringify({ token, username: u }));
+    }
+    applyRole('admin', u);
+    closeAdminLogin();
     renderAll();
+    toast('⚡ Admin mode unlocked');
+  } else if (users[u] && users[u].password === p && users[u].role !== 'admin') {
+    errEl.textContent = 'That account does not have admin access.';
   } else {
-    document.getElementById('login-error').textContent = 'Invalid username or password.';
+    errEl.textContent = 'Incorrect password.';
   }
 }
 
 document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 document.getElementById('login-user').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-pass').focus(); });
 
+// ── Drop back to guest ────────────────────────────────────
+function dropToGuest() {
+  applyRole('readonly', 'guest');
+  renderAll();
+  toast('Switched to guest mode');
+}
+
+// ── Forget this device ────────────────────────────────────
+function forgetDevice() {
+  localStorage.removeItem(DEVICE_KEY);
+  toast('Device forgotten — you will need to log in manually next time');
+}
+
+// ── Check trusted device on load ─────────────────────────
+function checkTrustedDevice() {
+  try {
+    const saved = localStorage.getItem(DEVICE_KEY);
+    if (!saved) return false;
+    const { token, username } = JSON.parse(saved);
+    // Re-derive and compare token
+    const u = username;
+    if (!users[u]) return false;
+    const expected = btoa(`${u}:${users[u].password}:${navigator.userAgent.slice(0,40)}`);
+    if (token === expected) {
+      applyRole('admin', u);
+      return true;
+    }
+    // Token mismatch (password changed) — clear it
+    localStorage.removeItem(DEVICE_KEY);
+    return false;
+  } catch(e) { return false; }
+}
+
 function doLogout() {
-  currentUser = null;
-  document.body.classList.remove('is-admin');
-  document.getElementById('login-screen').classList.remove('hidden');
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
-  document.getElementById('login-error').textContent = '';
+  // Legacy — now just drops to guest
+  dropToGuest();
 }
 
 function isAdmin() { return currentUser && currentUser.role === 'admin'; }
@@ -1109,22 +1531,82 @@ function isAdmin() { return currentUser && currentUser.role === 'admin'; }
 // ═══════════════════════════════════════════════════════
 // FILTERS & SORTING
 // ═══════════════════════════════════════════════════════
+// ── Decade buckets for year filter ─────────────────────
+function getDecades() {
+  const years = DB.map(r=>r.year).filter(Boolean);
+  const min = Math.floor(Math.min(...years)/10)*10;
+  const max = Math.floor(Math.max(...years)/10)*10;
+  const decades = [];
+  for (let d = min; d <= max; d += 10) decades.push(d);
+  return decades;
+}
+
 function populateFilterDropdowns() {
-  const genres = [...new Set(DB.map(r=>r.genre).filter(Boolean))].sort();
-  const labels = [...new Set(DB.map(r=>r.label).filter(Boolean))].sort();
-  const gSel = document.getElementById('genre-filter');
-  const lSel = document.getElementById('label-filter');
-  genres.forEach(g => gSel.innerHTML += `<option value="${g}">${g}</option>`);
-  labels.forEach(l => lSel.innerHTML += `<option value="${l}">${l}</option>`);
+  const genres   = [...new Set(DB.map(r=>r.genre).filter(Boolean))].sort();
+  const artists  = [...new Set(DB.map(r=>r.artist).filter(Boolean))].sort();
+  const labels   = [...new Set(DB.map(r=>r.label).filter(Boolean))].sort();
+  const decades  = getDecades();
+
+  buildPills('genre-pills',  genres,  'genres',  g => g);
+  buildPills('artist-pills', artists, 'artists', a => a);
+  buildPills('label-pills',  labels,  'labels',  l => l);
+
+  // Decade pills
+  const yc = document.getElementById('year-pills');
+  yc.innerHTML = decades.map(d =>
+    `<button class="filter-pill decade" data-decade="${d}" onclick="toggleYearPill(${d},this)">${d}s</button>`
+  ).join('');
+}
+
+function buildPills(containerId, values, filterKey, labelFn) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = values.map(v =>
+    `<button class="filter-pill" data-val="${v.replace(/"/g,'&quot;')}" onclick="togglePill('${filterKey}','${v.replace(/'/g,"\'")}',this)">${labelFn(v)}</button>`
+  ).join('');
+}
+
+function filterPillList(type) {
+  const searchId = type + '-search';
+  const pillsId  = type + '-pills';
+  const q = document.getElementById(searchId)?.value.toLowerCase() || '';
+  document.querySelectorAll(`#${pillsId} .filter-pill`).forEach(p => {
+    p.style.display = p.dataset.val?.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function togglePill(filterKey, val, btn) {
+  const arr = activeFilters[filterKey];
+  const idx = arr.indexOf(val);
+  if (idx === -1) arr.push(val);
+  else arr.splice(idx, 1);
+  btn.classList.toggle('active', arr.includes(val));
+  updateFilterCounts();
+  renderAll();
+}
+
+function toggleYearPill(decade, btn) {
+  const idx = activeFilters.years.indexOf(decade);
+  if (idx === -1) activeFilters.years.push(decade);
+  else activeFilters.years.splice(idx, 1);
+  btn.classList.toggle('active', activeFilters.years.includes(decade));
+  renderAll();
+}
+
+function updateFilterCounts() {
+  const gc = document.getElementById('genre-count');
+  const ac = document.getElementById('artist-count');
+  const lc = document.getElementById('label-count');
+  if (gc) gc.textContent = activeFilters.genres.length ? `(${activeFilters.genres.length})` : '';
+  if (ac) ac.textContent = activeFilters.artists.length ? `(${activeFilters.artists.length})` : '';
+  if (lc) lc.textContent = activeFilters.labels.length ? `(${activeFilters.labels.length})` : '';
 }
 
 function applyFilters() {
-  activeFilters.search = document.getElementById('search-input').value.toLowerCase();
-  activeFilters.genre = document.getElementById('genre-filter').value;
-  activeFilters.label = document.getElementById('label-filter').value;
-  activeFilters.yearFrom = document.getElementById('year-from').value;
-  activeFilters.yearTo = document.getElementById('year-to').value;
-  activeFilters.art = document.getElementById('art-filter').value;
+  activeFilters.search  = document.getElementById('search-input').value.toLowerCase();
+  activeFilters.yearFrom = document.getElementById('year-from')?.value || '';
+  activeFilters.yearTo   = document.getElementById('year-to')?.value   || '';
+  activeFilters.art      = document.getElementById('art-filter')?.value || '';
   sortBy = document.getElementById('sort-select').value;
   renderAll();
 }
@@ -1144,15 +1626,18 @@ function setStatusFilter(val, btn) {
 }
 
 function clearFilters() {
-  activeFilters = { search:'', genre:'', label:'', yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
+  activeFilters = { search:'', genres:[], artists:[], labels:[], years:[], yearFrom:'', yearTo:'', status:'all', collection:'all', art:'' };
   document.getElementById('search-input').value = '';
-  document.getElementById('genre-filter').value = '';
-  document.getElementById('label-filter').value = '';
-  document.getElementById('year-from').value = '';
-  document.getElementById('year-to').value = '';
-  document.getElementById('art-filter').value = '';
+  const yf = document.getElementById('year-from'); if (yf) yf.value = '';
+  const yt = document.getElementById('year-to');   if (yt) yt.value = '';
+  const af = document.getElementById('art-filter'); if (af) af.value = '';
+  const gs = document.getElementById('genre-search');  if (gs) gs.value = '';
+  const as = document.getElementById('artist-search'); if (as) as.value = '';
+  const ls = document.getElementById('label-search');  if (ls) ls.value = '';
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('[data-col]').forEach(b => b.classList.toggle('active', b.dataset.col === 'all'));
   document.querySelectorAll('[data-status]').forEach(b => b.classList.toggle('active', b.dataset.status === 'all'));
+  updateFilterCounts();
   renderAll();
 }
 
@@ -1166,19 +1651,33 @@ function getFiltered() {
   let records = DB.filter(r => {
     const s = activeFilters.search;
     if (s && !`${r.artist} ${r.title} ${r.label} ${r.genre} ${r.id}`.toLowerCase().includes(s)) return false;
-    if (activeFilters.genre && r.genre !== activeFilters.genre) return false;
-    if (activeFilters.label && r.label !== activeFilters.label) return false;
+    // Multi-select: genre must match ANY selected (substring match for compound genres)
+    if (activeFilters.genres.length && !activeFilters.genres.some(g => (r.genre||'').toLowerCase().includes(g.toLowerCase()))) return false;
+    if (activeFilters.artists.length && !activeFilters.artists.includes(r.artist)) return false;
+    if (activeFilters.labels.length && !activeFilters.labels.includes(r.label)) return false;
+    // Year range inputs
     if (activeFilters.yearFrom && (!r.year || r.year < +activeFilters.yearFrom)) return false;
-    if (activeFilters.yearTo && (!r.year || r.year > +activeFilters.yearTo)) return false;
+    if (activeFilters.yearTo   && (!r.year || r.year > +activeFilters.yearTo))   return false;
+    // Decade pills
+    if (activeFilters.years.length && (!r.year || !activeFilters.years.some(d => r.year >= d && r.year < d+10))) return false;
     if (activeFilters.art === 'yes' && !r.albumArt) return false;
-    if (activeFilters.art === 'no' && r.albumArt) return false;
-    if (activeFilters.collection === 'found' && r.notes !== 'Found') return false;
+    if (activeFilters.art === 'no'  &&  r.albumArt) return false;
+    if (activeFilters.collection === 'found'   && r.notes !== 'Found') return false;
     if (activeFilters.collection === 'neville' && r.notes !== "Neville's Collection") return false;
-    if (activeFilters.status === 'listened' && !r.listened) return false;
-    if (activeFilters.status === 'unlistened' && r.listened) return false;
-    if (activeFilters.status === 'fav' && !r.favourite) return false;
+    if (activeFilters.status === 'listened'   && !r.listened)  return false;
+    if (activeFilters.status === 'unlistened' &&  r.listened)  return false;
+    if (activeFilters.status === 'fav'        && !r.favourite) return false;
     return true;
   });
+
+  // Tag/playlist filter
+  if (typeof activeTagFilter !== 'undefined' && activeTagFilter) {
+    try {
+      const tag = getAllTags().find(t => t.name === activeTagFilter);
+      const ids = new Set(tag?.records || []);
+      records = records.filter(r => ids.has(r.id));
+    } catch(e) {}
+  }
 
   records.sort((a,b) => {
     const av = (a[sortBy]||'').toString().toLowerCase();
@@ -1186,6 +1685,98 @@ function getFiltered() {
     return av < bv ? -1 : av > bv ? 1 : 0;
   });
   return records;
+}
+
+// ── Column order (grid metadata) ────────────────────────
+const DEFAULT_COLS = [
+  {key:'year',  label:'Year',   visible:true},
+  {key:'genre', label:'Genre',  visible:true},
+  {key:'label', label:'Label',  visible:false},
+  {key:'notes', label:'Source', visible:false},
+];
+
+function getColumnOrder() {
+  try {
+    const saved = localStorage.getItem('mrd_cols');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_COLS));
+}
+
+function saveColumnOrder(cols) {
+  localStorage.setItem('mrd_cols', JSON.stringify(cols));
+}
+
+function getColValue(r, key) {
+  const v = r[key];
+  if (!v) return '';
+  if (key === 'year') return String(v);
+  if (typeof v === 'string' && v.length > 22) return v.substring(0,20)+'…';
+  return String(v);
+}
+
+function openColOrder() {
+  const cols = getColumnOrder();
+  const list = document.getElementById('col-drag-list');
+  list.innerHTML = cols.map((c,i) => `
+    <li class="col-drag-item" draggable="true" data-idx="${i}"
+      ondragstart="colDragStart(event,${i})" ondragover="colDragOver(event,${i})"
+      ondrop="colDrop(event,${i})" ondragleave="colDragLeave(event)"
+      ondragend="colDragEnd(event)">
+      <span class="col-drag-handle">⠿</span>
+      <span class="col-drag-name">${c.label}</span>
+      <div class="col-drag-toggle ${c.visible?'on':''}" onclick="toggleColVisible(${i},this)"></div>
+    </li>`).join('');
+  document.getElementById('colorder-modal').classList.add('open');
+}
+
+function closeColOrder() {
+  document.getElementById('colorder-modal').classList.remove('open');
+  renderAll();
+}
+
+function resetColOrder() {
+  saveColumnOrder(JSON.parse(JSON.stringify(DEFAULT_COLS)));
+  openColOrder();
+  renderAll();
+}
+
+function toggleColVisible(idx, el) {
+  const cols = getColumnOrder();
+  cols[idx].visible = !cols[idx].visible;
+  el.classList.toggle('on', cols[idx].visible);
+  saveColumnOrder(cols);
+  renderAll();
+}
+
+let dragSrcIdx = null;
+function colDragStart(e, idx) {
+  dragSrcIdx = idx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function colDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.col-drag-item').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function colDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function colDragEnd(e) {
+  document.querySelectorAll('.col-drag-item').forEach(el => {
+    el.classList.remove('dragging','drag-over');
+  });
+}
+function colDrop(e, targetIdx) {
+  e.preventDefault();
+  if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+  const cols = getColumnOrder();
+  const [moved] = cols.splice(dragSrcIdx, 1);
+  cols.splice(targetIdx, 0, moved);
+  saveColumnOrder(cols);
+  dragSrcIdx = null;
+  openColOrder(); // re-render the list
+  renderAll();
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1241,6 +1832,7 @@ function getArtistEmoji(genre) {
 
 function renderGrid() {
   const grid = document.getElementById('catalogue-grid');
+  const cols = getColumnOrder();
   grid.innerHTML = filteredRecords.map(r => {
     const color = getGenreColor(r.genre);
     const emoji = getArtistEmoji(r.genre);
@@ -1254,6 +1846,12 @@ function renderGrid() {
     } else if (r.albumArt && r.artStatus === 'verified') {
       artBadge = '<div class="art-status-badge art-status-verified" title="Art verified by admin">✓ OK</div>';
     }
+    // Build metadata rows based on column order prefs
+    const metaRows = cols.filter(c => c.visible).map(c => {
+      const val = getColValue(r, c.key);
+      if (!val) return '';
+      return `<div class="card-meta-row"><span class="card-meta-label">${c.label}</span><span class="card-meta-val">${val}</span></div>`;
+    }).join('');
     return `<div class="album-card" onclick="openDetail('${r.id}')">
       ${artHTML}
       <div class="card-placeholder" style="${placeholderStyle};background:linear-gradient(135deg,${color}22,${color}44)">
@@ -1261,11 +1859,11 @@ function renderGrid() {
         <div class="ph-artist">${r.artist}</div>
         <div class="ph-title">${r.title}</div>
       </div>
-      <div class="card-overlay">
-        <div class="co-artist">${r.artist}</div>
-        <div class="co-title">${r.title}</div>
+      <div class="card-info-overlay">
+        <div class="cio-artist">${r.artist}</div>
+        <div class="cio-title">${r.title}</div>
+        <div class="cio-meta">${metaRows}</div>
       </div>
-      ${r.year ? `<div class="card-year">${r.year}</div>` : ''}
       ${artBadge}
       <div class="card-badges">
         ${r.listened ? '<div class="badge badge-listened" title="Listened">✓</div>' : ''}
@@ -1326,9 +1924,14 @@ function updateStats() {
   const coverageEl = document.getElementById('art-coverage-label');
   if (coverageEl) {
     const noArt = total - withArt;
-    coverageEl.innerHTML = `<span style="color:var(--success)">✓ ${verified} verified</span> &nbsp;
-      <span style="color:#c47b2e">◑ ${autoArt} auto</span> &nbsp;
-      <span style="color:var(--text3)">○ ${noArt} missing</span>`;
+    const withBio  = DB.filter(r=>r.artistBio).length;
+    const verBio   = DB.filter(r=>r.bioStatus==='verified').length;
+    const withDesc = DB.filter(r=>r.albumDesc).length;
+    const verDesc  = DB.filter(r=>r.descStatus==='verified').length;
+    coverageEl.innerHTML =
+      `<b style="color:var(--text2)">Art:</b> <span style="color:var(--success)">✓${verified}</span> <span style="color:#c47b2e">◑${autoArt}</span> <span style="color:var(--text3)">○${noArt}</span><br>` +
+      `<b style="color:var(--text2)">Bio:</b> <span style="color:var(--success)">✓${verBio}</span> <span style="color:#c47b2e">◑${withBio-verBio}</span> <span style="color:var(--text3)">○${total-withBio}</span><br>` +
+      `<b style="color:var(--text2)">Info:</b> <span style="color:var(--success)">✓${verDesc}</span> <span style="color:#c47b2e">◑${withDesc-verDesc}</span> <span style="color:var(--text3)">○${total-withDesc}</span>`;
   }
 }
 
@@ -1378,6 +1981,10 @@ function openDetail(id) {
   document.getElementById('d-artist-bio').innerHTML = r.artistBio
     ? r.artistBio.split('\n').map(p=>`<p>${p}</p>`).join('')
     : '<em style="color:var(--text3)">No biography yet.</em>';
+  updateDetailBioStatus(r);
+  updateDetailDescStatus(r);
+  document.getElementById('d-play-count').textContent = r.playCount ? `▶ ${r.playCount}×` : '';
+  renderDetailTags(r);
 
   // Notes
   const notesArea = document.getElementById('d-notes-area');
@@ -1443,10 +2050,23 @@ function renderDetailTracks() {
 function toggleListened() {
   if (!currentRecord || !isAdmin()) { if(!isAdmin()) toast('Admin access required','error'); return; }
   currentRecord.listened = !currentRecord.listened;
-  saveDB();
+  if (currentRecord.listened) {
+    // Increment play count and log session
+    currentRecord.playCount = (currentRecord.playCount || 0) + 1;
+    logSession(currentRecord);
+  }
+  saveRecord(currentRecord);
   document.getElementById('d-listen-btn').textContent = currentRecord.listened ? '✓ Mark Unlistened' : '◎ Mark as Listened';
+  document.getElementById('d-play-count').textContent = currentRecord.playCount ? `▶ ${currentRecord.playCount}×` : '';
   renderAll();
-  toast(currentRecord.listened ? '✓ Marked as listened' : 'Marked as unlistened');
+  toast(currentRecord.listened ? `✓ Listened — played ${currentRecord.playCount}×` : 'Marked as unlistened');
+}
+
+function logSession(r) {
+  const log = JSON.parse(localStorage.getItem('mrd_sessions') || '[]');
+  log.unshift({ id: r.id, artist: r.artist, title: r.title, art: r.albumArt, ts: Date.now() });
+  if (log.length > 200) log.splice(200);
+  localStorage.setItem('mrd_sessions', JSON.stringify(log));
 }
 
 function toggleFavourite() {
@@ -1764,9 +2384,11 @@ async function fetchArtistBio() {
       const text = paras.join('\n\n');
 
       currentRecord.artistBio = text;
-      saveDB();
+      currentRecord.bioStatus = 'auto';
+      saveRecord(currentRecord);
       bioEl.innerHTML = `<p style="font-size:.72rem;color:var(--text3);margin-bottom:8px">Source: Wikipedia — "${best.title}"</p>` +
         paras.map(p=>`<p>${p}</p>`).join('');
+      updateDetailBioStatus(currentRecord);
       toast('Biography loaded ✓');
       return;
     } catch(e) {
@@ -1830,11 +2452,13 @@ async function fetchAlbumDesc() {
       const text = paras.join('\n\n');
 
       currentRecord.albumDesc = text;
-      saveDB();
+      currentRecord.descStatus = 'auto';
+      saveRecord(currentRecord);
       descEl.innerHTML = `<p style="font-size:.72rem;color:var(--text3);margin-bottom:8px">Source: Wikipedia — "${best.title}"</p>` +
         paras.map(p=>`<p>${p}</p>`).join('');
       const notesArea = document.getElementById('d-notes-area');
       if (notesArea) notesArea.value = text;
+      updateDetailDescStatus(currentRecord);
       toast('Description loaded ✓');
       return;
     } catch(e) {
@@ -2155,13 +2779,85 @@ function verifyArt() {
   toast('Art verified ✓');
 }
 
+function updateDetailBioStatus(r) {
+  const badge = document.getElementById('d-bio-status-badge');
+  const btn   = document.getElementById('d-verify-bio-btn');
+  if (!badge) return;
+  if (!r.artistBio) { badge.textContent = ''; if(btn) btn.style.display='none'; return; }
+  if (r.bioStatus === 'verified') {
+    badge.innerHTML = '<span class="bio-status-badge status-verified">✓ Verified</span>';
+    if (btn) btn.style.display = 'none';
+  } else if (r.bioStatus === 'auto') {
+    badge.innerHTML = '<span class="bio-status-badge status-auto">◑ Auto</span>';
+    if (btn && isAdmin()) { btn.style.display = 'inline-flex'; btn.textContent = '✓ Verify'; }
+  } else {
+    badge.textContent = '';
+    if (btn && isAdmin()) { btn.style.display = 'inline-flex'; btn.textContent = '✓ Mark Verified'; }
+  }
+}
+
+function updateDetailDescStatus(r) {
+  const badge = document.getElementById('d-desc-status-badge');
+  const btn   = document.getElementById('d-verify-desc-btn');
+  if (!badge) return;
+  if (!r.albumDesc) { badge.textContent = ''; if(btn) btn.style.display='none'; return; }
+  if (r.descStatus === 'verified') {
+    badge.innerHTML = '<span class="desc-status-badge status-verified">✓ Verified</span>';
+    if (btn) btn.style.display = 'none';
+  } else if (r.descStatus === 'auto') {
+    badge.innerHTML = '<span class="desc-status-badge status-auto">◑ Auto</span>';
+    if (btn && isAdmin()) { btn.style.display = 'inline-flex'; btn.textContent = '✓ Verify'; }
+  } else {
+    badge.textContent = '';
+    if (btn && isAdmin()) { btn.style.display = 'inline-flex'; btn.textContent = '✓ Mark Verified'; }
+  }
+}
+
+function verifyBio() {
+  if (!currentRecord || !isAdmin()) return;
+  currentRecord.bioStatus = 'verified';
+  saveRecord(currentRecord);
+  updateDetailBioStatus(currentRecord);
+  toast('Biography verified ✓');
+}
+
+function verifyDesc() {
+  if (!currentRecord || !isAdmin()) return;
+  currentRecord.descStatus = 'verified';
+  saveRecord(currentRecord);
+  updateDetailDescStatus(currentRecord);
+  toast('Description verified ✓');
+}
+
+// Also update fetchArtistBio and fetchAlbumDesc to set status = 'auto' on fetch
+
 // ═══════════════════════════════════════════════════════
 // BULK ART FETCH
 // ═══════════════════════════════════════════════════════
-function openBulkFetch() {
-  if (!isAdmin()) return;
-  bulkFetchAborted = false;
-  const toFetch = DB.filter(r => !r.albumArt || r.artStatus !== 'verified');
+// ── current bulk fetch mode ──────────────────────────────
+let bfMode = 'art'; // 'art' | 'bio' | 'desc'
+
+const BF_CONFIG = {
+  art:  { label:'🖼 Album Art',   desc:'Searches iTunes for album covers. Only fetches records with no art yet.',
+          skip: r => r.albumArt && r.albumArt.trim().length > 0, statusKey: 'artStatus' },
+  bio:  { label:'👤 Artist Bio',  desc:'Fetches artist biographies from Wikipedia. Only fetches records with no bio yet.',
+          skip: r => r.artistBio && r.artistBio.trim().length > 0, statusKey: 'bioStatus' },
+  desc: { label:'📝 Album Info',  desc:'Fetches album descriptions from Wikipedia. Only fetches records with no description yet.',
+          skip: r => r.albumDesc && r.albumDesc.trim().length > 0, statusKey: 'descStatus' }
+};
+
+function setBfTab(mode) {
+  bfMode = mode;
+  document.querySelectorAll('.bf-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('bf-tab-' + mode).classList.add('active');
+  const cfg = BF_CONFIG[mode];
+  document.getElementById('bf-description').textContent = cfg.desc;
+  resetBfCounts();
+}
+
+function resetBfCounts() {
+  const cfg = BF_CONFIG[bfMode];
+  const toFetch = DB.filter(r => !cfg.skip(r));
   document.getElementById('bf-n-pending').textContent = toFetch.length;
   document.getElementById('bf-n-found').textContent = '0';
   document.getElementById('bf-n-notfound').textContent = '0';
@@ -2169,8 +2865,16 @@ function openBulkFetch() {
   document.getElementById('bf-progress').style.width = '0%';
   document.getElementById('bf-current').textContent = 'Ready. Press Start to begin.';
   document.getElementById('bf-log').innerHTML = '';
+}
+
+function openBulkFetch(mode) {
+  if (!isAdmin()) return;
+  bfMode = mode || 'art';
+  bulkFetchAborted = false;
+  document.getElementById('bf-start-btn').textContent = '▶ Start';
   document.getElementById('bf-start-btn').style.display = 'inline-flex';
   document.getElementById('bf-stop-btn').style.display = 'none';
+  setBfTab(bfMode);
   document.getElementById('bulkfetch-modal').classList.add('open');
 }
 
@@ -2197,46 +2901,44 @@ function bfLog(msg, type='') {
 
 async function startBulkFetch() {
   if (!isAdmin()) return;
+  const cfg = BF_CONFIG[bfMode];
   bulkFetchAborted = false;
   document.getElementById('bf-start-btn').style.display = 'none';
   document.getElementById('bf-stop-btn').style.display = 'inline-flex';
   document.getElementById('bf-log').innerHTML = '';
 
-  // Only fetch records without verified art
-  const toFetch = DB.filter(r => !r.albumArt || r.artStatus !== 'verified');
+  const toFetch = DB.filter(r => !cfg.skip(r));
   const total = toFetch.length;
   let found = 0, notFound = 0, skipped = 0, done = 0;
-
   document.getElementById('bf-n-pending').textContent = total;
 
   for (let i = 0; i < toFetch.length; i++) {
-    if (bulkFetchAborted) {
-      bfLog('⏹ Stopped by user.', 'fail');
-      break;
-    }
+    if (bulkFetchAborted) { bfLog('⏹ Stopped by user.', 'fail'); break; }
 
     const r = toFetch[i];
-    const pct = Math.round((i / total) * 100);
-    document.getElementById('bf-progress').style.width = pct + '%';
+    document.getElementById('bf-progress').style.width = Math.round((i/total)*100) + '%';
     document.getElementById('bf-current').textContent = `[${i+1}/${total}] ${r.artist} — ${r.title}`;
 
-    // Skip if already has verified art
-    if (r.artStatus === 'verified') {
-      skipped++;
-      done++;
+    if (cfg.skip(r)) {
+      skipped++; done++;
       document.getElementById('bf-n-done').textContent = skipped;
-      bfLog(`⤼ ${r.artist} — ${r.title} (already verified)`, 'skip');
+      bfLog(`⤼ ${r.artist} — ${r.title} (already has ${bfMode === 'art' ? 'verified art' : bfMode === 'bio' ? 'bio' : 'description'})`, 'skip');
       continue;
     }
 
-    const artUrl = await fetchArtForRecord(r);
+    let result = null;
+    if (bfMode === 'art')  result = await fetchArtForRecord(r);
+    if (bfMode === 'bio')  result = await fetchBioForRecord(r);
+    if (bfMode === 'desc') result = await fetchDescForRecord(r);
 
-    if (artUrl) {
-      r.albumArt = artUrl;
-      r.artStatus = 'auto';
+    if (result) {
+      if (bfMode === 'art')  { r.albumArt  = result; r.artStatus  = 'auto'; }
+      if (bfMode === 'bio')  { r.artistBio = result; r.bioStatus  = 'auto'; }
+      if (bfMode === 'desc') { r.albumDesc = result; r.descStatus = 'auto'; }
       found++;
       document.getElementById('bf-n-found').textContent = found;
       bfLog(`✓ ${r.artist} — ${r.title}`, 'ok');
+      saveRecord(r);
     } else {
       notFound++;
       document.getElementById('bf-n-notfound').textContent = notFound;
@@ -2245,44 +2947,432 @@ async function startBulkFetch() {
 
     done++;
     document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
-    if (artUrl) saveRecord(r); else localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
 
-    // Throttle to avoid rate limiting
-    await new Promise(res => setTimeout(res, 300));
+    // Throttle: bio/desc hit Wikipedia so need more delay
+    await new Promise(res => setTimeout(res, bfMode === 'art' ? 300 : 600));
   }
 
   document.getElementById('bf-progress').style.width = '100%';
-  document.getElementById('bf-current').textContent = `Complete! Found art for ${found} of ${total} records.`;
+  document.getElementById('bf-current').textContent = `Done! ${found} found, ${notFound} not found.`;
   document.getElementById('bf-stop-btn').style.display = 'none';
   document.getElementById('bf-start-btn').textContent = '▶ Run Again';
   document.getElementById('bf-start-btn').style.display = 'inline-flex';
-  renderAll();
-  toast(`Bulk fetch done: ${found} found, ${notFound} not found`);
+  renderAll(); updateStats();
+  toast(`${BF_CONFIG[bfMode].label}: ${found} found, ${notFound} not found`);
 }
 
 async function fetchArtForRecord(r) {
-  const query = `${r.artist} ${r.title}`;
   try {
     const res = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=album&limit=5&media=music`
+      `https://itunes.apple.com/search?term=${encodeURIComponent(r.artist+' '+r.title)}&entity=album&limit=5&media=music`
     );
-    if (!res.ok) throw new Error('iTunes error');
+    if (!res.ok) return null;
     const data = await res.json();
-    if (data.results?.length) {
-      // Try to find best match by year if available
-      let best = data.results[0];
-      if (r.year) {
-        const yearMatch = data.results.find(x => x.releaseDate?.startsWith(String(r.year)));
-        if (yearMatch) best = yearMatch;
-      }
-      if (best.artworkUrl100) {
-        return best.artworkUrl100.replace('100x100bb', '600x600bb');
-      }
+    if (!data.results?.length) return null;
+    let best = data.results[0];
+    if (r.year) {
+      const ym = data.results.find(x => x.releaseDate?.startsWith(String(r.year)));
+      if (ym) best = ym;
     }
-  } catch(e) {}
+    return best.artworkUrl100 ? best.artworkUrl100.replace('100x100bb','600x600bb') : null;
+  } catch(e) { return null; }
+}
+
+async function fetchBioForRecord(r) {
+  const clean = r.artist.replace(/^The /i,'').replace(/\s+feat\..*$/i,'').trim();
+  for (const term of [clean, r.artist, `${clean} musician`]) {
+    try {
+      const s = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`);
+      const sd = await s.json();
+      const hit = sd?.query?.search?.find(x => x.title.toLowerCase().includes(clean.toLowerCase())) || sd?.query?.search?.[0];
+      if (!hit) continue;
+      const e = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=10&pageids=${hit.pageid}&format=json&origin=*`);
+      const ed = await e.json();
+      const pages = ed?.query?.pages;
+      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+      if (extract && extract.length > 80) {
+        const paras = extract.split('\n').filter(p=>p.trim().length>30).slice(0,4);
+        if (paras.length) return paras.join('\n\n');
+      }
+    } catch(e) {}
+  }
   return null;
 }
 
+async function fetchDescForRecord(r) {
+  const clean = r.artist.replace(/^The /i,'').replace(/\s+feat\..*$/i,'').trim();
+  for (const term of [`${r.title} ${clean}`, `${r.title} album`, r.title]) {
+    try {
+      const s = await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(term)}&srlimit=3&format=json&origin=*`);
+      const sd = await s.json();
+      if (!sd?.query?.search?.length) continue;
+      const hit = sd.query.search[0];
+      const e = await fetch(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&exsentences=8&pageids=${hit.pageid}&format=json&origin=*`);
+      const ed = await e.json();
+      const pages = ed?.query?.pages;
+      const extract = pages?.[Object.keys(pages)[0]]?.extract?.trim();
+      if (!extract || extract.length < 60) continue;
+      const lc = extract.toLowerCase();
+      const titleWord = r.title.toLowerCase().split(' ').filter(w=>w.length>3)[0] || '';
+      if (!lc.includes(clean.toLowerCase().split(' ')[0]) && !lc.includes(titleWord) && !lc.includes('album') && !lc.includes('music')) continue;
+      const paras = extract.split('\n').filter(p=>p.trim().length>30).slice(0,3);
+      if (paras.length) return paras.join('\n\n');
+    } catch(e) {}
+  }
+  return null;
+}
+
+
+
+// ═══════════════════════════════════════════════════════
+// NOW PLAYING
+// ═══════════════════════════════════════════════════════
+let npRecord = null;
+let npPlaying = false;
+let npTimer = 0;
+let npInterval = null;
+let npSpinning = false;
+let npDoneTracks = new Set();
+
+function openNowPlaying() {
+  npRecord = currentRecord;
+  if (!npRecord) return;
+  npDoneTracks = new Set();
+  npTimer = 0;
+  npPlaying = false;
+
+  const r = npRecord;
+  const modal = document.getElementById('nowplaying-modal');
+
+  // Background blur art
+  const bg = document.getElementById('np-bg');
+  bg.style.backgroundImage = r.albumArt ? `url(${r.albumArt})` : 'none';
+
+  // Art
+  const artImg = document.getElementById('np-art');
+  const artPh  = document.getElementById('np-no-art');
+  if (r.albumArt) {
+    artImg.src = r.albumArt; artImg.style.display = 'block'; artPh.style.display = 'none';
+    artImg.classList.remove('spinning');
+  } else {
+    artImg.style.display = 'none'; artPh.style.display = 'flex';
+    artPh.textContent = getArtistEmoji(r.genre);
+  }
+
+  document.getElementById('np-artist').textContent = r.artist;
+  document.getElementById('np-title').textContent = r.title;
+  document.getElementById('np-meta').textContent = [r.year, r.genre, r.label].filter(Boolean).join(' · ');
+  document.getElementById('np-timer').textContent = '0:00';
+  document.getElementById('np-play-btn').textContent = '▶';
+
+  // Tracklist
+  renderNpTracks();
+  modal.classList.add('open');
+  closeDetail();
+}
+
+function renderNpTracks() {
+  const container = document.getElementById('np-tracks');
+  const tracks = npRecord?.trackList || [];
+  if (!tracks.length) { container.innerHTML = '<div style="color:var(--text3);font-size:.8rem">No tracks listed</div>'; return; }
+  container.innerHTML = tracks.map((t, i) => `
+    <div class="np-track ${npDoneTracks.has(i) ? 'done' : ''}" onclick="toggleNpTrack(${i})">
+      <span class="np-track-num">${i+1}</span>
+      <span class="np-track-name">${t}</span>
+      <span class="np-track-check">✓</span>
+    </div>`).join('');
+}
+
+function toggleNpTrack(i) {
+  if (npDoneTracks.has(i)) npDoneTracks.delete(i);
+  else npDoneTracks.add(i);
+  renderNpTracks();
+}
+
+function toggleNpPlay() {
+  npPlaying = !npPlaying;
+  document.getElementById('np-play-btn').textContent = npPlaying ? '⏸' : '▶';
+  if (npPlaying) {
+    npInterval = setInterval(() => {
+      npTimer++;
+      const m = Math.floor(npTimer / 60);
+      const s = String(npTimer % 60).padStart(2, '0');
+      document.getElementById('np-timer').textContent = `${m}:${s}`;
+    }, 1000);
+    if (npSpinning) {
+      const artImg = document.getElementById('np-art');
+      artImg.classList.add('spinning');
+    }
+  } else {
+    clearInterval(npInterval);
+    document.getElementById('np-art').classList.remove('spinning');
+  }
+}
+
+function toggleNpSpin() {
+  npSpinning = !npSpinning;
+  const artImg = document.getElementById('np-art');
+  document.getElementById('np-spin-btn').style.color = npSpinning ? 'var(--accent)' : '';
+  if (npPlaying) artImg.classList.toggle('spinning', npSpinning);
+}
+
+function closeNowPlaying() {
+  npPlaying = false;
+  clearInterval(npInterval);
+  document.getElementById('np-art').classList.remove('spinning');
+  document.getElementById('nowplaying-modal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// ANALYTICS
+// ═══════════════════════════════════════════════════════
+function openAnalytics() {
+  renderAnalytics();
+  document.getElementById('analytics-modal').classList.add('open');
+}
+
+function closeAnalytics() {
+  document.getElementById('analytics-modal').classList.remove('open');
+}
+
+function renderAnalytics() {
+  const total   = DB.length;
+  const listened= DB.filter(r=>r.listened).length;
+  const favs    = DB.filter(r=>r.favourite).length;
+  const withArt = DB.filter(r=>r.albumArt).length;
+  const played  = DB.filter(r=>r.playCount>0).length;
+  const totalPlays = DB.reduce((s,r)=>s+(r.playCount||0),0);
+  const withBio = DB.filter(r=>r.artistBio).length;
+
+  document.getElementById('an-stats').innerHTML = [
+    { n: total,      l: 'Records'    },
+    { n: listened,   l: 'Listened'   },
+    { n: favs,       l: 'Favourites' },
+    { n: totalPlays, l: 'Total Plays'},
+    { n: withArt,    l: 'With Art'   },
+    { n: withBio,    l: 'With Bio'   },
+  ].map(s => `<div class="an-stat"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join('');
+
+  // Decades chart
+  const decades = {};
+  DB.forEach(r => {
+    if (!r.year) return;
+    const d = Math.floor(r.year/10)*10;
+    if (!decades[d]) decades[d] = { total:0, listened:0 };
+    decades[d].total++;
+    if (r.listened) decades[d].listened++;
+  });
+  const maxD = Math.max(...Object.values(decades).map(d=>d.total));
+  document.getElementById('an-decades').innerHTML = Object.entries(decades).sort(([a],[b])=>a-b).map(([d,v]) =>
+    `<div class="an-bar-row">
+      <div class="an-bar-label">${d}s</div>
+      <div class="an-bar"><div class="an-bar-fill" style="width:${(v.total/maxD*100).toFixed(1)}%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div>
+      <div class="an-bar-count">${v.total}</div>
+    </div>`).join('');
+
+  // Genre chart — normalise compound genres
+  const genres = {};
+  DB.forEach(r => {
+    if (!r.genre) return;
+    const g = r.genre.split(/[,\/]/)[0].trim();
+    genres[g] = (genres[g]||0) + 1;
+  });
+  const topGenres = Object.entries(genres).sort(([,a],[,b])=>b-a).slice(0,10);
+  const maxG = topGenres[0]?.[1] || 1;
+  document.getElementById('an-genres').innerHTML = topGenres.map(([g,n]) =>
+    `<div class="an-bar-row">
+      <div class="an-bar-label" title="${g}">${g}</div>
+      <div class="an-bar"><div class="an-bar-fill" style="width:${(n/maxG*100).toFixed(1)}%"></div></div>
+      <div class="an-bar-count">${n}</div>
+    </div>`).join('');
+
+  // Top labels
+  const labels = {};
+  DB.forEach(r => { if (r.label) labels[r.label] = (labels[r.label]||0) + 1; });
+  const topLabels = Object.entries(labels).sort(([,a],[,b])=>b-a).slice(0,8);
+  const maxL = topLabels[0]?.[1] || 1;
+  document.getElementById('an-labels').innerHTML = topLabels.map(([l,n]) =>
+    `<div class="an-bar-row">
+      <div class="an-bar-label" title="${l}">${l}</div>
+      <div class="an-bar"><div class="an-bar-fill" style="width:${(n/maxL*100).toFixed(1)}%;background:var(--success)"></div></div>
+      <div class="an-bar-count">${n}</div>
+    </div>`).join('');
+
+  // Most played
+  const mostPlayed = DB.filter(r=>r.playCount>0).sort((a,b)=>b.playCount-a.playCount).slice(0,5);
+  document.getElementById('an-mostplayed').innerHTML = mostPlayed.length ? mostPlayed.map(r =>
+    `<div class="an-session-item" onclick="closeAnalytics();openDetail('${r.id}');event.stopPropagation()" style="cursor:pointer">
+      <div class="an-session-art">${r.albumArt ? `<img src="${r.albumArt}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">` : getArtistEmoji(r.genre)}</div>
+      <div class="an-session-info"><div class="an-session-title">${r.artist}</div><div class="an-session-sub">${r.title}</div></div>
+      <div class="an-session-time">▶ ${r.playCount}×</div>
+    </div>`).join('') : '<div style="color:var(--text3);font-size:.85rem">No plays recorded yet</div>';
+
+  // Recent sessions
+  const sessions = JSON.parse(localStorage.getItem('mrd_sessions') || '[]').slice(0, 10);
+  document.getElementById('an-sessions').innerHTML = sessions.length ? sessions.map(s => {
+    const d = new Date(s.ts);
+    const timeStr = d.toLocaleDateString('en-GB', {day:'numeric',month:'short'}) + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    return `<div class="an-session-item">
+      <div class="an-session-art">${s.art ? `<img src="${s.art}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">` : '🎵'}</div>
+      <div class="an-session-info"><div class="an-session-title">${s.artist}</div><div class="an-session-sub">${s.title}</div></div>
+      <div class="an-session-time">${timeStr}</div>
+    </div>`;
+  }).join('') : '<div style="color:var(--text3);font-size:.85rem">No listening sessions yet. Press ▶ Now Playing on a record to start!</div>';
+}
+
+// ═══════════════════════════════════════════════════════
+// TAGS / PLAYLISTS
+// ═══════════════════════════════════════════════════════
+const TAGS_KEY = 'mrd_tags';
+function getAllTags() {
+  try { return JSON.parse(localStorage.getItem(TAGS_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveTags(tags) { localStorage.setItem(TAGS_KEY, JSON.stringify(tags)); }
+
+function openTagsModal() {
+  renderAllTags();
+  document.getElementById('tags-modal').classList.add('open');
+}
+function closeTagsModal() {
+  document.getElementById('tags-modal').classList.remove('open');
+}
+
+function createTag() {
+  const input = document.getElementById('new-tag-input');
+  const name = input.value.trim();
+  if (!name) return;
+  const tags = getAllTags();
+  if (tags.find(t => t.name === name)) { toast('Tag already exists', 'error'); return; }
+  tags.push({ name, records: [] });
+  saveTags(tags);
+  input.value = '';
+  renderAllTags();
+  toast(`Tag "${name}" created`);
+}
+
+function deleteTag(name) {
+  if (!confirm(`Delete tag "${name}"?`)) return;
+  const tags = getAllTags().filter(t => t.name !== name);
+  saveTags(tags);
+  if (activeTagFilter === name) { activeTagFilter = null; renderAll(); }
+  renderAllTags();
+}
+
+function renderAllTags() {
+  const tags = getAllTags();
+  const container = document.getElementById('all-tags-list');
+  if (!tags.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:8px 0">No tags yet. Create one above.</div>';
+    return;
+  }
+  container.innerHTML = tags.map(t => {
+    const count = t.records?.length || 0;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <button class="tag-chip ${activeTagFilter===t.name?'active':''}" onclick="setTagFilter('${t.name.replace(/'/g,"\\'")}')">
+        ${t.name} <span class="tag-record-count">${count}</span>
+      </button>
+      <div style="flex:1"></div>
+      <button class="btn btn-ghost btn-sm admin-only" style="font-size:.72rem;padding:3px 8px" onclick="openTagRecordPicker('${t.name.replace(/'/g,"\\'")}')">+ Records</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="color:var(--danger);font-size:.72rem;padding:3px 8px" onclick="deleteTag('${t.name.replace(/'/g,"\\'")}')">✕</button>
+    </div>`;
+  }).join('');
+  // Show admin-only inline
+  if (isAdmin()) container.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
+}
+
+function setTagFilter(name) {
+  activeTagFilter = activeTagFilter === name ? null : name;
+  renderAllTags();
+  renderAll();
+  if (activeTagFilter) {
+    const tag = getAllTags().find(t => t.name === name);
+    document.getElementById('tag-section-title').textContent = `"${name}" — ${tag?.records?.length||0} records`;
+    document.getElementById('tag-record-section').style.display = 'block';
+    document.getElementById('tag-record-list').innerHTML = (tag?.records||[]).map(id => {
+      const r = DB.find(x => x.id === id);
+      return r ? `<div style="font-size:.83rem;padding:4px 0;color:var(--text2)">${r.artist} — ${r.title}</div>` : '';
+    }).join('');
+  } else {
+    document.getElementById('tag-record-section').style.display = 'none';
+  }
+}
+
+function clearTagFilter() {
+  activeTagFilter = null;
+  renderAllTags();
+  renderAll();
+  document.getElementById('tag-record-section').style.display = 'none';
+}
+
+function openTagRecordPicker(tagName) {
+  // Simple: show all records as a searchable list with checkboxes
+  const tag = getAllTags().find(t => t.name === tagName);
+  if (!tag) return;
+  const selected = new Set(tag.records || []);
+  const picker = document.createElement('div');
+  picker.style.cssText = 'position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center';
+  picker.innerHTML = `
+    <div style="background:var(--surface);border-radius:16px;padding:24px;width:480px;max-width:95vw;max-height:80vh;overflow-y:auto">
+      <h3 style="font-family:\'Bebas Neue\',sans-serif;color:var(--accent);font-size:1.4rem;margin-bottom:12px">Add to "${tagName}"</h3>
+      <input type="text" placeholder="Search records…" oninput="filterTagPicker(this.value)" id="tag-picker-search" style="width:100%;margin-bottom:12px">
+      <div id="tag-picker-list">${DB.map(r => `
+        <label style="display:flex;align-items:center;gap:10px;padding:6px;cursor:pointer;border-radius:6px;transition:background .1s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+          <input type="checkbox" ${selected.has(r.id)?'checked':''} data-id="${r.id}" style="width:auto;margin:0">
+          <span style="font-size:.85rem">${r.artist} — ${r.title}</span>
+        </label>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="this.closest('div[style]').remove()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveTagRecords('${tagName.replace(/'/g,"\\'")}',this)">Save</button>
+      </div>
+    </div>`;
+  document.body.appendChild(picker);
+}
+
+function filterTagPicker(q) {
+  document.querySelectorAll('#tag-picker-list label').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+function saveTagRecords(tagName, btn) {
+  const tags = getAllTags();
+  const tag = tags.find(t => t.name === tagName);
+  if (!tag) return;
+  const boxes = btn.closest('div').querySelectorAll('input[type=checkbox]');
+  tag.records = [...boxes].filter(b => b.checked).map(b => b.dataset.id);
+  saveTags(tags);
+  btn.closest('[style*="position:fixed"]')?.remove();
+  renderAllTags();
+  renderAll();
+  toast(`Tag "${tagName}" updated — ${tag.records.length} records`);
+}
+
+// Add tag to current record quickly from detail modal
+function quickAddTag() {
+  if (!currentRecord || !isAdmin()) return;
+  const input = document.getElementById('d-tag-quick');
+  const name = input.value.trim();
+  if (!name) return;
+  const tags = getAllTags();
+  let tag = tags.find(t => t.name === name);
+  if (!tag) { tag = { name, records: [] }; tags.push(tag); }
+  if (!tag.records.includes(currentRecord.id)) tag.records.push(currentRecord.id);
+  saveTags(tags);
+  input.value = '';
+  renderDetailTags(currentRecord);
+  toast(`Added to "${name}"`);
+}
+
+function renderDetailTags(r) {
+  const container = document.getElementById('d-tags-display');
+  if (!container) return;
+  const tags = getAllTags().filter(t => t.records?.includes(r.id));
+  container.innerHTML = tags.length
+    ? tags.map(t => `<span class="tag-chip active" style="cursor:default">${t.name}</span>`).join('')
+    : '<span style="font-size:.78rem;color:var(--text3)">No tags yet</span>';
+}
+
+// Tag filter is handled inline in getFiltered
 
 function exportCSV() {
   const headers = ['ID','Artist','Title','Genre','Year','Label','Notes','Favourite','Listened','Tracks','FavTracks'];
