@@ -277,6 +277,7 @@ select option { background: var(--surface2); }
   font-size: .75rem; color: var(--text); opacity: 0; transition: opacity .2s; text-align: center; padding: 8px;
 }
 .detail-art-wrap:hover .art-change-hint { opacity: 1; }
+.detail-art-wrap:hover #art-zoom-hint { opacity: 1 !important; }
 .detail-info { flex: 1; min-width: 0; }
 .detail-id { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); margin-bottom: 6px; }
 .detail-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 5vw, 2rem); color: var(--accent); letter-spacing: .05em; line-height: 1; margin-bottom: 4px; }
@@ -1137,6 +1138,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('tracks')">🎵 Fetch All Tracks</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('credits')">🎼 Fetch Track Credits</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('lyrics')">🎤 Fetch Track Lyrics</button>
+      <div class="sidebar-sep" style="margin-top:8px"></div>
+      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px;background:linear-gradient(135deg,var(--accent),var(--accent2))" onclick="openBulkFetch('all')">⚡ Fetch Everything</button>
       <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding:0 2px;line-height:1.6" id="art-coverage-label"></div>
     </div>
     <div class="sidebar-count" id="sidebar-count"></div>
@@ -1295,10 +1298,10 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="detail-hero">
       <button class="detail-close" onclick="closeDetail()">✕</button>
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
-        <div class="detail-art-wrap" id="d-art-wrap" onclick="openArtPicker()">
+        <div class="detail-art-wrap" id="d-art-wrap" onclick="openArtLightbox()" style="cursor:zoom-in">
           <div class="detail-art-placeholder" id="d-art-placeholder">🎵</div>
           <img id="d-art-img" src="" alt="" style="display:none">
-          <div class="art-change-hint admin-only-inline" style="display:none">🖼 Change Art</div>
+          <div class="art-change-hint" style="opacity:0;transition:opacity .2s;position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff" id="art-zoom-hint">🔍 View</div>
         </div>
         <div id="d-art-status-row" style="display:none;gap:6px;align-items:center;flex-wrap:wrap">
           <span id="d-art-status-badge" style="font-size:.7rem;padding:2px 8px;border-radius:4px;font-weight:700;letter-spacing:.06em;text-transform:uppercase"></span>
@@ -1315,7 +1318,6 @@ body.is-admin .admin-only-inline { display: inline-flex; }
           <button class="btn btn-ghost btn-sm" id="d-fav-btn" onclick="toggleFavourite()"></button>
           <button class="btn btn-primary btn-sm" onclick="openNowPlaying()" title="Now Playing mode">▶ Now Playing</button>
           <span id="d-play-count" style="font-size:.75rem;color:var(--text3);align-self:center"></span>
-          <button class="btn btn-ghost btn-sm admin-only" onclick="openArtPicker()">🖼 Art</button>
           <button class="btn btn-ghost btn-sm admin-only" id="d-tracks-btn" onclick="switchTab('tracks')">🎵 Tracks</button>
         </div>
       </div>
@@ -1439,6 +1441,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="bf-tab-btn" id="bf-tab-tracks" onclick="setBfTab('tracks')">🎵 Tracks</button>
       <button class="bf-tab-btn" id="bf-tab-credits" onclick="setBfTab('credits')">🎼 Credits</button>
       <button class="bf-tab-btn" id="bf-tab-lyrics" onclick="setBfTab('lyrics')">🎤 Lyrics</button>
+      <button class="bf-tab-btn" id="bf-tab-all" onclick="setBfTab('all')" style="background:rgba(232,197,71,.15);color:var(--accent)">⚡ All</button>
     </div>
     <p id="bf-description" style="color:var(--text2);font-size:.83rem;margin-bottom:16px"></p>
     <div class="bf-progress-wrap">
@@ -1639,6 +1642,19 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm" onclick="resetTrackCols()">Reset</button>
       <button class="btn btn-primary btn-sm" onclick="closeTrackColManager()">Done</button>
     </div>
+  </div>
+</div>
+
+<!-- Art Lightbox -->
+<div id="art-lightbox" style="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:20px" onclick="if(event.target===this)closeArtLightbox()">
+  <div style="position:relative;max-width:90vw;max-height:90vh">
+    <img id="art-lightbox-img" src="" alt="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);display:block">
+    <div id="art-lightbox-ph" style="display:none;width:min(80vw,500px);height:min(80vw,500px);background:var(--surface2);border-radius:12px;align-items:center;justify-content:center;font-size:6rem"></div>
+    <div style="position:absolute;top:-48px;right:0;display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm admin-only" onclick="closeArtLightbox();openArtPicker()" style="background:rgba(20,20,20,.8)">✏️ Edit Art</button>
+      <button onclick="closeArtLightbox()" style="width:36px;height:36px;border-radius:50%;background:rgba(20,20,20,.8);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:1.1rem">✕</button>
+    </div>
+    <div id="art-lightbox-caption" style="text-align:center;margin-top:14px;color:var(--text2);font-size:.88rem"></div>
   </div>
 </div>
 
@@ -2580,11 +2596,10 @@ function renderDetailTracks() {
     }).filter(Boolean).join(' ');
 
     const hasPreview = !!obj.previewUrl;
-    const previewIcon = hasPreview ? '▶' : '♪';
-    return `<li class="track-item" onclick="openTrackPage(${i})" style="position:relative">
+    const previewDot = hasPreview ? '<span style="width:5px;height:5px;border-radius:50%;background:var(--accent);display:inline-block;margin-left:3px;vertical-align:middle" title="Preview available"></span>' : '';
+    return `<li class="track-item" onclick="openTrackPage(${i})" title="Click to open track details">
       <span class="track-num">${i+1}</span>
-      <button class="preview-btn" id="prev-btn-${i}" data-has-preview="${hasPreview}" onclick="event.stopPropagation();toggleTrackPreview(${i})" title="${hasPreview ? '30s Preview' : 'Find & play preview'}">${previewIcon}</button>
-      <span class="track-name">${obj.name || obj}${enrichDot}</span>
+      <span class="track-name">${obj.name || obj}${enrichDot}${previewDot}</span>
       <span style="flex:1;display:flex;align-items:center;gap:4px;justify-content:flex-end">${extras}</span>
       <span class="track-fav ${isFav?'on':''}" onclick="toggleTrackFav(${i},event)" title="Favourite track">★</span>
       ${adminDel}
@@ -2860,16 +2875,34 @@ async function enrichSingleTrack(idx) {
 async function enrichAllTracks() {
   if (!currentRecord || !isAdmin()) return;
   const tracks = currentRecord.trackList || [];
-  const toEnrich = tracks.filter((t, i) => !trackObj(t).enriched);
-  if (!toEnrich.length) { toast('All tracks already enriched'); return; }
-  toast(`⚡ Enriching ${toEnrich.length} tracks — this may take a minute…`);
+  if (!tracks.length) { toast('No tracks to enrich', 'error'); return; }
+
+  const needCredits = tracks.filter(t => !trackObj(t).enriched).length;
+  const needLyrics  = tracks.filter(t => !trackObj(t).lyrics).length;
+  const total = needCredits + needLyrics;
+  if (!total) { toast('All tracks already fully enriched ✓'); return; }
+
+  toast(`⚡ Enriching ${total} track fields (credits + lyrics)…`);
+
+  // Pass 1 — credits from MusicBrainz
   for (let i = 0; i < tracks.length; i++) {
     if (!trackObj(tracks[i]).enriched) {
       await enrichSingleTrack(i);
       await new Promise(r => setTimeout(r, 1000));
     }
   }
-  toast(`✓ All tracks enriched`);
+
+  // Pass 2 — lyrics from lyrics.ovh
+  for (let i = 0; i < tracks.length; i++) {
+    const obj = trackObj(tracks[i]);
+    if (!obj.lyrics) {
+      await fetchLyricsForTrack(i);
+      await new Promise(r => setTimeout(r, 800));
+    }
+  }
+
+  renderDetailTracks();
+  toast(`✓ Tracks fully enriched`);
 }
 
 function formatDuration(ms) {
@@ -3703,23 +3736,27 @@ const BF_CONFIG = {
              trackSkip: t => !!trackObj(t).enriched },
   lyrics:  { label:'🎤 Track Lyrics',  desc:'Fetches lyrics from lyrics.ovh for each track. Skips tracks that already have lyrics. ~800ms per track.',
              skip: r => !(r.trackList && r.trackList.length > 0), statusKey: null, trackLevel: true,
-             trackSkip: t => !!trackObj(t).lyrics }
+             trackSkip: t => !!trackObj(t).lyrics },
+  all:     { label:'⚡ Fetch Everything', desc:'Runs all fetch modes in sequence: Art → Bios → Album Info → Tracklists → Track Credits → Track Lyrics. Only fills gaps — skips anything already fetched. This will take a while.',
+             skip: r => false, statusKey: null, trackLevel: false }
 };
 
 function setBfTab(mode) {
   bfMode = mode;
   document.querySelectorAll('.bf-tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('bf-tab-' + mode).classList.add('active');
+  const tabEl = document.getElementById('bf-tab-' + mode);
+  if (tabEl) tabEl.classList.add('active');
   const cfg = BF_CONFIG[mode];
-  document.getElementById('bf-description').textContent = cfg.desc;
+  if (cfg) document.getElementById('bf-description').textContent = cfg.desc;
   resetBfCounts();
 }
 
 function resetBfCounts() {
   const cfg = BF_CONFIG[bfMode];
   let pending = 0;
-  if (cfg.trackLevel) {
-    // Count individual tracks that need fetching
+  if (bfMode === 'all') {
+    pending = DB.length; // rough estimate
+  } else if (cfg.trackLevel) {
     DB.forEach(r => {
       if (cfg.skip(r)) return;
       (r.trackList || []).forEach(t => { if (!cfg.trackSkip(t)) pending++; });
@@ -3775,6 +3812,29 @@ async function startBulkFetch() {
   document.getElementById('bf-start-btn').style.display = 'none';
   document.getElementById('bf-stop-btn').style.display = 'inline-flex';
   document.getElementById('bf-log').innerHTML = '';
+
+  // ── ALL mode — run every mode in sequence ────────────
+  if (bfMode === 'all') {
+    const modes = ['art','bio','desc','tracks','credits','lyrics'];
+    let grandTotal = 0;
+    for (const m of modes) {
+      if (bulkFetchAborted) break;
+      bfLog(`\n▶ Starting: ${BF_CONFIG[m].label}`, 'ok');
+      document.getElementById('bf-current').textContent = `Running: ${BF_CONFIG[m].label}…`;
+      bfMode = m;
+      await startBulkFetch();
+      grandTotal++;
+    }
+    bfMode = 'all';
+    document.getElementById('bf-progress').style.width = '100%';
+    document.getElementById('bf-current').textContent = `All done! Ran ${grandTotal} fetch passes.`;
+    document.getElementById('bf-stop-btn').style.display = 'none';
+    document.getElementById('bf-start-btn').textContent = '▶ Run Again';
+    document.getElementById('bf-start-btn').style.display = 'inline-flex';
+    renderAll(); updateStats();
+    toast('⚡ Fetch Everything complete!');
+    return;
+  }
 
   let found = 0, notFound = 0, skipped = 0, done = 0, total = 0;
 
@@ -5105,6 +5165,44 @@ function renderSettingsPage() {
   }
 }
 
+
+
+// ═══════════════════════════════════════════════════════
+// ART LIGHTBOX
+// ═══════════════════════════════════════════════════════
+function openArtLightbox() {
+  if (!currentRecord) return;
+  const modal = document.getElementById('art-lightbox');
+  const img   = document.getElementById('art-lightbox-img');
+  const ph    = document.getElementById('art-lightbox-ph');
+  const cap   = document.getElementById('art-lightbox-caption');
+
+  if (currentRecord.albumArt) {
+    img.src = currentRecord.albumArt;
+    img.style.display = 'block';
+    ph.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    ph.style.display = 'flex';
+    ph.textContent = getArtistEmoji(currentRecord.genre);
+  }
+
+  cap.textContent = `${currentRecord.artist} — ${currentRecord.title}${currentRecord.year ? ' ('+currentRecord.year+')' : ''}`;
+
+  // Show/hide admin edit button
+  modal.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = isAdmin() ? 'inline-flex' : 'none';
+  });
+
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'all';
+}
+
+function closeArtLightbox() {
+  const modal = document.getElementById('art-lightbox');
+  modal.style.opacity = '0';
+  modal.style.pointerEvents = 'none';
+}
 
 function exportCSV() {
   const headers = ['ID','Artist','Title','Genre','Year','Label','Notes','Favourite','Listened','Tracks','FavTracks'];
