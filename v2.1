@@ -2819,56 +2819,82 @@ async function enrichSingleTrack(idx) {
   toast(`⚡ Enriching "${name}"…`);
 
   try {
-    // Search for recording on MusicBrainz
+    // MusicBrainz — no User-Agent header in browser (causes CORS preflight failure)
+    // Step 1: search for recording
     const q = encodeURIComponent(`recording:"${name}" artist:"${currentRecord.artist}"`);
     const res = await fetch(
-      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=3&fmt=json`,
-      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=5&fmt=json`
     );
-    if (!res.ok) throw new Error('MB error');
+    if (!res.ok) throw new Error(`MB search failed: ${res.status}`);
     const data = await res.json();
     if (!data.recordings?.length) throw new Error('Not found');
 
-    const rec = data.recordings[0];
+    // Pick best match — prefer one matching the album year
+    let rec = data.recordings[0];
+    if (currentRecord.year) {
+      const ym = data.recordings.find(x =>
+        x.releases?.some(rel => rel.date?.startsWith(String(currentRecord.year)))
+      );
+      if (ym) rec = ym;
+    }
+
     const duration = rec.length ? formatDuration(rec.length) : obj.duration;
 
-    // Fetch full recording details with relations
-    await new Promise(r => setTimeout(r, 400));
+    // Step 2: fetch recording with artist-rels (producers) and work-rels (to find the work)
+    await new Promise(r => setTimeout(r, 500));
     const detRes = await fetch(
-      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-credits+work-rels+recording-rels&fmt=json`,
-      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-rels+work-rels&fmt=json`
     );
     const det = await detRes.json();
 
-    // Extract writer info from relations
-    const writers = [];
     const producers = [];
+    const workIds = [];
+
     if (det.relations) {
       det.relations.forEach(rel => {
-        if (['composer','lyricist','writer'].includes(rel.type)) {
-          if (rel.artist?.name) writers.push(rel.artist.name);
-        }
-        if (['producer','co-producer'].includes(rel.type)) {
-          if (rel.artist?.name) producers.push(rel.artist.name);
-        }
+        // Producer credits sit directly on the recording
+        if (['producer','co-producer','mix','engineer'].includes(rel.type) && rel.artist?.name)
+          producers.push(rel.artist.name);
+        // Collect linked work IDs to fetch writer credits
+        if (rel['target-type'] === 'work' && rel.work?.id)
+          workIds.push(rel.work.id);
       });
+    }
+
+    // Step 3: fetch the work to get composer/lyricist credits
+    const writers = [];
+    for (const wid of workIds.slice(0, 2)) {
+      try {
+        await new Promise(r => setTimeout(r, 300));
+        const wRes = await fetch(
+          `https://musicbrainz.org/ws/2/work/${wid}?inc=artist-rels&fmt=json`
+        );
+        const wDet = await wRes.json();
+        if (wDet.relations) {
+          wDet.relations.forEach(rel => {
+            if (['composer','lyricist','writer'].includes(rel.type) && rel.artist?.name)
+              writers.push(rel.artist.name);
+          });
+        }
+      } catch(e2) {}
+      if (writers.length) break;
     }
 
     tracks[idx] = {
       ...obj,
-      duration: duration || obj.duration,
-      writers: writers.length ? writers.join(', ') : obj.writers,
-      producers: producers.length ? producers.join(', ') : obj.producers,
-      mbid: rec.id,
-      enriched: true
+      duration:  duration || obj.duration,
+      writers:   writers.length   ? [...new Set(writers)].join(', ')   : (obj.writers   || ''),
+      producers: producers.length ? [...new Set(producers)].join(', ') : (obj.producers || ''),
+      mbid:      rec.id,
+      enriched:  true
     };
     currentRecord.trackList = tracks;
     saveRecord(currentRecord);
     renderDetailTracks();
     renderTrackPage(idx);
-    toast(`✓ "${name}" enriched`);
+    toast(`✓ "${name}" enriched${writers.length ? ` — written by ${writers[0]}` : ''}`);
   } catch(e) {
-    toast(`Could not find credits for "${name}" on MusicBrainz`, 'error');
+    toast(`Could not find credits for "${name}" — ${e.message}`, 'error');
   }
 }
 
@@ -4047,26 +4073,23 @@ async function fetchDescForRecord(r) {
 
 // Returns array of track names or null
 async function fetchTracklistForRecord(r) {
-  const MB_HEADERS = { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' };
+  // No User-Agent header — browser fetch CORS preflight blocks it on MusicBrainz
 
-  // Try strict search first: quoted title + artist
   const queries = [
     `release:"${r.title}" artist:"${r.artist}"`,
     `${r.title} ${r.artist}`,
-    `${r.title}`
+    r.title
   ];
 
   for (const q of queries) {
     try {
       const res = await fetch(
-        `https://musicbrainz.org/ws/2/release/?query=${encodeURIComponent(q)}&limit=5&fmt=json`,
-        { headers: MB_HEADERS }
+        `https://musicbrainz.org/ws/2/release/?query=${encodeURIComponent(q)}&limit=5&fmt=json`
       );
       if (!res.ok) continue;
       const data = await res.json();
       if (!data.releases?.length) continue;
 
-      // Prefer releases that match the year if we have one
       let releases = data.releases;
       if (r.year) {
         const yearMatches = releases.filter(x => x.date?.startsWith(String(r.year)));
@@ -4075,16 +4098,15 @@ async function fetchTracklistForRecord(r) {
 
       for (const rel of releases.slice(0, 3)) {
         try {
-          await new Promise(res => setTimeout(res, 400)); // respect MB rate limit
+          await new Promise(res => setTimeout(res, 400));
           const detRes = await fetch(
-            `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
-            { headers: MB_HEADERS }
+            `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`
           );
           if (!detRes.ok) continue;
           const det = await detRes.json();
           const tracks = [];
           if (det.media) det.media.forEach(m => m.tracks?.forEach(t => tracks.push(t.title)));
-          if (tracks.length >= 2) return tracks; // need at least 2 tracks to be valid
+          if (tracks.length >= 2) return tracks;
         } catch(e2) {}
       }
     } catch(e) {}
@@ -4094,19 +4116,16 @@ async function fetchTracklistForRecord(r) {
 
 // ── Bulk credits fetch per track (returns enriched track obj or null) ──
 async function fetchCreditsForTrack(record, trackName, idx) {
-  const MB_HEADERS = { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' };
   const obj = { ...trackObj(record.trackList[idx]) };
   try {
     const q = encodeURIComponent(`recording:"${trackName}" artist:"${record.artist}"`);
     const res = await fetch(
-      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=3&fmt=json`,
-      { headers: MB_HEADERS }
+      `https://musicbrainz.org/ws/2/recording/?query=${q}&limit=5&fmt=json`
     );
     if (!res.ok) return null;
     const data = await res.json();
     if (!data.recordings?.length) return null;
 
-    // Try to find best match with year context
     let rec = data.recordings[0];
     if (record.year) {
       const ym = data.recordings.find(x =>
@@ -4116,31 +4135,50 @@ async function fetchCreditsForTrack(record, trackName, idx) {
     }
 
     const duration = rec.length ? formatDuration(rec.length) : obj.duration;
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 400));
 
-    // Fetch full recording with relations
+    // Fetch recording with artist-rels + work-rels
     const detRes = await fetch(
-      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-credits+work-rels+recording-rels&fmt=json`,
-      { headers: MB_HEADERS }
+      `https://musicbrainz.org/ws/2/recording/${rec.id}?inc=artist-rels+work-rels&fmt=json`
     );
     if (!detRes.ok) return { ...obj, duration: duration || obj.duration, enriched: true };
     const det = await detRes.json();
 
-    const writers = [], producers = [];
+    const producers = [];
+    const workIds = [];
     if (det.relations) {
       det.relations.forEach(rel => {
-        if (['composer','lyricist','writer'].includes(rel.type) && rel.artist?.name)
-          writers.push(rel.artist.name);
-        if (['producer','co-producer'].includes(rel.type) && rel.artist?.name)
+        if (['producer','co-producer','mix','engineer'].includes(rel.type) && rel.artist?.name)
           producers.push(rel.artist.name);
+        if (rel['target-type'] === 'work' && rel.work?.id)
+          workIds.push(rel.work.id);
       });
+    }
+
+    // Follow work to get writers/composers
+    const writers = [];
+    for (const wid of workIds.slice(0, 2)) {
+      try {
+        await new Promise(r => setTimeout(r, 300));
+        const wRes = await fetch(
+          `https://musicbrainz.org/ws/2/work/${wid}?inc=artist-rels&fmt=json`
+        );
+        const wDet = await wRes.json();
+        if (wDet.relations) {
+          wDet.relations.forEach(rel => {
+            if (['composer','lyricist','writer'].includes(rel.type) && rel.artist?.name)
+              writers.push(rel.artist.name);
+          });
+        }
+      } catch(e2) {}
+      if (writers.length) break;
     }
 
     return {
       ...obj,
       duration:  duration || obj.duration,
-      writers:   writers.length   ? writers.join(', ')   : obj.writers,
-      producers: producers.length ? producers.join(', ') : obj.producers,
+      writers:   writers.length   ? [...new Set(writers)].join(', ')   : (obj.writers   || ''),
+      producers: producers.length ? [...new Set(producers)].join(', ') : (obj.producers || ''),
       mbid:      rec.id,
       enriched:  true
     };
