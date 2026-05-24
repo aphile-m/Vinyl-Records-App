@@ -820,7 +820,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 /* ── HOME PAGE ── */
 #page-home { min-height: calc(100vh - 120px); }
 .home-hero {
-  position: relative; height: min(480px, 55vw); min-height: 300px;
+  position: relative; height: 380px;
   overflow: hidden; display: flex; align-items: flex-end;
 }
 .home-hero-bg {
@@ -1051,8 +1051,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="home-hero-bg" id="home-hero-bg"></div>
     <!-- mode + refresh sits top-right inside hero -->
     <div style="position:absolute;top:14px;right:14px;z-index:2;display:flex;align-items:center;gap:6px">
-      <button class="pick-mode-btn" id="pick-comfort"  onclick="setPickMode('comfort',this)" style="backdrop-filter:blur(8px);background:rgba(0,0,0,.35)">Comfort</button>
-      <button class="pick-mode-btn" id="pick-discovery" onclick="setPickMode('discovery',this)" style="backdrop-filter:blur(8px);background:rgba(0,0,0,.35)">Discovery</button>
+      <button class="pick-mode-btn" id="pick-comfort"  onclick="setPickMode('comfort',this)" style="backdrop-filter:blur(8px);background:rgba(0,0,0,.5);color:#fff;border-color:rgba(255,255,255,.3)">Comfort</button>
+      <button class="pick-mode-btn" id="pick-discovery" onclick="setPickMode('discovery',this)" style="backdrop-filter:blur(8px);background:rgba(0,0,0,.5);color:#fff;border-color:rgba(255,255,255,.3)">Discovery</button>
       <button onclick="refreshDailyPick()" title="New pick" style="width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:var(--text2);backdrop-filter:blur(8px);background:rgba(0,0,0,.35);font-size:.9rem;display:flex;align-items:center;justify-content:center">↻</button>
     </div>
     <div class="home-hero-content">
@@ -5125,7 +5125,7 @@ function dpOpenTrackPage(idx) {
   openTrackPage(idx);
 }
 
-// Render track details in the right panel
+// Render track details in the right panel — tabbed layout
 function renderDpDetail(idx) {
   const r = dailyPickRecord;
   if (!r) return;
@@ -5141,44 +5141,64 @@ function renderDpDetail(idx) {
   const geniusUrl = 'https://genius.com/search?q=' + encodeURIComponent(name + ' ' + r.artist);
   const whosampledUrl = 'https://www.whosampled.com/search/?q=' + encodeURIComponent(name + ' ' + r.artist);
 
-  // Credits
-  let creditsHtml = '';
-  if (obj.writers || obj.producers || obj.musicians) {
-    const rows = [];
-    if (obj.writers)   rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>');
-    if (obj.producers) rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>');
-    if (obj.musicians) rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>');
-    creditsHtml = '<div class="tp-section"><div class="tp-section-label">Credits</div><div class="tp-credits">' + rows.join('') + '</div></div>';
-  } else {
-    creditsHtml = '<div class="tp-section"><div class="tp-section-label">Credits</div><div style="color:var(--text3);font-size:.8rem">No credits fetched yet</div></div>';
-  }
+  // ── Build tab content ────────────────────────────────
+  // Tab 1: Info (credits + bio context)
+  let creditsRows = '';
+  if (obj.writers)   creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>';
+  if (obj.producers) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>';
+  if (obj.musicians) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>';
+  if (obj.duration)  creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Duration</span><span class="tp-credit-name">' + obj.duration + '</span></div>';
 
-  // Lyrics — first 8 lines only to keep panel tidy
-  let lyricsHtml = '';
-  if (obj.lyrics) {
-    const lines = obj.lyrics.split('\n').filter(l => l.trim()).slice(0, 8);
-    lyricsHtml = '<div class="tp-section"><div class="tp-section-label">Lyrics</div>' +
-      '<div style="font-size:.82rem;line-height:1.8;color:var(--text2);white-space:pre-wrap">' + lines.join('\n') + '</div>' +
-      '<div style="margin-top:8px"><a href="' + geniusUrl + '" target="_blank" style="font-size:.72rem;color:var(--accent)">Full lyrics on Genius ↗</a></div>' +
-      '</div>';
-  }
+  const infoTab = creditsRows
+    ? '<div class="tp-section"><div class="tp-section-label">Credits' + (obj.enriched ? ' <span class="tp-enriched-badge">enriched</span>' : '') + '</div><div class="tp-credits">' + creditsRows + '</div></div>'
+    : '<div style="color:var(--text3);font-size:.82rem;padding:12px 0">No credits fetched yet for this track.</div>';
+
+  // Tab 2: Lyrics
+  const lyricsTab = obj.lyrics
+    ? '<div class="tp-lyrics" style="max-height:none">' + obj.lyrics + '</div>'
+    : '<div style="color:var(--text3);font-size:.82rem;padding:12px 0">No lyrics found for this track.<br><a href="' + geniusUrl + '" target="_blank" style="color:var(--accent);margin-top:8px;display:inline-block">Search on Genius ↗</a></div>';
+
+  // Tab 3: Discover (Genius + WhoSampled embedded links)
+  const discoverTab =
+    '<div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">' +
+      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:12px">🎤 Open on Genius — Lyrics &amp; Annotations</a>' +
+      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:12px">🔁 Open on WhoSampled — Samples &amp; Covers</a>' +
+      '<a class="tp-action-btn" href="https://www.discogs.com/search/?q=' + encodeURIComponent(r.artist + ' ' + r.title) + '&type=release" target="_blank" style="justify-content:center;padding:12px">💿 Open on Discogs — Release Info</a>' +
+    '</div>';
 
   const panel = document.getElementById('dp-detail-content');
   panel.innerHTML =
-    '<div class="tp-header" style="margin-bottom:14px">' +
-      '<div class="tp-num" style="font-size:2rem;opacity:.3">' + (idx + 1) + '</div>' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="tp-title" style="font-size:1.3rem">' + name + '</div>' +
-        (obj.duration ? '<div class="tp-duration">' + obj.duration + '</div>' : '') +
-      '</div>' +
+    // Track heading
+    '<div style="margin-bottom:14px">' +
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;color:var(--text);letter-spacing:.04em;line-height:1.1">' + name + '</div>' +
+      '<div style="font-size:.78rem;color:var(--text2);margin-top:3px">' + r.artist + (obj.duration ? ' · ' + obj.duration : '') + '</div>' +
     '</div>' +
-    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
-      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank">🎤 Genius</a>' +
-      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank">🔁 WhoSampled</a>' +
-      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')">↗ Full Page</button>' +
+    // Tab bar
+    '<div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">' +
+      '<button class="dp-tab-btn active" id="dp-tab-info"    onclick="switchDpTab(\'info\')"    style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--surface);color:var(--accent);cursor:pointer">Credits</button>' +
+      '<button class="dp-tab-btn"        id="dp-tab-lyrics"  onclick="switchDpTab(\'lyrics\')"  style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text2);cursor:pointer">Lyrics</button>' +
+      '<button class="dp-tab-btn"        id="dp-tab-discover" onclick="switchDpTab(\'discover\')" style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text2);cursor:pointer">Explore</button>' +
+      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')" style="margin-left:auto;font-size:.72rem;padding:4px 10px;align-self:flex-end;margin-bottom:2px">↗ Full Page</button>' +
     '</div>' +
-    creditsHtml +
-    lyricsHtml;
+    // Tab panes
+    '<div id="dp-pane-info">' + infoTab + '</div>' +
+    '<div id="dp-pane-lyrics" style="display:none">' + lyricsTab + '</div>' +
+    '<div id="dp-pane-discover" style="display:none">' + discoverTab + '</div>';
+}
+
+function switchDpTab(tab) {
+  ['info','lyrics','discover'].forEach(t => {
+    const btn  = document.getElementById('dp-tab-' + t);
+    const pane = document.getElementById('dp-pane-' + t);
+    const active = t === tab;
+    if (btn)  {
+      btn.style.background    = active ? 'var(--surface)' : 'transparent';
+      btn.style.color         = active ? 'var(--accent)'  : 'var(--text2)';
+      btn.style.borderColor   = active ? 'var(--border)'  : 'transparent';
+      btn.style.borderBottom  = active ? 'none'           : 'none';
+    }
+    if (pane) pane.style.display = active ? '' : 'none';
+  });
 }
 
 function closeDpTracks() {
