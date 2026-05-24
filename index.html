@@ -1682,23 +1682,25 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 </div>
 
 <!-- Daily Pick Track List Modal -->
-<div id="dp-tracks-modal" style="position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s" onclick="if(event.target===this)closeDpTracks()">
-  <div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;">
+<div id="dp-tracks-modal" style="position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:20px" onclick="if(event.target===this)closeDpTracks()">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.7)">
     <!-- Sticky header -->
-    <div style="padding:20px 20px 12px;flex-shrink:0;border-bottom:1px solid var(--border)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:.06em" id="dp-tracks-title">Tracks</div>
-          <div style="font-size:.78rem;color:var(--text2)" id="dp-tracks-sub"></div>
+    <div style="padding:20px 20px 14px;flex-shrink:0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="min-width:0">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:.06em;line-height:1.1" id="dp-tracks-title">Tracks</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:3px" id="dp-tracks-sub"></div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
           <button class="btn btn-ghost btn-sm" onclick="dpPlayRandom()" title="Play a random track preview">🎲 Random</button>
           <button onclick="closeDpTracks()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center">✕</button>
         </div>
       </div>
     </div>
     <!-- Scrollable track list -->
-    <div id="dp-tracks-list" style="overflow-y:auto;flex:1;padding:8px 20px 40px;"></div>
+    <div id="dp-tracks-list" style="overflow-y:auto;flex:1;padding:8px 12px 8px;"></div>
+    <!-- Footer — always visible, shows track count -->
+    <div id="dp-tracks-footer" style="padding:10px 20px;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:.7rem;color:var(--text3);text-align:center;flex-shrink:0"></div>
   </div>
 </div>
 
@@ -5059,6 +5061,9 @@ function openDpTracks() {
   document.getElementById('dp-tracks-title').textContent = r.artist + ' — ' + r.title;
   document.getElementById('dp-tracks-sub').textContent =
     `${tracks.length} track${tracks.length !== 1 ? 's' : ''}${r.year ? ' · ' + r.year : ''}`;
+
+  const footer = document.getElementById('dp-tracks-footer');
+  if (footer) footer.textContent = tracks.length + ' tracks total';
 
   const list = document.getElementById('dp-tracks-list');
   list.innerHTML = tracks.map((t, i) => {
