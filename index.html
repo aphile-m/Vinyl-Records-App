@@ -4646,12 +4646,6 @@ function updatePreviewProgress() {
 
 // ── Fetch preview URL from iTunes ─────────────────────
 async function getPreviewUrl(trackName, artist, title) {
-  // Check stored preview first
-  if (!currentRecord) return null;
-  const tracks = currentRecord.trackList || [];
-  const obj = trackObj(tracks.find((t,i) => trackName === (trackObj(t).name || t)));
-  if (obj.previewUrl) return obj.previewUrl;
-
   try {
     const q = encodeURIComponent(`${trackName} ${artist}`);
     const res = await fetch(`https://itunes.apple.com/search?term=${q}&entity=song&limit=5&media=music`);
@@ -4659,7 +4653,7 @@ async function getPreviewUrl(trackName, artist, title) {
     const data = await res.json();
     if (!data.results?.length) return null;
 
-    // Find best match — prefer one that matches the album
+    // Prefer result whose track name closely matches
     let best = data.results.find(x =>
       x.trackName?.toLowerCase().includes(trackName.toLowerCase().split(' ').slice(0,3).join(' '))
     ) || data.results[0];
