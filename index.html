@@ -1683,18 +1683,22 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
 <!-- Daily Pick Track List Modal -->
 <div id="dp-tracks-modal" style="position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s" onclick="if(event.target===this)closeDpTracks()">
-  <div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;padding:24px 20px 40px">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:.06em" id="dp-tracks-title">Tracks</div>
-        <div style="font-size:.78rem;color:var(--text2)" id="dp-tracks-sub"></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="btn btn-ghost btn-sm" onclick="dpPlayRandom()" title="Play a random track preview">🎲 Random</button>
-        <button onclick="closeDpTracks()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center">✕</button>
+  <div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;">
+    <!-- Sticky header -->
+    <div style="padding:20px 20px 12px;flex-shrink:0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:.06em" id="dp-tracks-title">Tracks</div>
+          <div style="font-size:.78rem;color:var(--text2)" id="dp-tracks-sub"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="dpPlayRandom()" title="Play a random track preview">🎲 Random</button>
+          <button onclick="closeDpTracks()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
       </div>
     </div>
-    <div id="dp-tracks-list" style="margin-top:16px"></div>
+    <!-- Scrollable track list -->
+    <div id="dp-tracks-list" style="overflow-y:auto;flex:1;padding:8px 20px 40px;"></div>
   </div>
 </div>
 
@@ -5072,6 +5076,7 @@ function openDpTracks() {
   const modal = document.getElementById('dp-tracks-modal');
   modal.style.opacity = '1';
   modal.style.pointerEvents = 'all';
+  document.body.style.overflow = 'hidden';
 }
 
 function closeDpTracks() {
@@ -5079,6 +5084,7 @@ function closeDpTracks() {
   const modal = document.getElementById('dp-tracks-modal');
   modal.style.opacity = '0';
   modal.style.pointerEvents = 'none';
+  document.body.style.overflow = '';
 }
 
 async function dpTogglePreview(idx) {
