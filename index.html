@@ -5061,11 +5061,11 @@ function renderDailyPick() {
 
   if (r.albumArt) {
     bg.style.backgroundImage = `url(${r.albumArt})`;
-    bg.style.background = '';
+    bg.style.backgroundColor = '';
     artWrap.innerHTML = `<img class="home-hero-art" src="${r.albumArt}" alt="" onclick="openDetail('${r.id}')">`;
   } else {
     bg.style.backgroundImage = 'none';
-    bg.style.background = `linear-gradient(135deg,${getGenreColor(r.genre)}55,var(--surface2))`;
+    bg.style.backgroundColor = getGenreColor(r.genre);
     artWrap.innerHTML = `<div class="home-hero-art-placeholder" onclick="openDetail('${r.id}')">${getArtistEmoji(r.genre)}</div>`;
   }
 
@@ -5135,55 +5135,81 @@ function renderDpDetail(idx) {
 
   // Highlight active row
   document.querySelectorAll('.dp-track-row').forEach(el => el.classList.remove('dp-active'));
-  const row = document.getElementById('dp-row-' + idx);
-  if (row) { row.classList.add('dp-active'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  const activeRow = document.getElementById('dp-row-' + idx);
+  if (activeRow) { activeRow.classList.add('dp-active'); activeRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
 
-  const geniusUrl = 'https://genius.com/search?q=' + encodeURIComponent(name + ' ' + r.artist);
+  const geniusUrl     = 'https://genius.com/search?q=' + encodeURIComponent(name + ' ' + r.artist);
   const whosampledUrl = 'https://www.whosampled.com/search/?q=' + encodeURIComponent(name + ' ' + r.artist);
+  const discogsUrl    = 'https://www.discogs.com/search/?q=' + encodeURIComponent(r.artist + ' ' + r.title) + '&type=release';
 
-  // ── Build tab content ────────────────────────────────
-  // Tab 1: Info (credits + bio context)
-  let creditsRows = '';
-  if (obj.writers)   creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>';
-  if (obj.producers) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>';
-  if (obj.musicians) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>';
-  if (obj.duration)  creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Duration</span><span class="tp-credit-name">' + obj.duration + '</span></div>';
+  // ── Album art + record info strip ────────────────────
+  const artHtml = r.albumArt
+    ? '<img src="' + r.albumArt + '" style="width:56px;height:56px;border-radius:6px;object-fit:cover;flex-shrink:0">'
+    : '<div style="width:56px;height:56px;border-radius:6px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">' + getArtistEmoji(r.genre) + '</div>';
 
-  const infoTab = creditsRows
-    ? '<div class="tp-section"><div class="tp-section-label">Credits' + (obj.enriched ? ' <span class="tp-enriched-badge">enriched</span>' : '') + '</div><div class="tp-credits">' + creditsRows + '</div></div>'
-    : '<div style="color:var(--text3);font-size:.82rem;padding:12px 0">No credits fetched yet for this track.</div>';
+  const recordStrip =
+    '<div style="display:flex;gap:12px;align-items:center;padding:14px 16px;background:var(--surface2);border-radius:10px;margin-bottom:16px;cursor:pointer" onclick="closeDpTracks();openDetail(\'' + r.id + '\')" title="Open record">' +
+      artHtml +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">' + (r.genre?.split(/[,\/]/)[0]?.trim() || '') + (r.year ? ' · ' + r.year : '') + '</div>' +
+        '<div style="font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.artist + '</div>' +
+        '<div style="font-size:.8rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title + '</div>' +
+      '</div>' +
+      '<span style="font-size:.7rem;color:var(--text3)">↗</span>' +
+    '</div>';
 
-  // Tab 2: Lyrics
-  const lyricsTab = obj.lyrics
-    ? '<div class="tp-lyrics" style="max-height:none">' + obj.lyrics + '</div>'
-    : '<div style="color:var(--text3);font-size:.82rem;padding:12px 0">No lyrics found for this track.<br><a href="' + geniusUrl + '" target="_blank" style="color:var(--accent);margin-top:8px;display:inline-block">Search on Genius ↗</a></div>';
+  // ── Track heading ─────────────────────────────────────
+  const trackHeading =
+    '<div style="margin-bottom:12px">' +
+      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.6rem;color:var(--text);letter-spacing:.04em;line-height:1;margin-bottom:2px">' + name + '</div>' +
+      '<div style="font-size:.75rem;color:var(--text2)">' +
+        (obj.duration ? obj.duration : '') +
+        (obj.enriched ? ' <span class="tp-enriched-badge" style="vertical-align:middle">enriched</span>' : '') +
+      '</div>' +
+    '</div>';
 
-  // Tab 3: Discover (Genius + WhoSampled embedded links)
-  const discoverTab =
-    '<div style="display:flex;flex-direction:column;gap:12px;padding:4px 0">' +
-      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:12px">🎤 Open on Genius — Lyrics &amp; Annotations</a>' +
-      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:12px">🔁 Open on WhoSampled — Samples &amp; Covers</a>' +
-      '<a class="tp-action-btn" href="https://www.discogs.com/search/?q=' + encodeURIComponent(r.artist + ' ' + r.title) + '&type=release" target="_blank" style="justify-content:center;padding:12px">💿 Open on Discogs — Release Info</a>' +
+  // ── Tab: Credits ──────────────────────────────────────
+  let creditsContent = '';
+  if (obj.writers || obj.producers || obj.musicians) {
+    if (obj.writers)   creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>';
+    if (obj.producers) creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>';
+    if (obj.musicians) creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>';
+    creditsContent = '<div class="tp-credits" style="margin-top:4px">' + creditsContent + '</div>';
+  } else {
+    creditsContent = '<div style="color:var(--text3);font-size:.82rem;padding:8px 0">No credits fetched yet for this track.</div>';
+  }
+
+  // ── Tab: Lyrics ───────────────────────────────────────
+  const lyricsContent = obj.lyrics
+    ? '<div style="font-size:.83rem;line-height:1.85;color:var(--text2);white-space:pre-wrap;max-height:260px;overflow-y:auto">' + obj.lyrics + '</div>'
+    : '<div style="color:var(--text3);font-size:.82rem;padding:8px 0">No lyrics yet. <a href="' + geniusUrl + '" target="_blank" style="color:var(--accent)">Search on Genius ↗</a></div>';
+
+  // ── Tab: Explore ──────────────────────────────────────
+  const exploreContent =
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">' +
+      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">🎤 Lyrics &amp; Annotations — Genius</a>' +
+      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">🔁 Samples &amp; Covers — WhoSampled</a>' +
+      '<a class="tp-action-btn" href="' + discogsUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">💿 Release Info — Discogs</a>' +
+    '</div>';
+
+  // ── Tab bar ───────────────────────────────────────────
+  const tabBar =
+    '<div style="display:flex;align-items:center;gap:2px;margin-bottom:12px;border-bottom:1px solid var(--border)">' +
+      '<button id="dp-tab-info"     onclick="switchDpTab(\'info\')"     class="dp-tab-btn dp-tab-active" style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid var(--accent);color:var(--accent);cursor:pointer;font-weight:600">Credits</button>' +
+      '<button id="dp-tab-lyrics"   onclick="switchDpTab(\'lyrics\')"   class="dp-tab-btn"               style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer">Lyrics</button>' +
+      '<button id="dp-tab-discover" onclick="switchDpTab(\'discover\')" class="dp-tab-btn"               style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer">Explore</button>' +
+      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')" style="margin-left:auto;font-size:.7rem;padding:4px 10px;margin-bottom:4px">↗ Full Page</button>' +
     '</div>';
 
   const panel = document.getElementById('dp-detail-content');
+  panel.style.height = '';
   panel.innerHTML =
-    // Track heading
-    '<div style="margin-bottom:14px">' +
-      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.5rem;color:var(--text);letter-spacing:.04em;line-height:1.1">' + name + '</div>' +
-      '<div style="font-size:.78rem;color:var(--text2);margin-top:3px">' + r.artist + (obj.duration ? ' · ' + obj.duration : '') + '</div>' +
-    '</div>' +
-    // Tab bar
-    '<div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0">' +
-      '<button class="dp-tab-btn active" id="dp-tab-info"    onclick="switchDpTab(\'info\')"    style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid var(--border);border-bottom:none;background:var(--surface);color:var(--accent);cursor:pointer">Credits</button>' +
-      '<button class="dp-tab-btn"        id="dp-tab-lyrics"  onclick="switchDpTab(\'lyrics\')"  style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text2);cursor:pointer">Lyrics</button>' +
-      '<button class="dp-tab-btn"        id="dp-tab-discover" onclick="switchDpTab(\'discover\')" style="padding:6px 14px;font-size:.78rem;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text2);cursor:pointer">Explore</button>' +
-      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')" style="margin-left:auto;font-size:.72rem;padding:4px 10px;align-self:flex-end;margin-bottom:2px">↗ Full Page</button>' +
-    '</div>' +
-    // Tab panes
-    '<div id="dp-pane-info">' + infoTab + '</div>' +
-    '<div id="dp-pane-lyrics" style="display:none">' + lyricsTab + '</div>' +
-    '<div id="dp-pane-discover" style="display:none">' + discoverTab + '</div>';
+    recordStrip +
+    trackHeading +
+    tabBar +
+    '<div id="dp-pane-info">'                   + creditsContent + '</div>' +
+    '<div id="dp-pane-lyrics"  style="display:none">' + lyricsContent  + '</div>' +
+    '<div id="dp-pane-discover" style="display:none">' + exploreContent + '</div>';
 }
 
 function switchDpTab(tab) {
@@ -5191,11 +5217,10 @@ function switchDpTab(tab) {
     const btn  = document.getElementById('dp-tab-' + t);
     const pane = document.getElementById('dp-pane-' + t);
     const active = t === tab;
-    if (btn)  {
-      btn.style.background    = active ? 'var(--surface)' : 'transparent';
-      btn.style.color         = active ? 'var(--accent)'  : 'var(--text2)';
-      btn.style.borderColor   = active ? 'var(--border)'  : 'transparent';
-      btn.style.borderBottom  = active ? 'none'           : 'none';
+    if (btn) {
+      btn.style.borderBottom = active ? '2px solid var(--accent)' : '2px solid transparent';
+      btn.style.color        = active ? 'var(--accent)'           : 'var(--text2)';
+      btn.style.fontWeight   = active ? '600'                     : 'normal';
     }
     if (pane) pane.style.display = active ? '' : 'none';
   });
