@@ -970,6 +970,21 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 .home-hero .pick-mode-btn { padding: 4px 10px; font-size: .75rem; }
 .home-hero .pick-mode-btn.active { background: var(--accent); border-color: var(--accent); color: #000; }
 
+
+/* dp modal responsive — stack on mobile */
+@media (max-width: 640px) {
+  #dp-tracks-modal > div { max-width: 100% !important; max-height: 92vh !important; }
+  #dp-tracks-modal > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+  #dp-tracks-modal > div > div > div[style*="width:300px"] {
+    width: 100% !important; border-right: none !important;
+    border-bottom: 1px solid var(--border); max-height: 40vh;
+  }
+}
+/* active track row highlight */
+.dp-track-row.dp-active { background: rgba(232,197,71,.1); border-radius: 8px; }
+.dp-track-name-link { cursor: pointer; text-decoration: none; color: inherit; }
+.dp-track-name-link:hover { color: var(--accent); text-decoration: underline; }
+
 </style>
 </head>
 <body>
@@ -1683,24 +1698,37 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
 <!-- Daily Pick Track List Modal -->
 <div id="dp-tracks-modal" style="position:fixed;inset:0;z-index:650;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:20px" onclick="if(event.target===this)closeDpTracks()">
-  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.7)">
-    <!-- Sticky header -->
-    <div style="padding:20px 20px 14px;flex-shrink:0;border-bottom:1px solid var(--border)">
+  <div style="background:var(--surface);border-radius:16px;width:100%;max-width:860px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.7)">
+    <!-- Header -->
+    <div style="padding:18px 20px 14px;flex-shrink:0;border-bottom:1px solid var(--border)">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
         <div style="min-width:0">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--accent);letter-spacing:.06em;line-height:1.1" id="dp-tracks-title">Tracks</div>
-          <div style="font-size:.78rem;color:var(--text2);margin-top:3px" id="dp-tracks-sub"></div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--accent);letter-spacing:.06em;line-height:1.1" id="dp-tracks-title">Tracks</div>
+          <div style="font-size:.75rem;color:var(--text2);margin-top:2px" id="dp-tracks-sub"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-          <button class="btn btn-ghost btn-sm" onclick="dpPlayRandom()" title="Play a random track preview">🎲 Random</button>
+          <button class="btn btn-ghost btn-sm" onclick="dpPlayRandom()">🎲 Random</button>
           <button onclick="closeDpTracks()" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center">✕</button>
         </div>
       </div>
     </div>
-    <!-- Scrollable track list -->
-    <div id="dp-tracks-list" style="overflow-y:auto;flex:1;padding:8px 12px 8px;"></div>
-    <!-- Footer — always visible, shows track count -->
-    <div id="dp-tracks-footer" style="padding:10px 20px;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:.7rem;color:var(--text3);text-align:center;flex-shrink:0"></div>
+    <!-- Two-column body -->
+    <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+      <!-- Left: track list -->
+      <div style="display:flex;flex-direction:column;flex-shrink:0;width:300px;border-right:1px solid var(--border);min-height:0">
+        <div id="dp-tracks-list" style="overflow-y:auto;flex:1;padding:6px 8px;"></div>
+        <div id="dp-tracks-footer" style="padding:8px 16px;border-top:1px solid var(--border);font-family:'DM Mono',monospace;font-size:.68rem;color:var(--text3);text-align:center;flex-shrink:0"></div>
+      </div>
+      <!-- Right: track detail panel -->
+      <div id="dp-detail-panel" style="flex:1;overflow-y:auto;padding:20px;min-width:0">
+        <div id="dp-detail-content" style="color:var(--text3);font-size:.85rem;display:flex;align-items:center;justify-content:center;height:100%;text-align:center;opacity:.5">
+          <div>
+            <div style="font-size:2rem;margin-bottom:8px">▶</div>
+            <div>Play a track to see its details here</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5070,9 +5098,9 @@ function openDpTracks() {
     const obj = trackObj(t);
     const name = obj.name || t;
     const dur  = obj.duration ? `<span class="dp-track-dur">${obj.duration}</span>` : '';
-    return `<div class="dp-track-row">
+    return `<div class="dp-track-row" id="dp-row-${i}">
       <span class="dp-track-num">${i + 1}</span>
-      <span class="dp-track-name" title="${name}">${name}</span>
+      <span class="dp-track-name-link dp-track-name" onclick="dpOpenTrackPage(${i})" title="Open track page">${name}</span>
       ${dur}
       <button class="dp-preview-btn" id="dp-prev-${i}" onclick="dpTogglePreview(${i})" title="30s preview">▶</button>
     </div>`;
@@ -5082,6 +5110,75 @@ function openDpTracks() {
   modal.style.opacity = '1';
   modal.style.pointerEvents = 'all';
   document.body.style.overflow = 'hidden';
+
+  // If something already playing, show its detail
+  if (_playingTrackIdx !== null) renderDpDetail(_playingTrackIdx);
+}
+
+// Open full track page from within dp modal
+function dpOpenTrackPage(idx) {
+  const r = dailyPickRecord;
+  if (!r) return;
+  // Set currentRecord so track page works correctly
+  currentRecord = DB.find(x => x.id === r.id) || r;
+  closeDpTracks();
+  openTrackPage(idx);
+}
+
+// Render track details in the right panel
+function renderDpDetail(idx) {
+  const r = dailyPickRecord;
+  if (!r) return;
+  const tracks = r.trackList || [];
+  const obj = trackObj(tracks[idx]);
+  const name = obj.name || tracks[idx];
+
+  // Highlight active row
+  document.querySelectorAll('.dp-track-row').forEach(el => el.classList.remove('dp-active'));
+  const row = document.getElementById('dp-row-' + idx);
+  if (row) { row.classList.add('dp-active'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+
+  const geniusUrl = 'https://genius.com/search?q=' + encodeURIComponent(name + ' ' + r.artist);
+  const whosampledUrl = 'https://www.whosampled.com/search/?q=' + encodeURIComponent(name + ' ' + r.artist);
+
+  // Credits
+  let creditsHtml = '';
+  if (obj.writers || obj.producers || obj.musicians) {
+    const rows = [];
+    if (obj.writers)   rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>');
+    if (obj.producers) rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>');
+    if (obj.musicians) rows.push('<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>');
+    creditsHtml = '<div class="tp-section"><div class="tp-section-label">Credits</div><div class="tp-credits">' + rows.join('') + '</div></div>';
+  } else {
+    creditsHtml = '<div class="tp-section"><div class="tp-section-label">Credits</div><div style="color:var(--text3);font-size:.8rem">No credits fetched yet</div></div>';
+  }
+
+  // Lyrics — first 8 lines only to keep panel tidy
+  let lyricsHtml = '';
+  if (obj.lyrics) {
+    const lines = obj.lyrics.split('\n').filter(l => l.trim()).slice(0, 8);
+    lyricsHtml = '<div class="tp-section"><div class="tp-section-label">Lyrics</div>' +
+      '<div style="font-size:.82rem;line-height:1.8;color:var(--text2);white-space:pre-wrap">' + lines.join('\n') + '</div>' +
+      '<div style="margin-top:8px"><a href="' + geniusUrl + '" target="_blank" style="font-size:.72rem;color:var(--accent)">Full lyrics on Genius ↗</a></div>' +
+      '</div>';
+  }
+
+  const panel = document.getElementById('dp-detail-content');
+  panel.innerHTML =
+    '<div class="tp-header" style="margin-bottom:14px">' +
+      '<div class="tp-num" style="font-size:2rem;opacity:.3">' + (idx + 1) + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="tp-title" style="font-size:1.3rem">' + name + '</div>' +
+        (obj.duration ? '<div class="tp-duration">' + obj.duration + '</div>' : '') +
+      '</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
+      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank">🎤 Genius</a>' +
+      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank">🔁 WhoSampled</a>' +
+      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')">↗ Full Page</button>' +
+    '</div>' +
+    creditsHtml +
+    lyricsHtml;
 }
 
 function closeDpTracks() {
@@ -5140,6 +5237,8 @@ async function dpTogglePreview(idx) {
   try {
     await audio.play();
     if (btn) { btn.textContent = '⏸'; btn.classList.remove('loading'); btn.classList.add('playing'); }
+    // Show track detail in right panel
+    renderDpDetail(idx);
   } catch(e) {
     stopPreview();
   }
