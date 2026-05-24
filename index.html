@@ -5142,74 +5142,68 @@ function renderDpDetail(idx) {
   const whosampledUrl = 'https://www.whosampled.com/search/?q=' + encodeURIComponent(name + ' ' + r.artist);
   const discogsUrl    = 'https://www.discogs.com/search/?q=' + encodeURIComponent(r.artist + ' ' + r.title) + '&type=release';
 
-  // ── Album art + record info strip ────────────────────
+  // ── 1. Record strip ───────────────────────────────────
   const artHtml = r.albumArt
-    ? '<img src="' + r.albumArt + '" style="width:56px;height:56px;border-radius:6px;object-fit:cover;flex-shrink:0">'
-    : '<div style="width:56px;height:56px;border-radius:6px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">' + getArtistEmoji(r.genre) + '</div>';
+    ? '<img src="' + r.albumArt + '" style="width:44px;height:44px;border-radius:5px;object-fit:cover;flex-shrink:0">'
+    : '<div style="width:44px;height:44px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">' + getArtistEmoji(r.genre) + '</div>';
 
   const recordStrip =
-    '<div style="display:flex;gap:12px;align-items:center;padding:14px 16px;background:var(--surface2);border-radius:10px;margin-bottom:16px;cursor:pointer" onclick="closeDpTracks();openDetail(\'' + r.id + '\')" title="Open record">' +
+    '<div onclick="closeDpTracks();openDetail(\'' + r.id + '\')" title="Open record" style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:14px;cursor:pointer;border:1px solid var(--border)">' +
       artHtml +
       '<div style="flex:1;min-width:0">' +
-        '<div style="font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">' + (r.genre?.split(/[,\/]/)[0]?.trim() || '') + (r.year ? ' · ' + r.year : '') + '</div>' +
-        '<div style="font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.artist + '</div>' +
-        '<div style="font-size:.8rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title + '</div>' +
+        '<div style="font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.07em">' + (r.genre?.split(/[,\/]/)[0]?.trim() || '') + (r.year ? ' · ' + r.year : '') + '</div>' +
+        '<div style="font-size:.85rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)">' + r.artist + '</div>' +
+        '<div style="font-size:.75rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.title + '</div>' +
       '</div>' +
-      '<span style="font-size:.7rem;color:var(--text3)">↗</span>' +
+      '<div style="font-size:.7rem;color:var(--text3);flex-shrink:0">↗</div>' +
     '</div>';
 
-  // ── Track heading ─────────────────────────────────────
+  // ── 2. Track heading ──────────────────────────────────
   const trackHeading =
-    '<div style="margin-bottom:12px">' +
-      '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1.6rem;color:var(--text);letter-spacing:.04em;line-height:1;margin-bottom:2px">' + name + '</div>' +
-      '<div style="font-size:.75rem;color:var(--text2)">' +
-        (obj.duration ? obj.duration : '') +
-        (obj.enriched ? ' <span class="tp-enriched-badge" style="vertical-align:middle">enriched</span>' : '') +
-      '</div>' +
+    '<div style="margin-bottom:14px">' +
+      '<div style="font-size:.68rem;color:var(--text3);font-family:\'DM Mono\',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Track ' + (idx + 1) + (obj.duration ? ' · ' + obj.duration : '') + (obj.enriched ? ' &nbsp;<span class="tp-enriched-badge">enriched</span>' : '') + '</div>' +
+      '<div style="font-size:1.15rem;font-weight:700;color:var(--text);line-height:1.2">' + name + '</div>' +
     '</div>';
 
-  // ── Tab: Credits ──────────────────────────────────────
-  let creditsContent = '';
-  if (obj.writers || obj.producers || obj.musicians) {
-    if (obj.writers)   creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>';
-    if (obj.producers) creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>';
-    if (obj.musicians) creditsContent += '<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>';
-    creditsContent = '<div class="tp-credits" style="margin-top:4px">' + creditsContent + '</div>';
-  } else {
-    creditsContent = '<div style="color:var(--text3);font-size:.82rem;padding:8px 0">No credits fetched yet for this track.</div>';
-  }
-
-  // ── Tab: Lyrics ───────────────────────────────────────
-  const lyricsContent = obj.lyrics
-    ? '<div style="font-size:.83rem;line-height:1.85;color:var(--text2);white-space:pre-wrap;max-height:260px;overflow-y:auto">' + obj.lyrics + '</div>'
-    : '<div style="color:var(--text3);font-size:.82rem;padding:8px 0">No lyrics yet. <a href="' + geniusUrl + '" target="_blank" style="color:var(--accent)">Search on Genius ↗</a></div>';
-
-  // ── Tab: Explore ──────────────────────────────────────
-  const exploreContent =
-    '<div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">' +
-      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">🎤 Lyrics &amp; Annotations — Genius</a>' +
-      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">🔁 Samples &amp; Covers — WhoSampled</a>' +
-      '<a class="tp-action-btn" href="' + discogsUrl + '" target="_blank" style="justify-content:center;padding:11px;font-size:.82rem">💿 Release Info — Discogs</a>' +
-    '</div>';
-
-  // ── Tab bar ───────────────────────────────────────────
+  // ── 3. Tab bar ────────────────────────────────────────
   const tabBar =
-    '<div style="display:flex;align-items:center;gap:2px;margin-bottom:12px;border-bottom:1px solid var(--border)">' +
-      '<button id="dp-tab-info"     onclick="switchDpTab(\'info\')"     class="dp-tab-btn dp-tab-active" style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid var(--accent);color:var(--accent);cursor:pointer;font-weight:600">Credits</button>' +
-      '<button id="dp-tab-lyrics"   onclick="switchDpTab(\'lyrics\')"   class="dp-tab-btn"               style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer">Lyrics</button>' +
-      '<button id="dp-tab-discover" onclick="switchDpTab(\'discover\')" class="dp-tab-btn"               style="padding:7px 14px;font-size:.78rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer">Explore</button>' +
-      '<button class="tp-action-btn" onclick="dpOpenTrackPage(' + idx + ')" style="margin-left:auto;font-size:.7rem;padding:4px 10px;margin-bottom:4px">↗ Full Page</button>' +
+    '<div style="display:flex;align-items:center;border-bottom:1px solid var(--border);margin-bottom:14px">' +
+      '<button id="dp-tab-info"     onclick="switchDpTab(\'info\')"     style="padding:6px 12px;font-size:.76rem;background:transparent;border:none;border-bottom:2px solid var(--accent);color:var(--accent);cursor:pointer;font-weight:600;margin-bottom:-1px">Credits</button>' +
+      '<button id="dp-tab-lyrics"   onclick="switchDpTab(\'lyrics\')"   style="padding:6px 12px;font-size:.76rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer;margin-bottom:-1px">Lyrics</button>' +
+      '<button id="dp-tab-discover" onclick="switchDpTab(\'discover\')" style="padding:6px 12px;font-size:.76rem;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text2);cursor:pointer;margin-bottom:-1px">Explore</button>' +
+      '<button onclick="dpOpenTrackPage(' + idx + ')" style="margin-left:auto;font-size:.7rem;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;white-space:nowrap">↗ Full Page</button>' +
+    '</div>';
+
+  // ── 4. Tab content ────────────────────────────────────
+  let creditsRows = '';
+  if (obj.writers)   creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Written by</span><span class="tp-credit-name">' + obj.writers + '</span></div>';
+  if (obj.producers) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Produced by</span><span class="tp-credit-name">' + obj.producers + '</span></div>';
+  if (obj.musicians) creditsRows += '<div class="tp-credit-row"><span class="tp-credit-role">Musicians</span><span class="tp-credit-name">' + obj.musicians + '</span></div>';
+
+  const creditsContent = creditsRows
+    ? '<div class="tp-credits">' + creditsRows + '</div>'
+    : '<div style="color:var(--text3);font-size:.82rem;padding:6px 0">No credits fetched yet.<br><span style="font-size:.75rem">Open the record and use ⚡ Enrich to fetch credits from MusicBrainz.</span></div>';
+
+  const lyricsContent = obj.lyrics
+    ? '<div style="font-size:.82rem;line-height:1.85;color:var(--text2);white-space:pre-wrap;max-height:220px;overflow-y:auto">' + obj.lyrics + '</div>'
+    : '<div style="color:var(--text3);font-size:.82rem;padding:6px 0">No lyrics yet. <a href="' + geniusUrl + '" target="_blank" style="color:var(--accent)">Search on Genius ↗</a></div>';
+
+  const exploreContent =
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">' +
+      '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">🎤 Genius — Lyrics &amp; Annotations</a>' +
+      '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">🔁 WhoSampled — Samples &amp; Covers</a>' +
+      '<a class="tp-action-btn" href="' + discogsUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">💿 Discogs — Release Info</a>' +
     '</div>';
 
   const panel = document.getElementById('dp-detail-content');
-  panel.style.height = '';
+  panel.style.cssText = '';
   panel.innerHTML =
     recordStrip +
     trackHeading +
     tabBar +
-    '<div id="dp-pane-info">'                   + creditsContent + '</div>' +
-    '<div id="dp-pane-lyrics"  style="display:none">' + lyricsContent  + '</div>' +
-    '<div id="dp-pane-discover" style="display:none">' + exploreContent + '</div>';
+    '<div id="dp-pane-info">'                          + creditsContent  + '</div>' +
+    '<div id="dp-pane-lyrics"   style="display:none">' + lyricsContent   + '</div>' +
+    '<div id="dp-pane-discover" style="display:none">' + exploreContent  + '</div>';
 }
 
 function switchDpTab(tab) {
