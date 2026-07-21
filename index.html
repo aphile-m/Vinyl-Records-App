@@ -16,7 +16,7 @@
   --accent2: #c47b2e;
   --text: #f0ece4;
   --text2: #a09890;
-  --text3: #606060;
+  --text3: #8f887e;
   --danger: #e05252;
   --success: #52c478;
   --radius: 8px;
@@ -25,19 +25,19 @@
 body.theme-magazine {
   --bg: #f5f0e8; --surface: #fff; --surface2: #f0ebe0;
   --surface3: #e8e0d0; --border: #d4c8b0; --text: #1a1208;
-  --text2: #6b5c42; --text3: #a09070; --accent: #c47b2e; --accent2: #8b4513;
+  --text2: #6b5c42; --text3: #7d6c4e; --accent: #c47b2e; --accent2: #8b4513;
 }
 /* Theme: Crate Digger (warm analog) */
 body.theme-crate {
   --bg: #1a1208; --surface: #241a0e; --surface2: #2e2010;
   --surface3: #3a2a14; --border: #4a3820; --text: #f0ddb8;
-  --text2: #c8a878; --text3: #806848; --accent: #e8943a; --accent2: #c47b2e;
+  --text2: #c8a878; --text3: #9a8560; --accent: #e8943a; --accent2: #c47b2e;
 }
 /* Theme: Streaming (clean dark) */
 body.theme-streaming {
   --bg: #121212; --surface: #1e1e1e; --surface2: #282828;
   --surface3: #333; --border: #404040; --text: #fff;
-  --text2: #b3b3b3; --text3: #737373; --accent: #1db954; --accent2: #17a349;
+  --text2: #b3b3b3; --text3: #8c8c8c; --accent: #1db954; --accent2: #17a349;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; }
@@ -167,16 +167,7 @@ select option { background: var(--surface2); }
 .album-card:hover { transform: scale(1.03); z-index: 2; }
 .album-card:hover .card-overlay { opacity: 1; }
 .album-art { width: 100%; height: 100%; object-fit: cover; display: block; }
-.card-placeholder {
-  width: 100%; height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 12px; text-align: center;
-  background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
-}
-.card-placeholder .ph-icon { font-size: 2.2rem; margin-bottom: 8px; opacity: .4; }
-.card-placeholder .ph-artist { font-size: .68rem; color: var(--text2); font-weight: 600; margin-bottom: 2px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.card-placeholder .ph-title { font-size: .62rem; color: var(--text3); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.card-placeholder { width: 100%; height: 100%; }
 .card-overlay {
   position: absolute; inset: 0; opacity: 0; transition: opacity .2s;
   background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 60%);
@@ -208,7 +199,7 @@ select option { background: var(--surface2); }
   cursor: pointer; transition: background .15s; align-items: center;
 }
 .list-row:hover { background: var(--surface); }
-.list-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.list-thumb { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; overflow: hidden; position: relative; }
 .list-thumb img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
 .list-id { font-family: 'DM Mono', monospace; font-size: .7rem; color: var(--text3); }
 .list-artist { font-weight: 600; font-size: .88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -280,7 +271,7 @@ select option { background: var(--surface2); }
 .detail-art-wrap:hover #art-zoom-hint { opacity: 1 !important; }
 .detail-info { flex: 1; min-width: 0; }
 .detail-id { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); margin-bottom: 6px; }
-.detail-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 5vw, 2rem); color: var(--accent); letter-spacing: .05em; line-height: 1; margin-bottom: 4px; }
+.detail-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 5vw, 2rem); color: var(--text); letter-spacing: .05em; line-height: 1; margin-bottom: 4px; }
 .detail-title { font-size: clamp(.9rem, 3vw, 1.2rem); color: var(--text); margin-bottom: 12px; }
 .detail-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .meta-tag { font-size: .72rem; padding: 3px 10px; border-radius: 20px; background: var(--surface3); color: var(--text2); }
@@ -615,7 +606,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   font-size: 5rem; margin-bottom: 28px;
   box-shadow: 0 20px 80px rgba(0,0,0,.8);
 }
-.np-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem,5vw,2.8rem); color: var(--accent); letter-spacing: .08em; }
+.np-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem,5vw,2.8rem); color: #f0ece4; letter-spacing: .08em; }
 .np-title  { font-size: clamp(.95rem,2.5vw,1.4rem); color: var(--text); margin-bottom: 6px; }
 .np-meta   { font-size: .82rem; color: var(--text2); margin-bottom: 28px; }
 .np-tracks { width: 100%; max-width: 440px; max-height: 200px; overflow-y: auto; margin-bottom: 24px; }
@@ -652,7 +643,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto;
   padding: 28px;
 }
-.analytics-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); margin-bottom: 20px; }
+.analytics-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--text); margin-bottom: 20px; }
 .an-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-bottom: 24px; }
 .an-stat { background: var(--surface2); border-radius: 10px; padding: 16px; text-align: center; }
 .an-stat .n { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--accent); }
@@ -868,6 +859,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   width: 130px; height: 130px; border-radius: 8px; object-fit: cover;
   background: var(--surface2); display: flex; align-items: center;
   justify-content: center; font-size: 2.5rem; margin-bottom: 6px;
+  overflow: hidden; position: relative;
 }
 .shelf-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
 .shelf-artist { font-size: .72rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -908,7 +900,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 .discover-card-title { font-weight: 700; font-size: .92rem; margin-bottom: 2px; }
 .discover-card-sub { font-size: .78rem; color: var(--text2); }
 .discover-section { margin-bottom: 32px; }
-.discover-section h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent); letter-spacing: .06em; margin-bottom: 14px; }
+.discover-section h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--text); letter-spacing: .06em; margin-bottom: 14px; }
 
 /* ── SESSIONS PAGE ── */
 #page-sessions { padding: 20px; }
@@ -984,6 +976,195 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 .dp-track-row.dp-active { background: rgba(232,197,71,.1); border-radius: 8px; }
 .dp-track-name-link { cursor: pointer; text-decoration: none; color: inherit; }
 .dp-track-name-link:hover { color: var(--accent); text-decoration: underline; }
+
+/* ── Generated sleeve placeholders ── */
+.sleeve {
+  position: relative; width: 100%; height: 100%; overflow: hidden;
+  container-type: size;
+  background:
+    linear-gradient(155deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 40%, rgba(0,0,0,.35) 100%),
+    linear-gradient(155deg, color-mix(in srgb, var(--sc) 42%, #1c1c1c) 0%, color-mix(in srgb, var(--sc) 14%, #101010) 100%);
+  background-color: var(--sc);
+}
+.sleeve::after { /* sleeve opening edge */
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 7%;
+  background: linear-gradient(90deg, rgba(0,0,0,.35), rgba(0,0,0,0) 60%);
+}
+.sleeve-disc {
+  position: absolute; top: 50%; right: -34%; width: 74%; aspect-ratio: 1;
+  transform: translateY(-50%); border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--sc) 0 16%, rgba(0,0,0,0) 16.5%),
+    radial-gradient(circle at 38% 34%, rgba(255,255,255,.10), rgba(255,255,255,0) 55%),
+    repeating-radial-gradient(circle at 50% 50%, #121212 0 2px, #1c1c1c 2px 4px);
+  background-color: #131313;
+  box-shadow: -6px 0 14px rgba(0,0,0,.45);
+}
+.sleeve-disc::after { /* spindle hole */
+  content: ''; position: absolute; top: 50%; left: 50%; width: 6%; height: 6%;
+  transform: translate(-50%,-50%); border-radius: 50%; background: #0a0a0a;
+}
+.sleeve-artist {
+  position: absolute; top: 7%; left: 8%; right: 34%;
+  font-family: 'Bebas Neue', sans-serif; font-size: clamp(11px, 12cqw, 30px);
+  line-height: 1.02; letter-spacing: .04em; color: rgba(255,255,255,.92);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.sleeve-title {
+  position: absolute; top: 46%; left: 8%; right: 36%;
+  font-size: clamp(8px, 6.5cqw, 14px); line-height: 1.25; color: rgba(255,255,255,.66);
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+}
+.sleeve-genre {
+  position: absolute; bottom: 6%; left: 8%;
+  font-family: 'DM Mono', monospace; font-size: clamp(6px, 4.5cqw, 10px);
+  text-transform: uppercase; letter-spacing: .14em; color: rgba(255,255,255,.5);
+}
+/* leave room for the provenance ribbon in the corner */
+.sleeve.has-ribbon .sleeve-artist { top: 20%; -webkit-line-clamp: 2; }
+.sleeve.has-ribbon .sleeve-title { top: 56%; -webkit-line-clamp: 2; }
+/* compact: tiny thumbs show just the disc */
+.sleeve.s-sm .sleeve-artist, .sleeve.s-sm .sleeve-title, .sleeve.s-sm .sleeve-genre { display: none; }
+.sleeve.s-sm::after { display: none; }
+.sleeve.s-sm .sleeve-disc { right: 50%; transform: translate(50%,-50%); width: 84%; box-shadow: none; }
+
+/* ── Active filter chips ── */
+#filter-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 10px 20px 0;
+}
+.fchip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .74rem; padding: 4px 6px 4px 11px; border-radius: 20px;
+  background: rgba(232,197,71,.12); border: 1px solid var(--accent);
+  color: var(--accent); cursor: pointer; transition: all .12s; user-select: none;
+}
+.fchip:hover { background: rgba(232,197,71,.22); }
+.fchip .fx {
+  width: 15px; height: 15px; border-radius: 50%; display: inline-flex;
+  align-items: center; justify-content: center; font-size: .68rem;
+  background: rgba(232,197,71,.25); line-height: 1;
+}
+.fchip-label { font-family: 'DM Mono', monospace; font-size: .64rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; }
+.fchip-clear { font-size: .72rem; color: var(--text3); cursor: pointer; padding: 4px 8px; border-radius: 20px; }
+.fchip-clear:hover { color: var(--danger); }
+
+/* ── Detail prev/next navigation ── */
+.detail-nav {
+  position: absolute; top: 16px; right: 62px;
+  display: flex; align-items: center; gap: 2px;
+}
+.detail-nav-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--surface3); color: var(--text2); font-size: 1.25rem;
+  display: flex; align-items: center; justify-content: center; transition: all .15s;
+  line-height: 1; padding-bottom: 2px;
+}
+.detail-nav-btn:hover { background: var(--border); color: var(--text); }
+#d-nav-pos { font-family: 'DM Mono', monospace; font-size: .68rem; color: var(--text3); padding: 0 6px; white-space: nowrap; }
+@media (max-width: 480px) { #d-nav-pos { display: none; } }
+
+/* ── Now Playing platter + tonearm ── */
+.np-platter-wrap { position: relative; width: min(300px, 62vw); aspect-ratio: 1; margin-bottom: 30px; }
+.np-platter {
+  position: absolute; inset: 0; border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255,255,255,.07), rgba(255,255,255,0) 58%),
+    repeating-radial-gradient(circle at 50% 50%, #101010 0 2.5px, #191919 2.5px 5px);
+  background-color: #0c0c0c;
+  box-shadow: 0 24px 80px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.05);
+  animation: npSpin 2.4s linear infinite; animation-play-state: paused;
+}
+.np-platter.spinning { animation-play-state: running; }
+.np-label-art, .np-label-ph {
+  position: absolute; top: 50%; left: 50%; width: 45%; aspect-ratio: 1;
+  transform: translate(-50%,-50%); border-radius: 50%; object-fit: cover;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.65);
+}
+.np-label-ph {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: 'Bebas Neue', sans-serif; font-size: clamp(.9rem, 4vw, 1.3rem);
+  letter-spacing: .08em; line-height: 1.05; color: rgba(0,0,0,.75); padding: 10%;
+  overflow: hidden;
+}
+.np-spindle {
+  position: absolute; top: 50%; left: 50%; width: 9px; height: 9px; z-index: 2;
+  transform: translate(-50%,-50%); border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #e8e4dc, #8a8680);
+  box-shadow: 0 0 4px rgba(0,0,0,.8);
+}
+.np-sheen {
+  position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from 210deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,.09) 38deg, rgba(255,255,255,0) 80deg, rgba(255,255,255,0) 195deg, rgba(255,255,255,.05) 235deg, rgba(255,255,255,0) 280deg);
+}
+.np-tonearm {
+  position: absolute; top: -6%; right: -10%; width: 13%; height: 70%; z-index: 3;
+  transform-origin: 50% 9%; transform: rotate(-25deg);
+  transition: transform .9s cubic-bezier(.55,0,.25,1);
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,.55));
+}
+.np-tonearm.on { transform: rotate(10deg); }
+.np-pivot {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #5a5a5a, #202020 75%);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,.2);
+}
+.np-arm {
+  position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+  width: 10%; min-width: 3px; height: 76%;
+  background: linear-gradient(90deg, #7a7a7a, #3a3a3a); border-radius: 3px;
+}
+.np-headshell {
+  position: absolute; bottom: 3%; left: 50%; transform: translateX(-58%) rotate(16deg);
+  width: 38%; min-width: 10px; height: 12%;
+  background: #26221c; border: 1px solid #55504a; border-radius: 2px;
+}
+
+/* ── Year in the Groove card ── */
+.groove-card {
+  position: relative; overflow: hidden; border-radius: 16px;
+  background:
+    radial-gradient(circle at 108% -18%, rgba(232,197,71,.16), rgba(232,197,71,0) 55%),
+    linear-gradient(150deg, #171310 0%, #0d0b08 100%);
+  border: 1px solid rgba(232,197,71,.28);
+  padding: 24px 26px; margin-bottom: 32px; color: #f0ece4;
+}
+.groove-card::before { /* record grooves in the corner */
+  content: ''; position: absolute; top: -46%; right: -18%; width: 68%; aspect-ratio: 1;
+  border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%, #e8c547 0 12%, rgba(0,0,0,0) 12.5%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(232,197,71,.14) 0 2px, rgba(232,197,71,0) 2px 8px);
+  opacity: .55;
+}
+.groove-eyebrow { font-family: 'DM Mono', monospace; font-size: .66rem; text-transform: uppercase; letter-spacing: .18em; color: #e8c547; margin-bottom: 2px; }
+.groove-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.5rem, 4vw, 2.1rem); letter-spacing: .05em; line-height: 1; margin-bottom: 18px; }
+.groove-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 14px 18px; position: relative; }
+.groove-stat .gv { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem, 4.5vw, 2.4rem); color: #e8c547; line-height: 1; }
+.groove-stat .gl { font-size: .66rem; text-transform: uppercase; letter-spacing: .1em; color: rgba(240,236,228,.55); margin-top: 3px; }
+.groove-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.groove-foot-note { font-size: .74rem; color: rgba(240,236,228,.5); font-style: italic; }
+
+/* ── Neville's crate provenance ribbon ── */
+.crate-ribbon {
+  position: absolute; top: 12px; left: -30px; z-index: 3;
+  transform: rotate(-45deg);
+  background: linear-gradient(180deg, #c47b2e, #a35f1d); color: #fff;
+  font-size: .55rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  padding: 3px 32px; box-shadow: 0 2px 6px rgba(0,0,0,.45); pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Polish ── */
+.shelf-scroll { scroll-snap-type: x proximity; }
+.shelf-card { scroll-snap-align: start; }
+.album-card:hover { box-shadow: 0 10px 32px rgba(0,0,0,.5); }
+@media (prefers-reduced-motion: reduce) {
+  .np-platter, .np-tonearm { animation: none !important; transition: none !important; }
+  .album-card, .shelf-card, .discover-card, .home-hero-art { transition: none !important; }
+}
 
 </style>
 </head>
@@ -1187,7 +1368,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div id="main">
     <div id="toolbar">
       <button class="btn-icon" id="mobile-filter-btn" onclick="toggleSidebar()">⚙</button>
-      <input type="text" id="search-input" placeholder="🔍 Search artist, title, label…" oninput="applyFilters()">
+      <input type="text" id="search-input" placeholder="🔍 Search artist, title, label…  ( / )" oninput="debouncedFilters()">
       <select class="sort-select" id="sort-select" onchange="applyFilters()">
         <option value="artist">Sort: Artist</option>
         <option value="title">Sort: Title</option>
@@ -1202,6 +1383,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <div class="toolbar-info" id="toolbar-info"></div>
       <button class="btn-icon" onclick="openColOrder()" title="Arrange columns">⊟</button>
     </div>
+    <div id="filter-chips" class="hidden"></div>
     <div id="catalogue-grid"></div>
     <div id="catalogue-list" class="hidden">
       <div class="list-header">
@@ -1218,6 +1400,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="empty-state hidden" id="empty-state">
       <div class="es-icon">🎵</div>
       <p>No records match your filters.</p>
+      <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="clearFilters()">✕ Clear all filters</button>
     </div>
   </div>
 </div>
@@ -1226,7 +1409,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 <!-- DISCOVER PAGE -->
 <div class="page" id="page-discover">
   <div style="padding:20px">
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:4px">✨ Discover</h2>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--text);letter-spacing:.06em;margin-bottom:4px">Discover</h2>
     <p style="font-size:.85rem;color:var(--text2);margin-bottom:24px">Records from your collection worth exploring</p>
   </div>
   <div id="discover-content" style="padding:0 20px 40px"></div>
@@ -1235,7 +1418,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 <!-- SESSIONS PAGE -->
 <div class="page" id="page-sessions">
   <div style="padding:20px">
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:4px">📖 Listening Sessions</h2>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--text);letter-spacing:.06em;margin-bottom:4px">Listening Sessions</h2>
     <p style="font-size:.85rem;color:var(--text2);margin-bottom:24px">Your complete listening history</p>
   </div>
   <div id="sessions-content" style="padding:0 20px 40px"></div>
@@ -1244,7 +1427,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 <!-- SETTINGS PAGE -->
 <div class="page" id="page-settings">
   <div style="padding:20px;max-width:560px">
-    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--accent);letter-spacing:.06em;margin-bottom:20px">⚙ Settings</h2>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--text);letter-spacing:.06em;margin-bottom:20px">Settings</h2>
 
     <div class="settings-section">
       <h3>Appearance</h3>
@@ -1335,6 +1518,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div class="detail-sheet">
     <div class="detail-hero">
       <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div class="detail-nav">
+        <button class="detail-nav-btn" onclick="navDetail(-1)" title="Previous record (←)">‹</button>
+        <span id="d-nav-pos"></span>
+        <button class="detail-nav-btn" onclick="navDetail(1)" title="Next record (→)">›</button>
+      </div>
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
         <div class="detail-art-wrap" id="d-art-wrap" onclick="openArtLightbox()" style="cursor:zoom-in">
           <div class="detail-art-placeholder" id="d-art-placeholder">🎵</div>
@@ -1593,8 +1781,19 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div class="np-bg" id="np-bg"></div>
   <button class="np-close" onclick="closeNowPlaying()">✕</button>
   <div class="np-content">
-    <img class="np-art" id="np-art" src="" alt="" style="display:none">
-    <div class="np-no-art" id="np-no-art" style="display:none"></div>
+    <div class="np-platter-wrap">
+      <div class="np-platter" id="np-platter">
+        <img class="np-label-art" id="np-art" src="" alt="" style="display:none">
+        <div class="np-label-ph" id="np-no-art" style="display:none"></div>
+        <div class="np-spindle"></div>
+      </div>
+      <div class="np-sheen"></div>
+      <div class="np-tonearm" id="np-tonearm">
+        <div class="np-pivot"></div>
+        <div class="np-arm"></div>
+        <div class="np-headshell"></div>
+      </div>
+    </div>
     <div class="np-artist" id="np-artist"></div>
     <div class="np-title" id="np-title"></div>
     <div class="np-meta" id="np-meta"></div>
@@ -1687,7 +1886,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 <div id="art-lightbox" style="position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:20px" onclick="if(event.target===this)closeArtLightbox()">
   <div style="position:relative;max-width:90vw;max-height:90vh">
     <img id="art-lightbox-img" src="" alt="" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.8);display:block">
-    <div id="art-lightbox-ph" style="display:none;width:min(80vw,500px);height:min(80vw,500px);background:var(--surface2);border-radius:12px;align-items:center;justify-content:center;font-size:6rem"></div>
+    <div id="art-lightbox-ph" style="display:none;width:min(80vw,500px);height:min(80vw,500px);background:var(--surface2);border-radius:12px;overflow:hidden;position:relative"></div>
     <div style="position:absolute;top:-48px;right:0;display:flex;gap:8px">
       <button class="btn btn-ghost btn-sm admin-only" onclick="closeArtLightbox();openArtPicker()" style="background:rgba(20,20,20,.8)">✏️ Edit Art</button>
       <button onclick="closeArtLightbox()" style="width:36px;height:36px;border-radius:50%;background:rgba(20,20,20,.8);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:1.1rem">✕</button>
@@ -1866,8 +2065,16 @@ async function init() {
   hideAppLoading();
   setBfTab('art');
 
-  // Navigate to start page
-  navTo(getStartPage());
+  // Navigate to start page — a deep link in the URL wins over the saved start page
+  const deepLink = decodeURIComponent(location.hash.slice(1));
+  if (deepLink.startsWith('record/')) {
+    navTo(getStartPage(), true);
+    openDetail(deepLink.slice(7), true);
+  } else if (PAGES.includes(deepLink)) {
+    navTo(deepLink, true);
+  } else {
+    navTo(getStartPage());
+  }
 
   if (window.innerWidth <= 768) {
     document.getElementById('mobile-sidebar-btn').style.display = 'flex';
@@ -2235,6 +2442,72 @@ function setSortBy(key) {
   renderAll();
 }
 
+// ── Active filter chips (shown above the grid) ──────────
+function chipRemovePill(key, val) {
+  const containerId = { genres:'genre-pills', artists:'artist-pills', labels:'label-pills' }[key];
+  const arr = activeFilters[key];
+  const i = arr.indexOf(val);
+  if (i > -1) arr.splice(i, 1);
+  document.querySelectorAll(`#${containerId} .filter-pill`).forEach(p => {
+    if (p.dataset.val === val) p.classList.remove('active');
+  });
+  updateFilterCounts();
+  renderAll();
+}
+
+function chipRemoveYear(d) {
+  const i = activeFilters.years.indexOf(d);
+  if (i > -1) activeFilters.years.splice(i, 1);
+  document.querySelector(`#year-pills [data-decade="${d}"]`)?.classList.remove('active');
+  renderAll();
+}
+
+function chipClear(kind) {
+  if (kind === 'collection') { document.querySelector('[data-col="all"]')?.click(); return; }
+  if (kind === 'status')     { document.querySelector('[data-status="all"]')?.click(); return; }
+  if (kind === 'search')   { document.getElementById('search-input').value = ''; activeFilters.search = ''; }
+  if (kind === 'yearFrom') { const el = document.getElementById('year-from'); if (el) el.value = ''; activeFilters.yearFrom = ''; }
+  if (kind === 'yearTo')   { const el = document.getElementById('year-to');   if (el) el.value = ''; activeFilters.yearTo = ''; }
+  if (kind === 'art')      { const el = document.getElementById('art-filter'); if (el) el.value = ''; activeFilters.art = ''; }
+  renderAll();
+}
+
+function renderFilterChips() {
+  const el = document.getElementById('filter-chips');
+  if (!el) return;
+  const F = activeFilters;
+  const chips = [];
+  if (F.search) chips.push({ pre:'Search', label:`“${F.search}”`, fn:() => chipClear('search') });
+  F.genres.forEach(v  => chips.push({ pre:'Genre',  label:v, fn:() => chipRemovePill('genres', v) }));
+  F.artists.forEach(v => chips.push({ pre:'Artist', label:v, fn:() => chipRemovePill('artists', v) }));
+  F.labels.forEach(v  => chips.push({ pre:'Label',  label:v, fn:() => chipRemovePill('labels', v) }));
+  F.years.forEach(d   => chips.push({ label:d + 's', fn:() => chipRemoveYear(d) }));
+  if (F.yearFrom) chips.push({ label:'From ' + F.yearFrom, fn:() => chipClear('yearFrom') });
+  if (F.yearTo)   chips.push({ label:'To ' + F.yearTo,     fn:() => chipClear('yearTo') });
+  if (F.art) chips.push({ label:F.art === 'yes' ? 'With art' : 'Without art', fn:() => chipClear('art') });
+  if (F.collection !== 'all') chips.push({ label:F.collection === 'found' ? 'Found' : 'Neville’s', fn:() => chipClear('collection') });
+  if (F.status !== 'all') chips.push({ label:{ listened:'✓ Listened', unlistened:'◎ Unheard', fav:'★ Favourites' }[F.status], fn:() => chipClear('status') });
+  if (typeof activeTagFilter !== 'undefined' && activeTagFilter) chips.push({ pre:'Tag', label:activeTagFilter, fn:() => clearTagFilter() });
+
+  el.classList.toggle('hidden', !chips.length);
+  el.innerHTML = '';
+  chips.forEach(ch => {
+    const b = document.createElement('button');
+    b.className = 'fchip';
+    b.innerHTML = (ch.pre ? `<span class="fchip-label">${escHTML(ch.pre)}</span>` : '') +
+      `<span>${escHTML(ch.label)}</span><span class="fx">✕</span>`;
+    b.onclick = ch.fn;
+    el.appendChild(b);
+  });
+  if (chips.length > 1) {
+    const c = document.createElement('button');
+    c.className = 'fchip-clear';
+    c.textContent = 'Clear all';
+    c.onclick = clearFilters;
+    el.appendChild(c);
+  }
+}
+
 function getFiltered() {
   let records = DB.filter(r => {
     const s = activeFilters.search;
@@ -2377,6 +2650,7 @@ function renderAll() {
   document.getElementById('sidebar-count').textContent = `Showing ${count} records`;
   document.getElementById('header-stats').textContent = `${DB.length} records`;
   document.getElementById('empty-state').classList.toggle('hidden', count > 0);
+  renderFilterChips();
 
   if (currentView === 'grid') {
     renderGrid();
@@ -2418,14 +2692,43 @@ function getArtistEmoji(genre) {
   return '🎵';
 }
 
+// ── Generated sleeve placeholders ───────────────────────
+// Every record without artwork renders as a vinyl sleeve: genre-hued duotone,
+// artist/title as sleeve type, record disc peeking out of the opening.
+function escHTML(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function sleeveHTML(r, size) {
+  const c = getGenreColor(r.genre);
+  const genre = (r.genre || '').split(/[,\/]/)[0].trim();
+  const ribbon = r.notes === "Neville's Collection" ? ' has-ribbon' : '';
+  return `<div class="sleeve${size === 'sm' ? ' s-sm' : ''}${ribbon}" style="--sc:${c}">
+    <div class="sleeve-disc"></div>
+    <div class="sleeve-artist">${escHTML(r.artist)}</div>
+    <div class="sleeve-title">${escHTML(r.title)}</div>
+    ${genre ? `<div class="sleeve-genre">${escHTML(genre)}</div>` : ''}
+  </div>`;
+}
+
+// Swap a broken <img> for the generated sleeve of its record (host needs data-rid)
+function artFallback(imgEl, size) {
+  const host = imgEl.closest('[data-rid]');
+  const r = host && DB.find(x => x.id === host.dataset.rid);
+  if (host && r) host.innerHTML = sleeveHTML(r, size);
+  else imgEl.style.display = 'none';
+}
+
+let _filterDebounce;
+function debouncedFilters() {
+  clearTimeout(_filterDebounce);
+  _filterDebounce = setTimeout(applyFilters, 150);
+}
+
 function renderGrid() {
   const grid = document.getElementById('catalogue-grid');
   const cols = getColumnOrder();
   grid.innerHTML = filteredRecords.map(r => {
-    const color = getGenreColor(r.genre);
-    const emoji = getArtistEmoji(r.genre);
     const artHTML = r.albumArt
-      ? `<img class="album-art" src="${r.albumArt}" alt="${r.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      ? `<img class="album-art" src="${r.albumArt}" alt="Cover of ${escHTML(r.title)} by ${escHTML(r.artist)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">`
       : '';
     const placeholderStyle = r.albumArt ? 'display:none' : '';
     let artBadge = '';
@@ -2442,11 +2745,8 @@ function renderGrid() {
     }).join('');
     return `<div class="album-card" onclick="openDetail('${r.id}')">
       ${artHTML}
-      <div class="card-placeholder" style="${placeholderStyle};background:linear-gradient(135deg,${color}22,${color}44)">
-        <div class="ph-icon">${emoji}</div>
-        <div class="ph-artist">${r.artist}</div>
-        <div class="ph-title">${r.title}</div>
-      </div>
+      <div class="card-placeholder" style="${placeholderStyle}">${sleeveHTML(r)}</div>
+      ${r.notes === "Neville's Collection" ? '<div class="crate-ribbon">Neville’s</div>' : ''}
       <div class="card-info-overlay">
         <div class="cio-artist">${r.artist}</div>
         <div class="cio-title">${r.title}</div>
@@ -2465,8 +2765,8 @@ function renderList() {
   const rows = document.getElementById('list-rows');
   rows.innerHTML = filteredRecords.map((r,i) => {
     const thumbHTML = r.albumArt
-      ? `<div class="list-thumb"><img src="${r.albumArt}" alt="" onerror="this.parentNode.textContent='${getArtistEmoji(r.genre)}'"></div>`
-      : `<div class="list-thumb">${getArtistEmoji(r.genre)}</div>`;
+      ? `<div class="list-thumb" data-rid="${r.id}"><img src="${r.albumArt}" alt="" loading="lazy" decoding="async" onerror="artFallback(this,'sm')"></div>`
+      : `<div class="list-thumb">${sleeveHTML(r,'sm')}</div>`;
     return `<div class="list-row" onclick="openDetail('${r.id}')">
       <span class="list-id">${r.id}</span>
       ${thumbHTML}
@@ -2526,10 +2826,11 @@ function updateStats() {
 // ═══════════════════════════════════════════════════════
 // DETAIL MODAL
 // ═══════════════════════════════════════════════════════
-function openDetail(id) {
+function openDetail(id, fromHash) {
   currentRecord = DB.find(r => r.id === id);
   if (!currentRecord) return;
   const r = currentRecord;
+  const wasOpen = document.getElementById('detail-modal').classList.contains('open');
 
   document.getElementById('d-id').textContent = r.id;
   document.getElementById('d-artist').textContent = r.artist;
@@ -2551,9 +2852,18 @@ function openDetail(id) {
     artPh.style.display = 'none';
   } else {
     artImg.style.display = 'none';
-    artPh.style.display = 'flex';
-    artPh.textContent = getArtistEmoji(r.genre);
+    artPh.style.display = 'block';
+    artPh.innerHTML = sleeveHTML(r);
   }
+
+  // Ambient genre-colour glow behind the hero
+  const heroEl = document.querySelector('#detail-modal .detail-hero');
+  if (heroEl) heroEl.style.background = `linear-gradient(180deg, ${getGenreColor(r.genre)}26, transparent)`;
+
+  // Position within the current filtered set (for prev/next)
+  const navList = filteredRecords.length ? filteredRecords : DB;
+  const navIdx = navList.findIndex(x => x.id === r.id);
+  document.getElementById('d-nav-pos').textContent = navIdx > -1 ? `${navIdx+1} / ${navList.length}` : '';
 
   // Buttons
   document.getElementById('d-listen-btn').textContent = r.listened ? '✓ Mark Unlistened' : '◎ Mark as Listened';
@@ -2596,6 +2906,22 @@ function openDetail(id) {
   document.getElementById('e-notes').value = r.notes;
 
   document.getElementById('detail-modal').classList.add('open');
+
+  // Deep link: record gets its own hash entry; flipping prev/next replaces it
+  if (!fromHash) {
+    const newHash = '#record/' + encodeURIComponent(id);
+    if (wasOpen) history.replaceState(null, '', newHash);
+    else location.hash = newHash;
+  }
+}
+
+function navDetail(dir) {
+  if (!currentRecord) return;
+  const list = filteredRecords.length ? filteredRecords : DB;
+  let i = list.findIndex(r => r.id === currentRecord.id);
+  i = i === -1 ? 0 : (i + dir + list.length) % list.length;
+  stopPreview();
+  openDetail(list[i].id);
 }
 
 function closeDetail() {
@@ -3603,6 +3929,14 @@ function drawWheel(highlightIndex = -1, angle = 0) {
     }
   });
 
+  // Record grooves over the segments
+  ctx.save();
+  ctx.globalAlpha = .14; ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+  for (let gr = 38; gr < r; gr += 9) {
+    ctx.beginPath(); ctx.arc(cx, cy, gr, 0, Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+
   // Center circle
   ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2);
   ctx.fillStyle = '#0a0a0a'; ctx.fill();
@@ -3657,6 +3991,7 @@ function spinWheel() {
       `;
       wheelSpinning = false;
       document.getElementById('spin-btn').disabled = false;
+      if (navigator.vibrate) navigator.vibrate([30, 40, 60]);
     }
   }
   requestAnimationFrame(animate);
@@ -4282,7 +4617,7 @@ let npRecord = null;
 let npPlaying = false;
 let npTimer = 0;
 let npInterval = null;
-let npSpinning = false;
+let npSpinning = true;
 let npDoneTracks = new Set();
 
 function openNowPlaying() {
@@ -4295,19 +4630,27 @@ function openNowPlaying() {
   const r = npRecord;
   const modal = document.getElementById('nowplaying-modal');
 
-  // Background blur art
+  // Ambient backdrop: blurred art, or a genre-colour glow when there's none
   const bg = document.getElementById('np-bg');
-  bg.style.backgroundImage = r.albumArt ? `url(${r.albumArt})` : 'none';
+  const glow = getGenreColor(r.genre);
+  if (r.albumArt) {
+    bg.style.backgroundImage = `url(${r.albumArt})`;
+  } else {
+    bg.style.backgroundImage = `radial-gradient(circle at 50% 32%, ${glow}77, #000 78%)`;
+  }
 
-  // Art
+  // Platter: art becomes the record label; no art → generated label
+  const platter = document.getElementById('np-platter');
+  platter.classList.remove('spinning');
+  document.getElementById('np-tonearm').classList.remove('on');
   const artImg = document.getElementById('np-art');
   const artPh  = document.getElementById('np-no-art');
   if (r.albumArt) {
     artImg.src = r.albumArt; artImg.style.display = 'block'; artPh.style.display = 'none';
-    artImg.classList.remove('spinning');
   } else {
     artImg.style.display = 'none'; artPh.style.display = 'flex';
-    artPh.textContent = getArtistEmoji(r.genre);
+    artPh.textContent = r.artist;
+    artPh.style.background = `radial-gradient(circle at 40% 32%, ${glow}, color-mix(in srgb, ${glow} 60%, #000))`;
   }
 
   document.getElementById('np-artist').textContent = r.artist;
@@ -4315,6 +4658,7 @@ function openNowPlaying() {
   document.getElementById('np-meta').textContent = [r.year, r.genre, r.label].filter(Boolean).join(' · ');
   document.getElementById('np-timer').textContent = '0:00';
   document.getElementById('np-play-btn').textContent = '▶';
+  document.getElementById('np-spin-btn').style.color = npSpinning ? 'var(--accent)' : '';
 
   // Tracklist
   renderNpTracks();
@@ -4343,6 +4687,8 @@ function toggleNpTrack(i) {
 function toggleNpPlay() {
   npPlaying = !npPlaying;
   document.getElementById('np-play-btn').textContent = npPlaying ? '⏸' : '▶';
+  // Needle drops on play, lifts on pause
+  document.getElementById('np-tonearm').classList.toggle('on', npPlaying);
   if (npPlaying) {
     npInterval = setInterval(() => {
       npTimer++;
@@ -4350,27 +4696,24 @@ function toggleNpPlay() {
       const s = String(npTimer % 60).padStart(2, '0');
       document.getElementById('np-timer').textContent = `${m}:${s}`;
     }, 1000);
-    if (npSpinning) {
-      const artImg = document.getElementById('np-art');
-      artImg.classList.add('spinning');
-    }
+    if (npSpinning) document.getElementById('np-platter').classList.add('spinning');
   } else {
     clearInterval(npInterval);
-    document.getElementById('np-art').classList.remove('spinning');
+    document.getElementById('np-platter').classList.remove('spinning');
   }
 }
 
 function toggleNpSpin() {
   npSpinning = !npSpinning;
-  const artImg = document.getElementById('np-art');
   document.getElementById('np-spin-btn').style.color = npSpinning ? 'var(--accent)' : '';
-  if (npPlaying) artImg.classList.toggle('spinning', npSpinning);
+  if (npPlaying) document.getElementById('np-platter').classList.toggle('spinning', npSpinning);
 }
 
 function closeNowPlaying() {
   npPlaying = false;
   clearInterval(npInterval);
-  document.getElementById('np-art').classList.remove('spinning');
+  document.getElementById('np-platter').classList.remove('spinning');
+  document.getElementById('np-tonearm').classList.remove('on');
   document.getElementById('nowplaying-modal').classList.remove('open');
 }
 
@@ -4453,7 +4796,7 @@ function renderAnalytics() {
   const mostPlayed = DB.filter(r=>r.playCount>0).sort((a,b)=>b.playCount-a.playCount).slice(0,5);
   document.getElementById('an-mostplayed').innerHTML = mostPlayed.length ? mostPlayed.map(r =>
     `<div class="an-session-item" onclick="closeAnalytics();openDetail('${r.id}');event.stopPropagation()" style="cursor:pointer">
-      <div class="an-session-art">${r.albumArt ? `<img src="${r.albumArt}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">` : getArtistEmoji(r.genre)}</div>
+      <div class="an-session-art" style="overflow:hidden;position:relative">${r.albumArt ? `<img src="${r.albumArt}" style="width:36px;height:36px;object-fit:cover;border-radius:4px">` : sleeveHTML(r,'sm')}</div>
       <div class="an-session-info"><div class="an-session-title">${r.artist}</div><div class="an-session-sub">${r.title}</div></div>
       <div class="an-session-time">▶ ${r.playCount}×</div>
     </div>`).join('') : '<div style="color:var(--text3);font-size:.85rem">No plays recorded yet</div>';
@@ -4858,17 +5201,19 @@ function closeTrackPage() {
   currentTrackIdx = null;
 }
 
-function closeDetail() {
+function closeDetail(fromHash) {
   stopPreview();
   document.getElementById('detail-modal').classList.remove('open');
   currentRecord = null;
+  // Drop the record deep-link without adding a history entry
+  if (!fromHash && location.hash.startsWith('#record/')) history.replaceState(null, '', '#' + currentPage);
 }
 
 
 // ═══════════════════════════════════════════════════════
 // VERSION
 // ═══════════════════════════════════════════════════════
-const APP_VERSION = 'v2.0';
+const APP_VERSION = 'v2.1';
 
 // ═══════════════════════════════════════════════════════
 // SETTINGS
@@ -4905,7 +5250,7 @@ function applyTheme() {
 const PAGES = ['home','catalogue','discover','sessions','settings'];
 let currentPage = 'home';
 
-function navTo(page) {
+function navTo(page, fromHash) {
   if (!PAGES.includes(page)) page = 'home';
   currentPage = page;
   // Save last page
@@ -4937,7 +5282,51 @@ function navTo(page) {
   }
 
   window.scrollTo(0, 0);
+
+  if (!fromHash && location.hash !== '#' + page) location.hash = page;
 }
+
+// ── Hash routing: pages and record deep links, browser back/forward ──
+function handleHash() {
+  const h = decodeURIComponent(location.hash.slice(1));
+  const detailOpen = document.getElementById('detail-modal').classList.contains('open');
+  if (h.startsWith('record/')) {
+    const id = h.slice(7);
+    if (!currentRecord || currentRecord.id !== id) openDetail(id, true);
+  } else {
+    if (detailOpen) closeDetail(true);
+    if (PAGES.includes(h) && h !== currentPage) navTo(h, true);
+  }
+}
+window.addEventListener('hashchange', handleHash);
+
+// ── Global keyboard shortcuts ──
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  const typing = /^(input|textarea|select)$/i.test(t.tagName || '') || t.isContentEditable;
+  const detailOpen = document.getElementById('detail-modal').classList.contains('open');
+
+  if (e.key === 'Escape') {
+    if (typing) { t.blur(); return; }
+    const tp = document.getElementById('trackpage-modal');
+    if (tp && tp.style.opacity === '1') { closeTrackPage(); return; }
+    if (document.getElementById('nowplaying-modal').classList.contains('open')) { closeNowPlaying(); return; }
+    if (detailOpen) { closeDetail(); return; }
+    return;
+  }
+  if (typing) return;
+
+  if (detailOpen) {
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); navDetail(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); navDetail(1); }
+    return;
+  }
+  if (e.key === '/') {
+    e.preventDefault();
+    if (currentPage !== 'catalogue') navTo('catalogue');
+    document.getElementById('search-input')?.focus();
+  }
+});
 
 function getStartPage() {
   const startPref = getSetting('startPage', 'last');
@@ -4972,8 +5361,9 @@ function renderShelf(containerId, records, emptyMsg) {
   }
   el.innerHTML = records.slice(0, 12).map(r => `
     <div class="shelf-card" onclick="openDetail('${r.id}')">
-      <div class="shelf-art">
-        ${r.albumArt ? `<img src="${r.albumArt}" alt="" loading="lazy" onerror="this.parentNode.textContent='${getArtistEmoji(r.genre)}'">` : getArtistEmoji(r.genre)}
+      <div class="shelf-art" data-rid="${r.id}">
+        ${r.albumArt ? `<img src="${r.albumArt}" alt="" loading="lazy" decoding="async" onerror="artFallback(this)">` : sleeveHTML(r)}
+        ${r.notes === "Neville's Collection" ? '<div class="crate-ribbon">Neville’s</div>' : ''}
       </div>
       <div class="shelf-artist">${r.artist}</div>
       <div class="shelf-title">${r.title}</div>
@@ -5062,11 +5452,17 @@ function renderDailyPick() {
   if (r.albumArt) {
     bg.style.backgroundImage = `url(${r.albumArt})`;
     bg.style.backgroundColor = '';
+    bg.style.filter = '';
     artWrap.innerHTML = `<img class="home-hero-art" src="${r.albumArt}" alt="" onclick="openDetail('${r.id}')">`;
   } else {
-    bg.style.backgroundImage = 'none';
-    bg.style.backgroundColor = getGenreColor(r.genre);
-    artWrap.innerHTML = `<div class="home-hero-art-placeholder" onclick="openDetail('${r.id}')">${getArtistEmoji(r.genre)}</div>`;
+    // no art: procedural backdrop — record grooves rising from below in the genre colour
+    const c = getGenreColor(r.genre);
+    bg.style.filter = 'none';
+    bg.style.backgroundImage =
+      `radial-gradient(circle at 50% 130%, ${c}66, transparent 62%),` +
+      `repeating-radial-gradient(circle at 50% 130%, transparent 0 30px, ${c}22 30px 32px)`;
+    bg.style.backgroundColor = '#101010';
+    artWrap.innerHTML = `<div class="home-hero-art-placeholder" onclick="openDetail('${r.id}')" style="overflow:hidden">${sleeveHTML(r)}</div>`;
   }
 
   label.textContent  = modeLabel;
@@ -5145,7 +5541,7 @@ function renderDpDetail(idx) {
   // ── 1. Record strip ───────────────────────────────────
   const artHtml = r.albumArt
     ? '<img src="' + r.albumArt + '" style="width:44px;height:44px;border-radius:5px;object-fit:cover;flex-shrink:0">'
-    : '<div style="width:44px;height:44px;border-radius:5px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">' + getArtistEmoji(r.genre) + '</div>';
+    : '<div style="width:44px;height:44px;border-radius:5px;overflow:hidden;position:relative;flex-shrink:0">' + sleeveHTML(r,'sm') + '</div>';
 
   const recordStrip =
     '<div onclick="closeDpTracks();openDetail(\'' + r.id + '\')" title="Open record" style="display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;margin-bottom:14px;cursor:pointer;border:1px solid var(--border)">' +
@@ -5372,10 +5768,11 @@ function renderDiscoverPage() {
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
         ${s.records.map(r => `
           <div class="discover-card" onclick="openDetail('${r.id}')">
-            <div class="discover-card-art">
+            <div class="discover-card-art" data-rid="${r.id}">
               ${r.albumArt
-                ? `<img src="${r.albumArt}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=discover-card-art-ph>${getArtistEmoji(r.genre)}</div>'">`
-                : `<div class="discover-card-art-ph">${getArtistEmoji(r.genre)}</div>`}
+                ? `<img src="${r.albumArt}" alt="" loading="lazy" decoding="async" onerror="artFallback(this)">`
+                : sleeveHTML(r)}
+              ${r.notes === "Neville's Collection" ? '<div class="crate-ribbon">Neville’s</div>' : ''}
             </div>
             <div class="discover-card-body">
               <div class="discover-card-label">${r.genre?.split(/[,\/]/)[0]?.trim() || ''}</div>
@@ -5419,6 +5816,107 @@ function getMostPlayedDecade() {
 // ═══════════════════════════════════════════════════════
 // SESSIONS PAGE
 // ═══════════════════════════════════════════════════════
+// ── Year in the Groove: collection-wrapped stats card ──
+function grooveStats(sessions) {
+  const year = new Date().getFullYear();
+  let scoped = sessions.filter(s => new Date(s.ts).getFullYear() === year);
+  let scopeLabel = String(year);
+  if (!scoped.length) { scoped = sessions; scopeLabel = 'All time'; }
+
+  const uniqueIds = new Set(scoped.map(s => s.id));
+  const heard = DB.filter(r => r.listened).length;
+  const pctHeard = DB.length ? Math.round(heard / DB.length * 100) : 0;
+
+  // Top genre and artist across the scoped sessions
+  const gCounts = {}, aCounts = {};
+  scoped.forEach(s => {
+    const r = DB.find(x => x.id === s.id);
+    const g = r?.genre?.split(/[,\/]/)[0]?.trim();
+    if (g) gCounts[g] = (gCounts[g] || 0) + 1;
+    if (s.artist) aCounts[s.artist] = (aCounts[s.artist] || 0) + 1;
+  });
+  const topGenre  = Object.entries(gCounts).sort((a,b) => b[1]-a[1])[0]?.[0] || '—';
+  const topArtist = Object.entries(aCounts).sort((a,b) => b[1]-a[1])[0]?.[0] || '—';
+
+  // Longest streak of consecutive listening days
+  const days = [...new Set(scoped.map(s => new Date(s.ts).toDateString()))]
+    .map(d => new Date(d).getTime()).sort((a,b) => a-b);
+  let streak = days.length ? 1 : 0, best = streak;
+  for (let i = 1; i < days.length; i++) {
+    streak = (days[i] - days[i-1] === 86400000) ? streak + 1 : 1;
+    if (streak > best) best = streak;
+  }
+
+  return { scopeLabel, spins: scoped.length, unique: uniqueIds.size, pctHeard, topGenre, topArtist, streak: best };
+}
+
+function grooveCardHTML(st) {
+  return `<div class="groove-card" id="groove-card">
+    <div class="groove-eyebrow">Molefe Records Collection</div>
+    <div class="groove-title">Year in the Groove — ${escHTML(st.scopeLabel)}</div>
+    <div class="groove-grid">
+      <div class="groove-stat"><div class="gv">${st.spins}</div><div class="gl">Spins</div></div>
+      <div class="groove-stat"><div class="gv">${st.unique}</div><div class="gl">Records played</div></div>
+      <div class="groove-stat"><div class="gv">${st.pctHeard}%</div><div class="gl">Collection heard</div></div>
+      <div class="groove-stat"><div class="gv">${st.streak}</div><div class="gl">Day streak</div></div>
+    </div>
+    <div class="groove-foot">
+      <span class="groove-foot-note">Top genre: ${escHTML(st.topGenre)} · Most played: ${escHTML(st.topArtist)}</span>
+      <button class="btn btn-ghost btn-sm" onclick="saveGrooveCard()">⬇ Save card</button>
+    </div>
+  </div>`;
+}
+
+// Draw the card to a canvas and download it as a shareable PNG
+function saveGrooveCard() {
+  const st = grooveStats(JSON.parse(localStorage.getItem('mrd_sessions') || '[]'));
+  const W = 1080, H = 1080;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+
+  const grad = x.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#171310'); grad.addColorStop(1, '#0d0b08');
+  x.fillStyle = grad; x.fillRect(0, 0, W, H);
+
+  // Record grooves top-right
+  x.save(); x.translate(W * .96, H * .04); x.globalAlpha = .5;
+  for (let r = 30; r < 480; r += 16) {
+    x.beginPath(); x.arc(0, 0, r, 0, Math.PI * 2);
+    x.strokeStyle = 'rgba(232,197,71,.25)'; x.lineWidth = 3; x.stroke();
+  }
+  x.beginPath(); x.arc(0, 0, 60, 0, Math.PI * 2); x.fillStyle = '#e8c547'; x.fill();
+  x.restore();
+
+  const bebas = s => `${s}px 'Bebas Neue', sans-serif`;
+  const mono  = s => `${s}px 'DM Mono', monospace`;
+  x.textBaseline = 'top';
+  x.fillStyle = '#e8c547'; x.font = mono(26);
+  x.fillText('M O L E F E   R E C O R D S   C O L L E C T I O N', 80, 110);
+  x.fillStyle = '#f0ece4'; x.font = bebas(92);
+  x.fillText('YEAR IN THE GROOVE', 80, 160);
+  x.fillStyle = 'rgba(240,236,228,.6)'; x.font = bebas(48);
+  x.fillText(String(st.scopeLabel).toUpperCase(), 80, 268);
+
+  const stats = [
+    [st.spins, 'SPINS'], [st.unique, 'RECORDS PLAYED'],
+    [st.pctHeard + '%', 'COLLECTION HEARD'], [st.streak, 'DAY STREAK'],
+  ];
+  stats.forEach(([v, l], i) => {
+    const sx = 80 + (i % 2) * 480, sy = 420 + Math.floor(i / 2) * 240;
+    x.fillStyle = '#e8c547'; x.font = bebas(130); x.fillText(String(v), sx, sy);
+    x.fillStyle = 'rgba(240,236,228,.55)'; x.font = mono(24); x.fillText(l, sx + 4, sy + 140);
+  });
+
+  x.fillStyle = 'rgba(240,236,228,.6)'; x.font = mono(28);
+  x.fillText(`Top genre: ${st.topGenre}   ·   Most played: ${st.topArtist}`, 80, 950);
+
+  const a = document.createElement('a');
+  a.download = `year-in-the-groove-${st.scopeLabel}.png`.replace(/\s+/g, '-').toLowerCase();
+  a.href = cv.toDataURL('image/png');
+  a.click();
+  toast('🎉 Card saved', 'success');
+}
+
 function renderSessionsPage() {
   const el = document.getElementById('sessions-content');
   if (!el) return;
@@ -5438,15 +5936,17 @@ function renderSessionsPage() {
     grouped[key].push(s);
   });
 
-  el.innerHTML = Object.entries(grouped).map(([date, items]) => `
+  el.innerHTML = grooveCardHTML(grooveStats(sessions)) + Object.entries(grouped).map(([date, items]) => `
     <div style="margin-bottom:24px">
       <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">${date}</div>
       ${items.map(s => {
         const r = DB.find(x => x.id === s.id);
         const time = new Date(s.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
         return `<div class="session-entry" onclick="openDetail('${s.id}')">
-          <div class="session-art">
-            ${r?.albumArt ? `<img src="${r.albumArt}" style="width:48px;height:48px;object-fit:cover;border-radius:6px" onerror="this.parentNode.textContent='🎵'">` : '🎵'}
+          <div class="session-art" data-rid="${s.id}" style="overflow:hidden;position:relative">
+            ${r?.albumArt
+              ? `<img src="${r.albumArt}" style="width:48px;height:48px;object-fit:cover;border-radius:6px" loading="lazy" onerror="artFallback(this,'sm')">`
+              : sleeveHTML(r || { artist: s.artist, title: s.title, genre: '' }, 'sm')}
           </div>
           <div class="session-info">
             <div class="session-artist">${s.artist}</div>
@@ -5502,8 +6002,8 @@ function openArtLightbox() {
     ph.style.display = 'none';
   } else {
     img.style.display = 'none';
-    ph.style.display = 'flex';
-    ph.textContent = getArtistEmoji(currentRecord.genre);
+    ph.style.display = 'block';
+    ph.innerHTML = sleeveHTML(currentRecord);
   }
 
   cap.textContent = `${currentRecord.artist} — ${currentRecord.title}${currentRecord.year ? ' ('+currentRecord.year+')' : ''}`;

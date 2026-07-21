@@ -101,17 +101,22 @@ Ranked by impact-per-effort for a personal vinyl ritual app:
 
 ## Prioritised roadmap
 
-| # | Change | Impact | Effort |
-|---|--------|--------|--------|
-| 1 | Generated sleeve placeholders (kill the emoji) | ★★★★★ | M |
-| 2 | Active-filter chip row above the grid | ★★★★★ | S |
-| 3 | Hash routing: back button, deep links | ★★★★ | M |
-| 4 | Prev/next in detail sheet + `/` search shortcut | ★★★★ | S |
-| 5 | Spinning-record Now Playing | ★★★★ | M |
-| 6 | Gold-discipline + contrast + SVG icon pass | ★★★ | M |
-| 7 | Move bulk-fetch out of sidebar; mobile toolbar collapse | ★★★ | S |
-| 8 | Crate-flip view | ★★★ | L |
-| 9 | Year in the Groove (wrapped) | ★★★ | M |
-| 10 | A11y sweep (roles, focus, alt, reduced motion) | ★★★ | M |
+| # | Change | Impact | Effort | Status |
+|---|--------|--------|--------|--------|
+| 1 | Generated sleeve placeholders (kill the emoji) | ★★★★★ | M | ✅ Done (v2.1) |
+| 2 | Active-filter chip row above the grid | ★★★★★ | S | ✅ Done (v2.1) |
+| 3 | Hash routing: back button, deep links | ★★★★ | M | ✅ Done (v2.1) |
+| 4 | Prev/next in detail sheet + `/` search shortcut | ★★★★ | S | ✅ Done (v2.1) |
+| 5 | Spinning-record Now Playing | ★★★★ | M | ✅ Done (v2.1) |
+| 6 | Gold-discipline + contrast + SVG icon pass | ★★★ | M | ✅ Contrast + gold done; SVG icons pending |
+| 7 | Move bulk-fetch out of sidebar; mobile toolbar collapse | ★★★ | S | Pending |
+| 8 | Crate-flip view | ★★★ | L | Pending |
+| 9 | Year in the Groove (wrapped) | ★★★ | M | ✅ Done (v2.1) |
+| 10 | A11y sweep (roles, focus, alt, reduced motion) | ★★★ | M | Partial: Esc/arrows, alt text, reduced-motion |
+
+Also shipped in v2.1: Neville's-crate provenance ribbon, ambient genre-colour glow in the
+detail sheet and Now Playing, procedural groove-ring hero backdrop, wheel platter grooves +
+haptic buzz, debounced search, scroll-snap shelves, and a "Clear all filters" action in the
+catalogue empty state.
 
 *S = under an hour of focused work, M = an evening, L = a weekend.*
