@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MRD Records Catalogue</title>
+<title>Molefe Records Collection</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1011,7 +1011,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
 <!-- Header -->
 <div id="header">
-  <h1 style="cursor:pointer" onclick="navTo('home')">MRD <span>Records</span></h1>
+  <h1 style="cursor:pointer" onclick="navTo('home')">Molefe <span>Records Collection</span></h1>
   <span class="app-version" id="app-version-display">v2.0</span>
   <div class="header-stats" id="header-stats"></div>
   <div class="header-actions">
@@ -1325,7 +1325,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
     <div style="text-align:center;padding:20px 0;color:var(--text3);font-size:.75rem">
       <span id="settings-version"></span><br>
-      MRD Records Catalogue
+      Molefe Records Collection
     </div>
   </div>
 </div>
@@ -1883,7 +1883,7 @@ function showAppLoading(msg) {
     el = document.createElement('div');
     el.id = 'app-loading';
     el.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
-    el.innerHTML = `<div style="font-family:\'Bebas Neue\',sans-serif;font-size:3rem;color:var(--accent);letter-spacing:.1em">MRD</div>
+    el.innerHTML = `<div style="font-family:\'Bebas Neue\',sans-serif;font-size:3rem;color:var(--accent);letter-spacing:.1em">MOLEFE</div>
       <div class="loading-spinner" style="width:28px;height:28px;border-width:3px"></div>
       <div id="app-loading-msg" style="font-size:.85rem;color:var(--text2)"></div>`;
     document.body.appendChild(el);
@@ -3256,14 +3256,14 @@ async function fetchTracklist() {
     const q = encodeURIComponent(`release:"${currentRecord.title}" artist:"${currentRecord.artist}"`);
     const res = await fetch(
       `https://musicbrainz.org/ws/2/release/?query=${q}&limit=3&fmt=json`,
-      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+      { headers: { 'User-Agent': 'Molefe-Records-App/1.0 (records@molefe.app)' } }
     );
     const data = await res.json();
     if (data.releases?.length) {
       const rel = data.releases[0];
       const detRes = await fetch(
         `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
-        { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+        { headers: { 'User-Agent': 'Molefe-Records-App/1.0 (records@molefe.app)' } }
       );
       const det = await detRes.json();
       const tracks = [];
@@ -3284,14 +3284,14 @@ async function fetchTracklist() {
     const q2 = encodeURIComponent(`${currentRecord.title} ${currentRecord.artist}`);
     const res2 = await fetch(
       `https://musicbrainz.org/ws/2/release/?query=${q2}&limit=3&fmt=json`,
-      { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+      { headers: { 'User-Agent': 'Molefe-Records-App/1.0 (records@molefe.app)' } }
     );
     const data2 = await res2.json();
     if (data2.releases?.length) {
       for (const rel of data2.releases.slice(0, 3)) {
         const detRes = await fetch(
           `https://musicbrainz.org/ws/2/release/${rel.id}?inc=recordings&fmt=json`,
-          { headers: { 'User-Agent': 'MRD-Records-App/1.0 (records@mrd.app)' } }
+          { headers: { 'User-Agent': 'Molefe-Records-App/1.0 (records@molefe.app)' } }
         );
         const det = await detRes.json();
         const tracks = [];
@@ -3607,8 +3607,8 @@ function drawWheel(highlightIndex = -1, angle = 0) {
   ctx.beginPath(); ctx.arc(cx,cy,28,0,Math.PI*2);
   ctx.fillStyle = '#0a0a0a'; ctx.fill();
   ctx.strokeStyle = '#e8c547'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = '#e8c547'; ctx.font = 'bold 18px Bebas Neue'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('MRD', cx, cy);
+  ctx.fillStyle = '#e8c547'; ctx.font = 'bold 12px Bebas Neue'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('MOLEFE', cx, cy);
 
   // Pointer
   ctx.beginPath();
