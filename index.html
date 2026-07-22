@@ -2073,7 +2073,9 @@ function recordToRow(r) {
     artist_bio:  r.artistBio  || '',
     album_desc:  r.albumDesc  || '',
     play_count:  r.playCount  || 0,
-    tags:        r.tags       || []
+    tags:        r.tags       || [],
+    spotify_album_id: r.spotifyAlbumId || null,
+    ai_notes:    r.aiNotes    || null
   };
 }
 
@@ -2100,7 +2102,9 @@ function rowToRecord(row) {
     artistBio:  row.artist_bio ?? '',
     albumDesc:  row.album_desc ?? '',
     playCount:  row.play_count  ?? 0,
-    tags:       row.tags        ?? []
+    tags:       row.tags        ?? [],
+    spotifyAlbumId: row.spotify_album_id ?? null,
+    aiNotes:    row.ai_notes    ?? null
   };
 }
 
@@ -2202,14 +2206,18 @@ function getSpotifyMap() {
 }
 function getSpotifyId(r) {
   if (!r) return null;
+  if (r.spotifyAlbumId) return r.spotifyAlbumId;        // Supabase (source of truth)
   const local = getSpotifyMap()[r.id];
-  if (local !== undefined) return local; // may be explicitly null (admin cleared)
-  return SPOTIFY_SEED[r.id] || null;
+  if (local !== undefined) return local;                 // local fallback / explicit clear
+  return SPOTIFY_SEED[r.id] || null;                     // built-in seed
 }
 function setSpotifyId(recordId, albumId) {
+  // Persist to Supabase via the record, with a localStorage fallback
   const map = getSpotifyMap();
   map[recordId] = albumId || null;
   localStorage.setItem(SPOTIFY_LS, JSON.stringify(map));
+  const rec = DB.find(x => x.id === recordId);
+  if (rec) { rec.spotifyAlbumId = albumId || null; saveRecord(rec); }
 }
 function spotifyAlbumUrl(id) { return 'https://open.spotify.com/album/' + id; }
 
@@ -2487,11 +2495,16 @@ const AI_MODEL = 'claude-opus-4-8';
 function getAllAINotes() {
   try { return JSON.parse(localStorage.getItem(AI_NOTES_LS) || '{}'); } catch(e) { return {}; }
 }
-function getAINotes(r) { return r ? getAllAINotes()[r.id] || null : null; }
+function getAINotes(r) {
+  if (!r) return null;
+  return r.aiNotes || getAllAINotes()[r.id] || null; // Supabase first, local fallback
+}
 function saveAINotes(recordId, data) {
   const all = getAllAINotes();
   all[recordId] = data;
   localStorage.setItem(AI_NOTES_LS, JSON.stringify(all));
+  const rec = DB.find(x => x.id === recordId);
+  if (rec) { rec.aiNotes = data; saveRecord(rec); }
 }
 
 function buildCatalogSummary() {
@@ -2657,14 +2670,33 @@ function verifyAINotes() {
   toast('Liner notes verified ✓', 'success');
 }
 
+// One-time: push enrichment saved locally (pre-Supabase-sync versions) up to the DB
+async function syncLocalEnrichmentToDB() {
+  const spot = getSpotifyMap();
+  const notes = getAllAINotes();
+  const changed = [];
+  DB.forEach(r => {
+    let dirty = false;
+    if (!r.spotifyAlbumId && spot[r.id]) { r.spotifyAlbumId = spot[r.id]; dirty = true; }
+    if (!r.aiNotes && notes[r.id])       { r.aiNotes = notes[r.id];       dirty = true; }
+    if (dirty) changed.push(r);
+  });
+  if (!changed.length) return;
+  try {
+    await saveBulk(changed);
+    toast(`☁ Synced ${changed.length} enriched record${changed.length > 1 ? 's' : ''} to Supabase`, 'success');
+  } catch(e) {
+    console.warn('Enrichment sync failed', e);
+  }
+}
+
 // ── Connections section for Discover ────────────────────
 function renderConnectionsSection() {
-  const all = getAllAINotes();
-  const loved = DB.filter(r => (r.favourite || r.playCount > 0) && all[r.id]?.connections?.length);
+  const loved = DB.filter(r => (r.favourite || r.playCount > 0) && getAINotes(r)?.connections?.length);
   const seen = new Set();
   const cards = [];
   shuffle(loved).forEach(src => {
-    (all[src.id].connections || []).forEach(c => {
+    (getAINotes(src).connections || []).forEach(c => {
       if (seen.has(c.id) || cards.length >= 6) return;
       const target = DB.find(x => x.id === c.id);
       if (!target) return;
@@ -2713,6 +2745,7 @@ async function init() {
   if (checkTrustedDevice()) {
     toast('⚡ Admin mode — trusted device', 'success');
   }
+  if (isAdmin()) syncLocalEnrichmentToDB();
   const switchBtn = document.getElementById('admin-switch-btn');
   if (switchBtn && !isAdmin()) switchBtn.style.display = 'flex';
 
@@ -6699,7 +6732,7 @@ function renderSettingsPage() {
   }
   const aiEl = document.getElementById('ai-notes-status');
   if (aiEl) {
-    const count = Object.keys(getAllAINotes()).length;
+    const count = DB.filter(r => getAINotes(r)).length;
     aiEl.textContent = count
       ? `${count} of ${DB.length} records have liner notes`
       : (getApiKeys().anthropic ? 'Ready — run ✨ Enrich collection' : 'Add an Anthropic API key in the Admin panel');
