@@ -1157,6 +1157,41 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   white-space: nowrap;
 }
 
+/* ── Spotify integration ── */
+.spotify-embed iframe { width: 100%; border: 0; border-radius: 12px; display: block; }
+.spotify-note { font-size: .72rem; color: var(--text3); margin-top: 8px; }
+.spotify-cta {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #1db954; color: #000; font-weight: 600;
+  padding: 8px 16px; border-radius: 20px; font-size: .85rem; transition: filter .15s;
+}
+.spotify-cta:hover { filter: brightness(1.1); }
+.spotify-none { color: var(--text3); font-size: .85rem; padding: 12px 0; }
+
+/* ── AI liner notes ── */
+.ln-wrap { margin-bottom: 22px; }
+.ln-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.ai-badge {
+  font-size: .6rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px;
+  background: rgba(155,89,182,.2); color: #c39bd3; border: 1px solid rgba(155,89,182,.4);
+}
+.ai-badge.verified { background: rgba(82,196,120,.15); color: var(--success); border-color: rgba(82,196,120,.4); }
+.ln-fact { display: flex; gap: 10px; font-size: .86rem; line-height: 1.55; color: var(--text2); padding: 5px 0; }
+.ln-fact::before { content: '◆'; color: var(--accent); font-size: .6rem; padding-top: 5px; flex-shrink: 0; }
+.ln-listenfor {
+  margin: 12px 0; padding: 12px 14px; border-left: 3px solid var(--accent);
+  background: rgba(232,197,71,.07); border-radius: 0 8px 8px 0;
+  font-size: .86rem; line-height: 1.55; color: var(--text);
+}
+.ln-listenfor b { color: var(--accent); font-family: 'DM Mono', monospace; font-size: .68rem; letter-spacing: .1em; display: block; margin-bottom: 4px; }
+.ln-context { font-size: .86rem; line-height: 1.65; color: var(--text2); margin-top: 10px; }
+.ln-themes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.ln-theme { font-size: .7rem; padding: 3px 10px; border-radius: 20px; background: var(--surface3); color: var(--text2); }
+
+/* ── Discover connections ── */
+.conn-reason { font-size: .72rem; color: var(--text3); font-style: italic; margin-top: 4px; line-height: 1.4; }
+
 /* ── Polish ── */
 .shelf-scroll { scroll-snap-type: x proximity; }
 .shelf-card { scroll-snap-align: start; }
@@ -1357,6 +1392,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('tracks')">🎵 Fetch All Tracks</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('credits')">🎼 Fetch Track Credits</button>
       <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('lyrics')">🎤 Fetch Track Lyrics</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('spotify')">🎧 Match Spotify</button>
+      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('ainotes')">✨ AI Liner Notes</button>
       <div class="sidebar-sep" style="margin-top:8px"></div>
       <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px;background:linear-gradient(135deg,var(--accent),var(--accent2))" onclick="openBulkFetch('all')">⚡ Fetch Everything</button>
       <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding:0 2px;line-height:1.6" id="art-coverage-label"></div>
@@ -1485,6 +1522,23 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     </div>
 
     <div class="settings-section">
+      <h3>Integrations</h3>
+      <div class="setting-row">
+        <div class="setting-label"><strong>Spotify</strong><span id="spotify-conn-status">Not connected</span></div>
+        <button class="btn btn-ghost btn-sm" id="spotify-conn-btn" onclick="spotifyConnectToggle()">Connect</button>
+      </div>
+      <div class="setting-row" style="flex-wrap:wrap">
+        <div class="setting-label"><strong>Export playlist</strong><span>Turn favourites or a tag into a Spotify playlist</span></div>
+        <select id="spotify-export-select" style="max-width:160px;font-size:.82rem"></select>
+        <button class="btn btn-ghost btn-sm" onclick="exportToSpotify()">⤴ Export</button>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label"><strong>AI liner notes</strong><span id="ai-notes-status"></span></div>
+        <button class="btn btn-ghost btn-sm admin-only" onclick="openBulkFetch('ainotes')">✨ Enrich collection</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
       <h3>Account</h3>
       <div class="setting-row">
         <div class="setting-label"><strong>User</strong><span id="settings-user-display"></span></div>
@@ -1543,6 +1597,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
           <button class="btn btn-ghost btn-sm" id="d-listen-btn" onclick="toggleListened()"></button>
           <button class="btn btn-ghost btn-sm" id="d-fav-btn" onclick="toggleFavourite()"></button>
           <button class="btn btn-primary btn-sm" onclick="openNowPlaying()" title="Now Playing mode">▶ Now Playing</button>
+          <a class="btn btn-ghost btn-sm" id="d-spotify-open" target="_blank" rel="noopener" style="display:none">🎧 Spotify</a>
           <span id="d-play-count" style="font-size:.75rem;color:var(--text3);align-self:center"></span>
           <button class="btn btn-ghost btn-sm admin-only" id="d-tracks-btn" onclick="switchTab('tracks')">🎵 Tracks</button>
         </div>
@@ -1552,12 +1607,18 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <div class="detail-tabs">
         <button class="detail-tab active" onclick="switchTab('info')">Info</button>
         <button class="detail-tab" onclick="switchTab('tracks')">Tracks</button>
+        <button class="detail-tab" onclick="switchTab('listen')">Listen</button>
         <button class="detail-tab" onclick="switchTab('bio')">Artist Bio</button>
         <button class="detail-tab" onclick="switchTab('notes')">Notes</button>
         <button class="detail-tab admin-only" onclick="switchTab('edit')">Edit</button>
       </div>
       <!-- Info Tab -->
+      <div class="tab-pane" id="tab-listen">
+        <div class="section-label">Listen on Spotify</div>
+        <div id="d-spotify-embed" class="spotify-embed"></div>
+      </div>
       <div class="tab-pane active" id="tab-info">
+        <div id="d-liner-notes"></div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <div class="section-label" style="margin-bottom:0">Album Description</div>
           <span id="d-desc-status-badge"></span>
@@ -1667,6 +1728,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="bf-tab-btn" id="bf-tab-tracks" onclick="setBfTab('tracks')">🎵 Tracks</button>
       <button class="bf-tab-btn" id="bf-tab-credits" onclick="setBfTab('credits')">🎼 Credits</button>
       <button class="bf-tab-btn" id="bf-tab-lyrics" onclick="setBfTab('lyrics')">🎤 Lyrics</button>
+      <button class="bf-tab-btn" id="bf-tab-spotify" onclick="setBfTab('spotify')">🎧 Spotify</button>
+      <button class="bf-tab-btn" id="bf-tab-ainotes" onclick="setBfTab('ainotes')">✨ AI Notes</button>
       <button class="bf-tab-btn" id="bf-tab-all" onclick="setBfTab('all')" style="background:rgba(232,197,71,.15);color:var(--accent)">⚡ All</button>
     </div>
     <p id="bf-description" style="color:var(--text2);font-size:.83rem;margin-bottom:16px"></p>
@@ -1730,6 +1793,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="section-label">API Keys (optional — enhances track data)</div>
     <div class="field-row"><label>Last.fm API Key <a href="https://www.last.fm/api/account/create" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get free key</a></label><input type="text" id="key-lastfm" placeholder="Paste Last.fm key…"></div>
     <div class="field-row"><label>Discogs Token <a href="https://www.discogs.com/settings/developers" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get free token</a></label><input type="text" id="key-discogs" placeholder="Paste Discogs token…"></div>
+    <div class="field-row"><label>Anthropic API Key (AI liner notes) <a href="https://platform.claude.com/" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get key</a></label><input type="password" id="key-anthropic" placeholder="sk-ant-…"></div>
+    <div class="field-row"><label>Spotify Client ID (playlist export &amp; matching) <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Create app</a></label><input type="text" id="key-spotify-client" placeholder="Spotify app Client ID…"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
       <button class="btn btn-primary btn-sm" onclick="saveApiKeysFromAdmin()">Save Keys</button>
     </div>
@@ -1799,6 +1864,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="np-meta" id="np-meta"></div>
     <div class="np-timer" id="np-timer">0:00</div>
     <div class="np-tracks" id="np-tracks"></div>
+    <div id="np-spotify" class="spotify-embed" style="width:100%;max-width:440px;margin-bottom:20px"></div>
     <div class="np-controls">
       <button class="np-btn" onclick="toggleNpSpin()" id="np-spin-btn" title="Toggle spin">⟳</button>
       <button class="np-btn np-btn-main" id="np-play-btn" onclick="toggleNpPlay()">▶</button>
@@ -2039,12 +2105,602 @@ function rowToRecord(row) {
 }
 
 // ═══════════════════════════════════════════════════════
+// SPOTIFY INTEGRATION
+// ═══════════════════════════════════════════════════════
+// Album matches: per-record override in localStorage → seed map below.
+// SPOTIFY_SEED is machine-matched from the Spotify catalogue; nulls = no match found.
+const SPOTIFY_SEED = {
+  'MRD-A-001': '5NRKNzTNjGSnCEQ97KOqNO',
+  'MRD-A-002': '1r1JiWEDBce0btGtwMoXF0',
+  'MRD-B-002': '0QZc5pm1bH0kLFCnYoajHw',
+  'MRD-B-003': '7gr9gLflbW5DrgGQB9kcen',
+  'MRD-B-004': '7yB4bs0A8UsCvX4rkPcbHd',
+  'MRD-B-005': '0Stnb66v5cibvR22sFdLYx',
+  'MRD-B-008': '243jhZJtyIZtEkrD6vhRLn',
+  'MRD-C-002': '5zKiTlGl3QQBZZWowNwN5I',
+  'MRD-C-003': '4NIUKfEJKzlNffM8JuNAqd',
+  'MRD-C-004': '2k7UuAKMBzYEZxf4KAPszw',
+  'MRD-C-006': '5f05f5UtnAnofLoL8fYQmu',
+  'MRD-D-001': '3xwUqfoT4aPBg5AD66cSa1',
+  'MRD-D-005': '5PSewqr3UuWgOsULPNcgj7',
+  'MRD-D-007': '7soN64t2qWYk1Bu9BYDI7c',
+  'MRD-G-001': '6qwOcN9wZgVF0bishcfFsh',
+  'MRD-G-005': '4s4o0cdIjRxqL92hFa30c9',
+  'MRD-H-002': '42qcX8LprsyIPdjzlQyZ8e',
+  'MRD-H-003': '0dWe4CrzSt9QFFXpLnw0bN',
+  'MRD-H-004': '10oMdAuUD0Tcc4BowCWUni',
+  'MRD-I-001': '59BvOqjVF1EAFqatz28o0t',
+  'MRD-I-002': '04nhRulMSOvcRCGRTa7I5l',
+  'MRD-K-001': '2SVjAOXtuCmyEKiulLHvtu',
+  'MRD-L-002': '1mHRprlZp4JTafIiIxOKtY',
+  'MRD-M-005': '5ydCidOL2zGSowKF5QwTNF',
+  'MRD-N-002': '1BOWkJPsp5aJC9shn8Zzy4',
+  'MRD-O-001': '6MKxTNGK8IDA6bExrdOyX4',
+  'MRD-R-002': '6W320mOugv1aWnad9ZEBun',
+  'MRD-S-003': '5CDfrZCA53QdaQJ87AO9tL',
+  'MRD-S-004': '0MJj5o9vLbyQEjuxhLgK4T',
+  'MRD-S-005': '22jnjffo6bx7gePtCUcIhF',
+  'MRD-S-006': '3BdmXWQSmoGO8lu3lnnNtR',
+  'MRD-S-007': '0Ypw0OZMrIKMVFWxMkH8Af',
+  'MRD-T-001': '0uhJOt9UNPeI9BhegNXMkw',
+  'MRD-V-004': '3uHhZZiUoh3oS6JfuVXhJ0',
+  'NC-001': '0tFPDkiH2TpnjoVcrWtZHp',
+  'NC-004': '5aXsE8qz2HxSwwUQMzH4Ga',
+  'NC-008': '1bZfHb8iToiDmWJJ6dvpWo',
+  'NC-009': '0Ps5fS17h7usRhGbPO4tkp',
+  'NC-013': '2O89YTcyPbOiQW1UaMa8yz',
+  'NC-015': '37RnDHLg68pu4owUWJYmMt',
+  'NC-016': '0OflUemnHFws5bKzEbBVV3',
+  'NC-020': '0ewXQKLoYSqTPrVC0WAGNS',
+  'NC-022': '4AIhC1tinH5Zy8sOAxGzbD',
+  'NC-024': '7o26rVddmWRnQEDk4Jhs6C',
+  'NC-026': '6FJxoadUE4JNVwWHghBwnb',
+  'NC-027': '3Yko2SxDk4hc6fncIBQlcM',
+  'NC-028': '3kEtdS2pH6hKcMU9Wioob1',
+  'NC-029': '4a1EmaXGBiQ61Y4m6SNcYi',
+  'NC-030': '3gPlX9Zs3tXZZKNCyoOkSm',
+  'NC-032': '2hWMz4KhFIl7Qff82wMEXF',
+  'NC-035': '0kiJcgpfAxxcTlH9JTYIrK',
+  'NC-036': '4yzozr59813IAXnxhWUl7i',
+  'NC-037': '7oUPgnLGmhvkGxTlOS9WaQ',
+  'NC-041': '2wNo6VTSh8F5HDtDr3jwSH',
+  'NC-042': '7BbmzS6gRlfli1Al1OvTO5',
+  'NC-044': '0YnLeYOGgy0vtxQRbgW7s1',
+  'NC-045': '6SK2peVU59QbWvkhiqxAJ8',
+  'NC-047': '5qiIk5WmSCyA4i81p0sM9n',
+  'NC-049': '7bVHrF7UWm1p4eAVFy2IYZ',
+  'NC-052': '2s7i3iZQksQuSTjEOrANxJ',
+  'NC-053': '1i4CdMNfc1A5Vsnej3OXtp',
+  'NC-054': '6McedcPTihVzYQ7dqLK7PM',
+  'NC-060': '7vBoSAnKmMUYFmOZgAXOph',
+  'NC-062': '2lfJHxE66T5g2fWyL8kbDD',
+  'NC-070': '188HLP6mJk11XeMYy5mrsS',
+  'NC-071': '76qKa3l6IN361bwck4Umq7',
+  'NC-072': '3zGzuEpyDZH1jhTxCqTvuA',
+  'NC-073': '32xr0FntXslUdKPQkyrbzV',
+  'NC-076': '7BVax1QyhsP8eHLd3HRhAj',
+  'NC-078': '0BBfO1njZnJy7gDaTuSPqh',
+  'NC-079': '3Jm5rknuSOa0tTFDLpJbCg',
+  'NC-080': '6vfLFBMieZaK3IntQWkVKo',
+  'NC-081': '4GxrvKiysSiDU1HHifh1PA',
+  'NC-082': '1TkbyIkf6GSrO5e7gWS4AM',
+  'NC-086': '5bhbWMOHk0W6RIA8xqHlUk',
+  'NC-092': '5OtauYvfHXqagEVB7PXcMu',
+  'NC-093': '4BEentLcVNeqzfyRN6TGDI',
+  'NC-094': '6IFLgKyEZnnGkwZculh9O8',
+  'NC-098': '1ncFtghXBcXDgrGZb65XVz',
+  'NC-099': '6coLc1SEiWbS1X3hFkbMRV',
+  'NC-101': '4QZ7wq0y0io4KdNDqF81y8',
+};
+const SPOTIFY_LS = 'mrd_spotify';
+const SPOTIFY_TOKEN_LS = 'mrd_spotify_token';
+const SPOTIFY_VERIFIER_LS = 'mrd_spotify_verifier';
+const SPOTIFY_SCOPES = 'playlist-modify-public playlist-modify-private';
+
+function getSpotifyMap() {
+  try { return JSON.parse(localStorage.getItem(SPOTIFY_LS) || '{}'); } catch(e) { return {}; }
+}
+function getSpotifyId(r) {
+  if (!r) return null;
+  const local = getSpotifyMap()[r.id];
+  if (local !== undefined) return local; // may be explicitly null (admin cleared)
+  return SPOTIFY_SEED[r.id] || null;
+}
+function setSpotifyId(recordId, albumId) {
+  const map = getSpotifyMap();
+  map[recordId] = albumId || null;
+  localStorage.setItem(SPOTIFY_LS, JSON.stringify(map));
+}
+function spotifyAlbumUrl(id) { return 'https://open.spotify.com/album/' + id; }
+
+// ── Embeds ──────────────────────────────────────────────
+function renderDetailSpotify(r) {
+  const el = document.getElementById('d-spotify-embed');
+  if (!el) return;
+  const sid = getSpotifyId(r);
+  if (sid) {
+    // iframe src is set lazily when the Listen tab is opened (loadSpotifyEmbed)
+    el.innerHTML = `
+      <iframe data-src="https://open.spotify.com/embed/album/${sid}?theme=0" height="380"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <div class="spotify-note">Full tracks play if you're logged into Spotify in this browser (Premium); otherwise 30-second previews.</div>
+      <div style="margin-top:10px"><a class="spotify-cta" href="${spotifyAlbumUrl(sid)}" target="_blank" rel="noopener">▶ Open in Spotify</a></div>
+      ${isAdmin() ? `<div class="spotify-note" style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="clearSpotifyMatch()">✕ Wrong album? Clear match</button></div>` : ''}`;
+  } else {
+    el.innerHTML = `
+      <div class="spotify-none">No Spotify match for this record yet.</div>
+      ${isAdmin() ? `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" id="d-spotify-url" placeholder="Paste Spotify album URL…" style="flex:1;min-width:200px;font-size:.82rem">
+          <button class="btn btn-ghost btn-sm" onclick="saveSpotifyUrl()">Save</button>
+          ${spotifyIsConnected() ? `<button class="btn btn-ghost btn-sm" onclick="matchSpotifySingle()">🔍 Match now</button>` : ''}
+        </div>
+        <div class="spotify-note">Or connect Spotify in Settings and run 🎧 Match Spotify in bulk fetch.</div>` : ''}`;
+  }
+}
+
+function loadSpotifyEmbed() {
+  document.querySelectorAll('#d-spotify-embed iframe[data-src], #np-spotify iframe[data-src]').forEach(f => {
+    if (!f.src) f.src = f.dataset.src;
+  });
+}
+
+function saveSpotifyUrl() {
+  if (!currentRecord) return;
+  const val = document.getElementById('d-spotify-url')?.value.trim() || '';
+  const m = val.match(/album[/:]([A-Za-z0-9]{22})/);
+  if (!m) { toast('Could not find an album ID in that URL', 'error'); return; }
+  setSpotifyId(currentRecord.id, m[1]);
+  renderDetailSpotify(currentRecord);
+  updateDetailSpotifyLink(currentRecord);
+  toast('🎧 Spotify match saved', 'success');
+}
+
+function clearSpotifyMatch() {
+  if (!currentRecord) return;
+  setSpotifyId(currentRecord.id, null);
+  renderDetailSpotify(currentRecord);
+  updateDetailSpotifyLink(currentRecord);
+}
+
+async function matchSpotifySingle() {
+  if (!currentRecord) return;
+  toast('Searching Spotify…');
+  const id = await matchSpotifyForRecord(currentRecord);
+  if (id) {
+    setSpotifyId(currentRecord.id, id);
+    renderDetailSpotify(currentRecord);
+    updateDetailSpotifyLink(currentRecord);
+    toast('🎧 Matched!', 'success');
+  } else {
+    toast('No confident match found', 'error');
+  }
+}
+
+function updateDetailSpotifyLink(r) {
+  const a = document.getElementById('d-spotify-open');
+  if (!a) return;
+  const sid = getSpotifyId(r);
+  a.style.display = sid ? 'inline-flex' : 'none';
+  if (sid) a.href = spotifyAlbumUrl(sid);
+}
+
+// ── PKCE auth (client-side, no secret) ──────────────────
+function spotifyIsConnected() {
+  try { return !!JSON.parse(localStorage.getItem(SPOTIFY_TOKEN_LS) || 'null')?.refresh_token; }
+  catch(e) { return false; }
+}
+
+function b64url(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function spotifyConnect() {
+  const clientId = getApiKeys().spotifyClient;
+  if (!clientId) { toast('Add a Spotify Client ID in the Admin panel first', 'error'); return; }
+  if (location.protocol === 'file:') {
+    toast('Spotify login needs the app hosted on a web URL (e.g. GitHub Pages) — it can\'t run from a local file', 'error');
+    return;
+  }
+  const verifier = b64url(crypto.getRandomValues(new Uint8Array(48)));
+  localStorage.setItem(SPOTIFY_VERIFIER_LS, verifier);
+  const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  const redirect = location.origin + location.pathname;
+  location.href = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
+    client_id: clientId, response_type: 'code', redirect_uri: redirect,
+    scope: SPOTIFY_SCOPES, code_challenge_method: 'S256', code_challenge: challenge,
+  });
+}
+
+async function spotifyHandleCallback() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const verifier = localStorage.getItem(SPOTIFY_VERIFIER_LS);
+  if (!code || !verifier) return;
+  history.replaceState(null, '', location.pathname + location.hash); // clean ?code= from URL
+  localStorage.removeItem(SPOTIFY_VERIFIER_LS);
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code', code,
+        redirect_uri: location.origin + location.pathname,
+        client_id: getApiKeys().spotifyClient || '',
+        code_verifier: verifier,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error(data.error_description || 'token exchange failed');
+    data.expires_at = Date.now() + (data.expires_in || 3600) * 1000;
+    localStorage.setItem(SPOTIFY_TOKEN_LS, JSON.stringify(data));
+    toast('🎧 Spotify connected', 'success');
+  } catch(e) {
+    toast('Spotify login failed: ' + e.message, 'error');
+  }
+}
+
+async function spotifyToken() {
+  let tok;
+  try { tok = JSON.parse(localStorage.getItem(SPOTIFY_TOKEN_LS) || 'null'); } catch(e) { tok = null; }
+  if (!tok) return null;
+  if (Date.now() < (tok.expires_at || 0) - 60000) return tok.access_token;
+  // refresh
+  try {
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: tok.refresh_token,
+        client_id: getApiKeys().spotifyClient || '',
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error('refresh failed');
+    tok.access_token = data.access_token;
+    if (data.refresh_token) tok.refresh_token = data.refresh_token;
+    tok.expires_at = Date.now() + (data.expires_in || 3600) * 1000;
+    localStorage.setItem(SPOTIFY_TOKEN_LS, JSON.stringify(tok));
+    return tok.access_token;
+  } catch(e) {
+    return null;
+  }
+}
+
+function spotifyDisconnect() {
+  localStorage.removeItem(SPOTIFY_TOKEN_LS);
+  renderSettingsPage();
+  toast('Spotify disconnected');
+}
+
+function spotifyConnectToggle() {
+  if (spotifyIsConnected()) spotifyDisconnect();
+  else spotifyConnect();
+}
+
+async function spotifyApi(path, opts = {}) {
+  const token = await spotifyToken();
+  if (!token) throw new Error('Spotify not connected');
+  const res = await fetch('https://api.spotify.com/v1/' + path, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...opts.headers },
+  });
+  if (res.status === 429) {
+    const wait = (+res.headers.get('Retry-After') || 2) * 1000;
+    await new Promise(r => setTimeout(r, wait));
+    return spotifyApi(path, opts);
+  }
+  if (!res.ok) throw new Error(`Spotify ${res.status}: ${await res.text()}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── Matching (needs Spotify connection) ─────────────────
+function normTitle(s) {
+  return (s || '').toLowerCase().replace(/\(.*?\)|\[.*?\]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+async function matchSpotifyForRecord(r) {
+  try {
+    const q = `album:"${r.title}" artist:"${r.artist}"`;
+    let data = await spotifyApi('search?' + new URLSearchParams({ q, type: 'album', limit: 5 }));
+    let items = data?.albums?.items || [];
+    if (!items.length) {
+      data = await spotifyApi('search?' + new URLSearchParams({ q: `${r.artist} ${r.title}`, type: 'album', limit: 5 }));
+      items = data?.albums?.items || [];
+    }
+    const wantT = normTitle(r.title), wantA = normTitle(r.artist);
+    for (const a of items) {
+      const gotT = normTitle(a.name);
+      const gotA = normTitle((a.artists || []).map(x => x.name).join(' '));
+      const titleOk = gotT === wantT || gotT.includes(wantT) || wantT.includes(gotT);
+      const artistOk = gotA.includes(wantA) || wantA.includes(gotA);
+      if (titleOk && artistOk) return a.id;
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+// ── Playlist export ─────────────────────────────────────
+async function exportToSpotify() {
+  const sel = document.getElementById('spotify-export-select');
+  const choice = sel?.value;
+  if (!choice) { toast('Nothing to export', 'error'); return; }
+  if (!spotifyIsConnected()) { toast('Connect Spotify first', 'error'); return; }
+
+  let records, label;
+  if (choice === '__favs') {
+    records = DB.filter(r => r.favourite);
+    label = 'Favourites';
+  } else {
+    const tag = getAllTags().find(t => t.name === choice);
+    const ids = new Set(tag?.records || []);
+    records = DB.filter(r => ids.has(r.id));
+    label = choice;
+  }
+  if (!records.length) { toast('No records in that selection', 'error'); return; }
+
+  toast(`Exporting ${records.length} records to Spotify…`);
+  try {
+    const me = await spotifyApi('me');
+    const playlist = await spotifyApi(`users/${encodeURIComponent(me.id)}/playlists`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: `Molefe Records — ${label}`,
+        description: 'Exported from the Molefe Records Collection',
+        public: false,
+      }),
+    });
+
+    let uris = [], skipped = 0;
+    for (const r of records) {
+      const sid = getSpotifyId(r);
+      if (!sid) { skipped++; continue; }
+      try {
+        const tr = await spotifyApi(`albums/${sid}/tracks?limit=50`);
+        uris.push(...(tr?.items || []).map(t => t.uri));
+      } catch(e) { skipped++; }
+    }
+    for (let i = 0; i < uris.length; i += 100) {
+      await spotifyApi(`playlists/${playlist.id}/tracks`, {
+        method: 'POST',
+        body: JSON.stringify({ uris: uris.slice(i, i + 100) }),
+      });
+    }
+    toast(`🎧 Playlist created: ${uris.length} tracks${skipped ? ` (${skipped} records had no match)` : ''}`, 'success');
+    if (playlist.external_urls?.spotify) window.open(playlist.external_urls.spotify, '_blank');
+  } catch(e) {
+    toast('Export failed: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// AI LINER NOTES (Claude API, browser-side)
+// ═══════════════════════════════════════════════════════
+const AI_NOTES_LS = 'mrd_ainotes';
+const AI_MODEL = 'claude-opus-4-8';
+
+function getAllAINotes() {
+  try { return JSON.parse(localStorage.getItem(AI_NOTES_LS) || '{}'); } catch(e) { return {}; }
+}
+function getAINotes(r) { return r ? getAllAINotes()[r.id] || null : null; }
+function saveAINotes(recordId, data) {
+  const all = getAllAINotes();
+  all[recordId] = data;
+  localStorage.setItem(AI_NOTES_LS, JSON.stringify(all));
+}
+
+function buildCatalogSummary() {
+  return DB.map(r => `${r.id}|${r.artist}|${r.title}|${r.year || '?'}`).join('\n');
+}
+
+// Calls the Claude API directly from the browser (admin's key, stored locally).
+async function fetchAINotesForRecord(r) {
+  const key = getApiKeys().anthropic;
+  if (!key) return null;
+
+  const system = `You are a knowledgeable music historian writing liner notes for a private family vinyl collection app (the Molefe Records Collection, South Africa). Accuracy is critical: state only facts you are confident are true, or that you verified with web search. Fewer true facts beat many dubious ones — never invent chart positions, dates, personnel, or stories. For South African pressings and artists, historical/cultural context (including apartheid-era context where relevant) is especially valuable. Your entire final reply must be a single JSON object — no markdown fences, no commentary.`;
+
+  const user = `Record:
+Artist: ${r.artist}
+Album: ${r.title}
+Year: ${r.year || 'unknown'}
+Label: ${r.label || 'unknown'}
+Genre: ${r.genre || 'unknown'}
+
+The full collection catalogue (id|artist|title|year), for the "connections" field:
+${buildCatalogSummary()}
+
+Write liner notes for this record as JSON with exactly these fields:
+{
+  "facts": ["2-4 short, genuinely interesting, verified facts about this album or its making"],
+  "themes": ["1-4 short themes of the album, one or two words each"],
+  "listenFor": "one sentence pointing the listener at a specific moment, instrument, or production detail worth listening for",
+  "context": "2-3 sentences of cultural/historical context",
+  "pickReason": "one evocative sentence (max 18 words) that would make someone pull this record out tonight",
+  "suggestedTags": ["up to 3 mood/occasion tags, e.g. 'Late night', 'Sunday morning', 'Dance party'"],
+  "connections": [{"id": "<a record id from the catalogue above>", "why": "short reason (max 10 words)"}]
+}
+Rules: connections must use ids that exist in the catalogue, never this record's own id (${r.id}), max 3, and the connection should be musically or historically meaningful. If you cannot find enough verified facts, return fewer facts rather than inventing any.`;
+
+  const body = {
+    model: AI_MODEL,
+    max_tokens: 3000,
+    system,
+    tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
+    messages: [{ role: 'user', content: user }],
+  };
+
+  try {
+    let resp = await aiRequest(key, body);
+    // Server-side tool loop can pause; resume up to 3 times
+    let guard = 0;
+    while (resp && resp.stop_reason === 'pause_turn' && guard++ < 3) {
+      body.messages = [
+        { role: 'user', content: user },
+        { role: 'assistant', content: resp.content },
+      ];
+      resp = await aiRequest(key, body);
+    }
+    if (!resp || resp.stop_reason === 'refusal') return null;
+
+    const text = (resp.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+    const start = text.indexOf('{'), end = text.lastIndexOf('}');
+    if (start === -1 || end === -1) return null;
+    const data = JSON.parse(text.slice(start, end + 1));
+    if (!Array.isArray(data.facts)) return null;
+
+    // Sanitise connections: only real catalogue ids, never self
+    data.connections = (data.connections || [])
+      .filter(c => c && c.id && c.id !== r.id && DB.some(x => x.id === c.id))
+      .slice(0, 3);
+    data.suggestedTags = (data.suggestedTags || []).slice(0, 3);
+    data.status = 'auto';
+    data.ts = Date.now();
+    return data;
+  } catch(e) {
+    console.warn('AI notes failed for', r.id, e);
+    return null;
+  }
+}
+
+async function aiRequest(key, body) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 429 || res.status === 529) {
+    await new Promise(r => setTimeout(r, 15000));
+    return aiRequest(key, body);
+  }
+  if (!res.ok) throw new Error(`Claude API ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return res.json();
+}
+
+// Merge AI-suggested tags into the tags system (creates tags as needed)
+function applyAITags(r, data) {
+  if (!data?.suggestedTags?.length) return;
+  const tags = getAllTags();
+  data.suggestedTags.forEach(name => {
+    const clean = String(name).trim().slice(0, 30);
+    if (!clean) return;
+    let tag = tags.find(t => t.name.toLowerCase() === clean.toLowerCase());
+    if (!tag) { tag = { name: clean, records: [] }; tags.push(tag); }
+    if (!tag.records.includes(r.id)) tag.records.push(r.id);
+  });
+  saveTags(tags);
+}
+
+// ── Liner notes UI ──────────────────────────────────────
+function renderLinerNotes(r) {
+  const el = document.getElementById('d-liner-notes');
+  if (!el) return;
+  const n = getAINotes(r);
+
+  if (!n) {
+    el.innerHTML = isAdmin() && getApiKeys().anthropic
+      ? `<div class="ln-wrap"><button class="btn btn-ghost btn-sm" id="ln-gen-btn" onclick="generateLinerNotes()">✨ Generate liner notes</button></div>`
+      : '';
+    return;
+  }
+
+  const verified = n.status === 'verified';
+  el.innerHTML = `<div class="ln-wrap">
+    <div class="ln-head">
+      <div class="section-label" style="margin-bottom:0">Liner Notes</div>
+      <span class="ai-badge ${verified ? 'verified' : ''}">${verified ? '✓ Verified' : 'AI — unverified'}</span>
+      ${isAdmin() && !verified ? `<button class="verify-btn" style="padding:3px 10px;font-size:.72rem" onclick="verifyAINotes()">✓ Verify</button>` : ''}
+      ${isAdmin() ? `<button class="btn btn-ghost btn-sm" style="padding:3px 10px;font-size:.72rem" onclick="generateLinerNotes()" title="Regenerate">↻</button>` : ''}
+    </div>
+    ${(n.facts || []).map(f => `<div class="ln-fact">${escHTML(f)}</div>`).join('')}
+    ${n.listenFor ? `<div class="ln-listenfor"><b>LISTEN FOR</b>${escHTML(n.listenFor)}</div>` : ''}
+    ${n.context ? `<div class="ln-context">${escHTML(n.context)}</div>` : ''}
+    ${(n.themes || []).length ? `<div class="ln-themes">${n.themes.map(t => `<span class="ln-theme">${escHTML(t)}</span>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+async function generateLinerNotes() {
+  if (!currentRecord || !isAdmin()) return;
+  const btn = document.getElementById('ln-gen-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span> Writing…'; }
+  toast('✨ Writing liner notes… (~30s)');
+  const r = currentRecord;
+  const data = await fetchAINotesForRecord(r);
+  if (data) {
+    saveAINotes(r.id, data);
+    applyAITags(r, data);
+    if (currentRecord?.id === r.id) renderLinerNotes(r);
+    toast('✨ Liner notes ready', 'success');
+  } else {
+    if (currentRecord?.id === r.id) renderLinerNotes(r);
+    toast('Could not generate notes — check the Anthropic key in Admin', 'error');
+  }
+}
+
+function verifyAINotes() {
+  if (!currentRecord) return;
+  const n = getAINotes(currentRecord);
+  if (!n) return;
+  n.status = 'verified';
+  saveAINotes(currentRecord.id, n);
+  renderLinerNotes(currentRecord);
+  toast('Liner notes verified ✓', 'success');
+}
+
+// ── Connections section for Discover ────────────────────
+function renderConnectionsSection() {
+  const all = getAllAINotes();
+  const loved = DB.filter(r => (r.favourite || r.playCount > 0) && all[r.id]?.connections?.length);
+  const seen = new Set();
+  const cards = [];
+  shuffle(loved).forEach(src => {
+    (all[src.id].connections || []).forEach(c => {
+      if (seen.has(c.id) || cards.length >= 6) return;
+      const target = DB.find(x => x.id === c.id);
+      if (!target) return;
+      seen.add(c.id);
+      cards.push({ target, src, why: c.why });
+    });
+  });
+  if (!cards.length) return '';
+  return `<div class="discover-section">
+    <h3>🧵 Connected to records you love</h3>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Threads between your favourites and the rest of the crate</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px">
+      ${cards.map(({ target: r, src, why }) => `
+        <div class="discover-card" onclick="openDetail('${r.id}')">
+          <div class="discover-card-art" data-rid="${r.id}">
+            ${r.albumArt ? `<img src="${r.albumArt}" alt="" loading="lazy" decoding="async" onerror="artFallback(this)">` : sleeveHTML(r)}
+          </div>
+          <div class="discover-card-body">
+            <div class="discover-card-label">Because you love ${escHTML(src.artist)}</div>
+            <div class="discover-card-title">${escHTML(r.artist)}</div>
+            <div class="discover-card-sub">${escHTML(r.title)}</div>
+            <div class="conn-reason">${escHTML(why || '')}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
 async function init() {
   loadUsers();
   loginAsGuest();
   applyTheme();
+  await spotifyHandleCallback(); // completes PKCE login if returning from Spotify
 
   // Show version number
   const vEl = document.getElementById('app-version-display');
@@ -2905,6 +3561,11 @@ function openDetail(id, fromHash) {
   document.getElementById('e-label').value = r.label;
   document.getElementById('e-notes').value = r.notes;
 
+  // Spotify + AI liner notes
+  renderDetailSpotify(r);
+  updateDetailSpotifyLink(r);
+  renderLinerNotes(r);
+
   document.getElementById('detail-modal').classList.add('open');
 
   // Deep link: record gets its own hash entry; flipping prev/next replaces it
@@ -2936,9 +3597,10 @@ function closeDetailOnBg(e) {
 function switchTab(tab) {
   document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  const idx = ['info','tracks','bio','notes','edit'].indexOf(tab);
+  const idx = ['info','tracks','listen','bio','notes','edit'].indexOf(tab);
   document.querySelectorAll('.detail-tab')[idx]?.classList.add('active');
   document.getElementById('tab-'+tab)?.classList.add('active');
+  if (tab === 'listen') loadSpotifyEmbed();
 }
 
 
@@ -3110,6 +3772,7 @@ function renderTrackPage(idx) {
       <span class="track-fav ${isFav?'on':''}" style="cursor:pointer;font-size:1.1rem;padding:5px 8px;border-radius:20px;border:1px solid var(--border)" onclick="toggleTrackFav(${idx},{stopPropagation:()=>{}});renderTrackPage(${idx})" title="Favourite">★</span>
       <a class="tp-action-btn genius" href="${geniusUrl}" target="_blank">🎤 Genius</a>
       <a class="tp-action-btn whosampled" href="${whosampledUrl}" target="_blank">🔁 WhoSampled</a>
+      <a class="tp-action-btn" href="https://open.spotify.com/search/${encodeURIComponent(name + ' ' + r.artist)}" target="_blank" style="border-color:#1db954;color:#1db954">🎧 Spotify</a>
       <a class="tp-action-btn" href="${discogsUrl}" target="_blank">💿 Discogs</a>
       ${prevBtn}${nextBtn}
     </div>
@@ -3345,16 +4008,22 @@ function openAdmin() {
   const keys = getApiKeys();
   const lfEl = document.getElementById('key-lastfm');
   const dgEl = document.getElementById('key-discogs');
+  const anEl = document.getElementById('key-anthropic');
+  const spEl = document.getElementById('key-spotify-client');
   if (lfEl) lfEl.value = keys.lastfm || '';
   if (dgEl) dgEl.value = keys.discogs || '';
+  if (anEl) anEl.value = keys.anthropic || '';
+  if (spEl) spEl.value = keys.spotifyClient || '';
   renderUserList();
   document.getElementById('admin-modal').classList.add('open');
 }
 
 function saveApiKeysFromAdmin() {
   const keys = {
-    lastfm:  document.getElementById('key-lastfm')?.value.trim() || '',
-    discogs: document.getElementById('key-discogs')?.value.trim() || ''
+    lastfm:        document.getElementById('key-lastfm')?.value.trim() || '',
+    discogs:       document.getElementById('key-discogs')?.value.trim() || '',
+    anthropic:     document.getElementById('key-anthropic')?.value.trim() || '',
+    spotifyClient: document.getElementById('key-spotify-client')?.value.trim() || ''
   };
   saveApiKeys(keys);
   toast('API keys saved ✓');
@@ -4172,6 +4841,10 @@ const BF_CONFIG = {
   lyrics:  { label:'🎤 Track Lyrics',  desc:'Fetches lyrics from lyrics.ovh for each track. Skips tracks that already have lyrics. ~800ms per track.',
              skip: r => !(r.trackList && r.trackList.length > 0), statusKey: null, trackLevel: true,
              trackSkip: t => !!trackObj(t).lyrics },
+  spotify: { label:'🎧 Match Spotify',  desc:'Matches records to Spotify albums via the Spotify search API. Requires Spotify to be connected (Settings → Integrations). Skips records that already have a match.',
+             skip: r => !!getSpotifyId(r), statusKey: null, trackLevel: false },
+  ainotes: { label:'✨ AI Liner Notes', desc:'Writes liner notes with Claude (facts, themes, listen-for, connections, mood tags) grounded with web search. Requires an Anthropic API key (Admin panel). Roughly $0.05–0.10 per record, ~30s each. Skips records that already have notes.',
+             skip: r => !!getAINotes(r), statusKey: null, trackLevel: false },
   all:     { label:'⚡ Fetch Everything', desc:'Runs all fetch modes in sequence: Art → Bios → Album Info → Tracklists → Track Credits → Track Lyrics. Only fills gaps — skips anything already fetched. This will take a while.',
              skip: r => false, statusKey: null, trackLevel: false }
 };
@@ -4243,6 +4916,19 @@ function bfLog(msg, type='') {
 async function startBulkFetch() {
   if (!isAdmin()) return;
   const cfg = BF_CONFIG[bfMode];
+
+  // Pre-flight checks for the integration modes
+  if (bfMode === 'spotify' && !spotifyIsConnected()) {
+    bfLog('✗ Connect Spotify first (Settings → Integrations), then run this.', 'fail');
+    document.getElementById('bf-current').textContent = 'Spotify not connected.';
+    return;
+  }
+  if (bfMode === 'ainotes' && !getApiKeys().anthropic) {
+    bfLog('✗ Add an Anthropic API key in the Admin panel (⚙) first.', 'fail');
+    document.getElementById('bf-current').textContent = 'No Anthropic API key.';
+    return;
+  }
+
   bulkFetchAborted = false;
   document.getElementById('bf-start-btn').style.display = 'none';
   document.getElementById('bf-stop-btn').style.display = 'inline-flex';
@@ -4347,20 +5033,24 @@ async function startBulkFetch() {
       }
 
       let result = null;
-      if (bfMode === 'art')    result = await fetchArtForRecord(r);
-      if (bfMode === 'bio')    result = await fetchBioForRecord(r);
-      if (bfMode === 'desc')   result = await fetchDescForRecord(r);
-      if (bfMode === 'tracks') result = await fetchTracklistForRecord(r);
+      if (bfMode === 'art')     result = await fetchArtForRecord(r);
+      if (bfMode === 'bio')     result = await fetchBioForRecord(r);
+      if (bfMode === 'desc')    result = await fetchDescForRecord(r);
+      if (bfMode === 'tracks')  result = await fetchTracklistForRecord(r);
+      if (bfMode === 'spotify') result = await matchSpotifyForRecord(r);
+      if (bfMode === 'ainotes') result = await fetchAINotesForRecord(r);
 
       if (result) {
-        if (bfMode === 'art')    { r.albumArt  = result; r.artStatus  = 'auto'; }
-        if (bfMode === 'bio')    { r.artistBio = result; r.bioStatus  = 'auto'; }
-        if (bfMode === 'desc')   { r.albumDesc = result; r.descStatus = 'auto'; }
-        if (bfMode === 'tracks') { r.trackList = result; }
+        if (bfMode === 'art')     { r.albumArt  = result; r.artStatus  = 'auto'; }
+        if (bfMode === 'bio')     { r.artistBio = result; r.bioStatus  = 'auto'; }
+        if (bfMode === 'desc')    { r.albumDesc = result; r.descStatus = 'auto'; }
+        if (bfMode === 'tracks')  { r.trackList = result; }
+        if (bfMode === 'spotify') { setSpotifyId(r.id, result); }
+        if (bfMode === 'ainotes') { saveAINotes(r.id, result); applyAITags(r, result); }
         found++;
         document.getElementById('bf-n-found').textContent = found;
         bfLog(`✓ ${r.artist} — ${r.title}`, 'ok');
-        saveRecord(r);
+        if (bfMode !== 'spotify' && bfMode !== 'ainotes') saveRecord(r); // these persist locally, not in Supabase
       } else {
         notFound++;
         document.getElementById('bf-n-notfound').textContent = notFound;
@@ -4370,7 +5060,7 @@ async function startBulkFetch() {
       done++;
       document.getElementById('bf-n-pending').textContent = Math.max(0, total - done);
 
-      const delay = bfMode === 'art' ? 1200 : bfMode === 'tracks' ? 1000 : 700;
+      const delay = bfMode === 'art' ? 1200 : bfMode === 'tracks' ? 1000 : bfMode === 'spotify' ? 400 : bfMode === 'ainotes' ? 500 : 700;
       await new Promise(res => setTimeout(res, delay));
     }
   }
@@ -4662,6 +5352,15 @@ function openNowPlaying() {
 
   // Tracklist
   renderNpTracks();
+
+  // Spotify companion — full playback if the browser is logged into Spotify
+  const npSpot = document.getElementById('np-spotify');
+  const npSid = getSpotifyId(r);
+  npSpot.innerHTML = npSid
+    ? `<iframe src="https://open.spotify.com/embed/album/${npSid}?theme=0" height="80"
+         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`
+    : '';
+
   modal.classList.add('open');
   closeDetail();
 }
@@ -4714,6 +5413,7 @@ function closeNowPlaying() {
   clearInterval(npInterval);
   document.getElementById('np-platter').classList.remove('spinning');
   document.getElementById('np-tonearm').classList.remove('on');
+  document.getElementById('np-spotify').innerHTML = ''; // stop any embed playback
   document.getElementById('nowplaying-modal').classList.remove('open');
 }
 
@@ -5213,7 +5913,7 @@ function closeDetail(fromHash) {
 // ═══════════════════════════════════════════════════════
 // VERSION
 // ═══════════════════════════════════════════════════════
-const APP_VERSION = 'v2.1';
+const APP_VERSION = 'v2.2';
 
 // ═══════════════════════════════════════════════════════
 // SETTINGS
@@ -5468,7 +6168,7 @@ function renderDailyPick() {
   label.textContent  = modeLabel;
   artist.textContent = r.artist;
   title.textContent  = r.title;
-  meta.textContent   = reasons[mode];
+  meta.textContent   = getAINotes(r)?.pickReason || reasons[mode];
 
   actions.innerHTML =
     '<button class="btn btn-primary btn-sm" onclick="openDetail(\'' + r.id + '\')">Open Record</button>' +
@@ -5588,6 +6288,7 @@ function renderDpDetail(idx) {
     '<div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">' +
       '<a class="tp-action-btn genius" href="' + geniusUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">🎤 Genius — Lyrics &amp; Annotations</a>' +
       '<a class="tp-action-btn whosampled" href="' + whosampledUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">🔁 WhoSampled — Samples &amp; Covers</a>' +
+      '<a class="tp-action-btn" href="https://open.spotify.com/search/' + encodeURIComponent(name + ' ' + r.artist) + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem;border-color:#1db954;color:#1db954">🎧 Spotify — Listen</a>' +
       '<a class="tp-action-btn" href="' + discogsUrl + '" target="_blank" style="justify-content:center;padding:10px;font-size:.8rem">💿 Discogs — Release Info</a>' +
     '</div>';
 
@@ -5753,15 +6454,17 @@ function renderDiscoverPage() {
     sections.push({ title: '🎲 Surprise Me', subtitle: 'Random picks from your unplayed collection', records: wildcard });
   }
 
+  const connectionsHTML = renderConnectionsSection();
+
   if (!sections.length) {
-    el.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text3)">
+    el.innerHTML = connectionsHTML + `<div style="text-align:center;padding:60px 0;color:var(--text3)">
       <div style="font-size:3rem;margin-bottom:12px">🎉</div>
       <p>You've listened to your whole collection!</p>
     </div>`;
     return;
   }
 
-  el.innerHTML = sections.map(s => `
+  el.innerHTML = connectionsHTML + sections.map(s => `
     <div class="discover-section">
       <h3>${s.title}</h3>
       <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">${s.subtitle}</p>
@@ -5981,6 +6684,30 @@ function renderSettingsPage() {
   // Show admin-only settings elements
   if (isAdmin()) {
     document.querySelectorAll('#page-settings .admin-only').forEach(el => el.style.display = 'flex');
+  }
+
+  // Integrations status
+  const scEl = document.getElementById('spotify-conn-status');
+  const sbEl = document.getElementById('spotify-conn-btn');
+  if (scEl) {
+    const connected = spotifyIsConnected();
+    scEl.textContent = connected ? 'Connected — full playback, matching & playlist export'
+      : (location.protocol === 'file:'
+          ? 'Album embeds work now; login needs the app on a hosted URL'
+          : 'Not connected — embeds work; connect for playlist export & matching');
+    if (sbEl) sbEl.textContent = connected ? 'Disconnect' : 'Connect';
+  }
+  const aiEl = document.getElementById('ai-notes-status');
+  if (aiEl) {
+    const count = Object.keys(getAllAINotes()).length;
+    aiEl.textContent = count
+      ? `${count} of ${DB.length} records have liner notes`
+      : (getApiKeys().anthropic ? 'Ready — run ✨ Enrich collection' : 'Add an Anthropic API key in the Admin panel');
+  }
+  const selEl = document.getElementById('spotify-export-select');
+  if (selEl) {
+    selEl.innerHTML = '<option value="__favs">★ Favourites</option>' +
+      getAllTags().map(t => `<option value="${escHTML(t.name)}">${escHTML(t.name)} (${(t.records||[]).length})</option>`).join('');
   }
 }
 
