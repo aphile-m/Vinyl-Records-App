@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Molefe Records Collection</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://alcdn.msauth.net/browser/2.38.4/js/msal-browser.min.js"></script>
 <style>
 :root {
   --bg: #0a0a0a;
@@ -1524,6 +1525,14 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="settings-section">
       <h3>Integrations</h3>
       <div class="setting-row">
+        <div class="setting-label"><strong>Microsoft 365</strong><span id="ms-conn-status">Not connected</span></div>
+        <button class="btn btn-ghost btn-sm" id="ms-conn-btn" onclick="msConnectToggle()">Sign in</button>
+      </div>
+      <div class="setting-row admin-only" id="ms-migrate-row" style="display:none">
+        <div class="setting-label"><strong>Migrate data</strong><span>Copy the collection from Supabase into the SharePoint list</span></div>
+        <button class="btn btn-ghost btn-sm" onclick="migrateFromSupabase(true)">⇄ Import from Supabase</button>
+      </div>
+      <div class="setting-row">
         <div class="setting-label"><strong>Spotify</strong><span id="spotify-conn-status">Not connected</span></div>
         <button class="btn btn-ghost btn-sm" id="spotify-conn-btn" onclick="spotifyConnectToggle()">Connect</button>
       </div>
@@ -1795,6 +1804,8 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="field-row"><label>Discogs Token <a href="https://www.discogs.com/settings/developers" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get free token</a></label><input type="text" id="key-discogs" placeholder="Paste Discogs token…"></div>
     <div class="field-row"><label>Anthropic API Key (AI liner notes) <a href="https://platform.claude.com/" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Get key</a></label><input type="password" id="key-anthropic" placeholder="sk-ant-…"></div>
     <div class="field-row"><label>Spotify Client ID (playlist export &amp; matching) <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--accent);font-size:.72rem">↗ Create app</a></label><input type="text" id="key-spotify-client" placeholder="Spotify app Client ID…"></div>
+    <div class="field-row"><label>Microsoft Entra App Client ID (M365 backend) <a href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade" target="_blank" style="color:var(--accent);font-size:.72rem">↗ App registrations</a></label><input type="text" id="key-ms-client" placeholder="Entra application (client) ID…"></div>
+    <div class="field-row"><label>SharePoint site (optional — blank = tenant root site)</label><input type="text" id="key-sp-site" placeholder="https://resgrocapital.sharepoint.com/sites/YourSite"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:16px">
       <button class="btn btn-primary btn-sm" onclick="saveApiKeysFromAdmin()">Save Keys</button>
     </div>
@@ -2033,7 +2044,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const STORAGE_KEY = 'mrd_db_cache'; // local cache only
 const USERS_KEY   = 'mrd_users';
 
-// ── Supabase helpers ──────────────────────────────────
+// ── Supabase helpers (migration source only — the live backend is Microsoft 365) ──
 async function sbFetch(path, opts = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...opts,
@@ -2106,6 +2117,267 @@ function rowToRecord(row) {
     spotifyAlbumId: row.spotify_album_id ?? null,
     aiNotes:    row.ai_notes    ?? null
   };
+}
+
+// ═══════════════════════════════════════════════════════
+// MICROSOFT 365 BACKEND (Microsoft Graph → SharePoint list)
+// ═══════════════════════════════════════════════════════
+// The collection lives in a SharePoint list ('MolefeRecords') accessed via
+// Microsoft Graph with MSAL sign-in. Signed-out visitors get a read-only
+// view from the local cache / built-in data. Supabase remains only as a
+// one-time migration source (see migrateFromSupabase).
+const MS_SCOPES = ['User.Read', 'Sites.ReadWrite.All'];
+const SP_LIST_NAME = 'MolefeRecords';
+let msalApp = null, msAccount = null, spSiteId = null, spListId = null;
+const spItemIds = {}; // record id -> SharePoint list item id
+
+function msConfigured() { return !!getApiKeys().msClient; }
+function msSignedIn() { return !!msAccount; }
+
+function msalInit() {
+  if (msalApp || !window.msal || !msConfigured()) return;
+  try {
+    msalApp = new msal.PublicClientApplication({
+      auth: {
+        clientId: getApiKeys().msClient,
+        authority: 'https://login.microsoftonline.com/common',
+        redirectUri: location.origin + location.pathname,
+      },
+      cache: { cacheLocation: 'localStorage' },
+    });
+    const accounts = msalApp.getAllAccounts();
+    if (accounts.length) msAccount = accounts[0];
+  } catch(e) { console.warn('MSAL init failed', e); }
+}
+
+async function msSignIn() {
+  if (location.protocol === 'file:') {
+    toast('Microsoft sign-in needs the app hosted on a web URL (e.g. SharePoint page or GitHub Pages)', 'error');
+    return;
+  }
+  if (!msConfigured()) {
+    toast('Add the Microsoft Entra App Client ID in the Admin panel (⚙) first', 'error');
+    return;
+  }
+  msalInit();
+  if (!msalApp) { toast('Microsoft sign-in library failed to load', 'error'); return; }
+  try {
+    const res = await msalApp.loginPopup({ scopes: MS_SCOPES });
+    msAccount = res.account;
+    toast(`☁ Signed in as ${msAccount.name || msAccount.username}`, 'success');
+    showAppLoading('Loading your collection from Microsoft 365…');
+    await loadDB();
+    populateFilterDropdowns();
+    renderAll(); updateStats();
+    hideAppLoading();
+    renderSettingsPage();
+  } catch(e) {
+    hideAppLoading();
+    toast('Microsoft sign-in failed: ' + (e.errorMessage || e.message), 'error');
+  }
+}
+
+function msSignOut() {
+  const acct = msAccount;
+  msAccount = null; spSiteId = null; spListId = null;
+  if (msalApp && acct) msalApp.logoutPopup({ account: acct }).catch(() => {});
+  renderSettingsPage();
+  toast('Signed out of Microsoft 365');
+}
+
+function msConnectToggle() { msSignedIn() ? msSignOut() : msSignIn(); }
+
+async function msToken() {
+  if (!msSignedIn() || !msalApp) return null;
+  try {
+    return (await msalApp.acquireTokenSilent({ scopes: MS_SCOPES, account: msAccount })).accessToken;
+  } catch(e) {
+    try { return (await msalApp.acquireTokenPopup({ scopes: MS_SCOPES })).accessToken; }
+    catch(e2) { return null; }
+  }
+}
+
+async function graphFetch(path, opts = {}) {
+  const token = await msToken();
+  if (!token) throw new Error('Not signed in to Microsoft 365');
+  const res = await fetch('https://graph.microsoft.com/v1.0' + path, {
+    ...opts,
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...opts.headers },
+  });
+  if (res.status === 429 || res.status === 503) {
+    const wait = (+res.headers.get('Retry-After') || 3) * 1000;
+    await new Promise(r => setTimeout(r, wait));
+    return graphFetch(path, opts);
+  }
+  if (!res.ok) throw new Error(`Graph ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── Site + list provisioning ────────────────────────────
+async function spResolveSite() {
+  if (spSiteId) return spSiteId;
+  const cfg = (getApiKeys().spSite || '').trim();
+  let site;
+  if (!cfg || cfg === 'root') {
+    site = await graphFetch('/sites/root');
+  } else if (cfg.startsWith('http')) {
+    const u = new URL(cfg);
+    const path = u.pathname.replace(/\/+$/, '');
+    site = path && path !== '/'
+      ? await graphFetch(`/sites/${u.hostname}:${path}`)
+      : await graphFetch(`/sites/${u.hostname}`);
+  } else {
+    site = await graphFetch('/sites/' + cfg);
+  }
+  spSiteId = site.id;
+  return spSiteId;
+}
+
+const SP_COLUMNS = [
+  { name: 'RecordId',       indexed: true, text: {} },
+  { name: 'Artist',         text: {} },
+  { name: 'AlbumTitle',     text: {} },
+  { name: 'Genre',          text: {} },
+  { name: 'RecordYear',     number: {} },
+  { name: 'RecordLabel',    text: {} },
+  { name: 'RecordNotes',    text: { allowMultipleLines: true } },
+  { name: 'Favourite',      boolean: {} },
+  { name: 'Listened',       boolean: {} },
+  { name: 'AlbumArt',       text: { allowMultipleLines: true } },
+  { name: 'ArtStatus',      text: {} },
+  { name: 'BioStatus',      text: {} },
+  { name: 'DescStatus',     text: {} },
+  { name: 'PlayCount',      number: {} },
+  { name: 'SpotifyAlbumId', text: {} },
+  { name: 'TrackList',      text: { allowMultipleLines: true } },
+  { name: 'FavTracks',      text: { allowMultipleLines: true } },
+  { name: 'RecordTags',     text: { allowMultipleLines: true } },
+  { name: 'ArtistBio',      text: { allowMultipleLines: true } },
+  { name: 'AlbumDesc',      text: { allowMultipleLines: true } },
+  { name: 'AiNotes',        text: { allowMultipleLines: true } },
+];
+
+async function spEnsureList() {
+  if (spListId) return spListId;
+  const sid = await spResolveSite();
+  try {
+    const list = await graphFetch(`/sites/${sid}/lists/${SP_LIST_NAME}`);
+    spListId = list.id;
+  } catch(e) {
+    // Not found — create it with the full column set
+    const created = await graphFetch(`/sites/${sid}/lists`, {
+      method: 'POST',
+      body: JSON.stringify({
+        displayName: SP_LIST_NAME,
+        description: 'Molefe Records Collection — created automatically by the app',
+        list: { template: 'genericList' },
+        columns: SP_COLUMNS,
+      }),
+    });
+    spListId = created.id;
+    toast('☁ Created SharePoint list ' + SP_LIST_NAME, 'success');
+  }
+  return spListId;
+}
+
+// ── Record ↔ list item mapping ──────────────────────────
+function recordToSpFields(r) {
+  return {
+    Title: `${r.artist} — ${r.title}`,
+    RecordId: r.id,
+    Artist: r.artist || '', AlbumTitle: r.title || '', Genre: r.genre || '',
+    RecordYear: r.year ?? null, RecordLabel: r.label || '', RecordNotes: r.notes || '',
+    Favourite: !!r.favourite, Listened: !!r.listened,
+    AlbumArt: r.albumArt || '', ArtStatus: r.artStatus || '',
+    BioStatus: r.bioStatus || '', DescStatus: r.descStatus || '',
+    PlayCount: r.playCount || 0, SpotifyAlbumId: r.spotifyAlbumId || '',
+    TrackList: JSON.stringify(r.trackList || []),
+    FavTracks: JSON.stringify(r.favTracks || []),
+    RecordTags: JSON.stringify(r.tags || []),
+    ArtistBio: r.artistBio || '', AlbumDesc: r.albumDesc || '',
+    AiNotes: r.aiNotes ? JSON.stringify(r.aiNotes) : '',
+  };
+}
+
+function spFieldsToRecord(f) {
+  const j = (s, d) => { try { return s ? JSON.parse(s) : d; } catch(e) { return d; } };
+  if (!f.RecordId) return null;
+  return {
+    id: f.RecordId,
+    artist: f.Artist || '', title: f.AlbumTitle || '', genre: f.Genre || '',
+    year: f.RecordYear ?? null, label: f.RecordLabel || '', notes: f.RecordNotes || '',
+    favourite: !!f.Favourite, listened: !!f.Listened,
+    albumArt: f.AlbumArt || null, artStatus: f.ArtStatus || null,
+    bioStatus: f.BioStatus || null, descStatus: f.DescStatus || null,
+    playCount: f.PlayCount || 0, spotifyAlbumId: f.SpotifyAlbumId || null,
+    trackList: j(f.TrackList, []), favTracks: j(f.FavTracks, []),
+    tags: j(f.RecordTags, []), artistBio: f.ArtistBio || '', albumDesc: f.AlbumDesc || '',
+    aiNotes: j(f.AiNotes, null),
+  };
+}
+
+async function spLoadRecords() {
+  const sid = await spResolveSite();
+  const lid = await spEnsureList();
+  let url = `/sites/${sid}/lists/${lid}/items?expand=fields&$top=200`;
+  const items = [];
+  while (url) {
+    const page = await graphFetch(url);
+    items.push(...(page.value || []));
+    url = page['@odata.nextLink'] ? page['@odata.nextLink'].replace('https://graph.microsoft.com/v1.0', '') : null;
+  }
+  Object.keys(spItemIds).forEach(k => delete spItemIds[k]);
+  const records = [];
+  items.forEach(it => {
+    const rec = spFieldsToRecord(it.fields || {});
+    if (rec) { spItemIds[rec.id] = it.id; records.push(rec); }
+  });
+  return records;
+}
+
+async function spSaveRecord(r) {
+  const sid = await spResolveSite();
+  const lid = await spEnsureList();
+  const fields = recordToSpFields(r);
+  if (spItemIds[r.id]) {
+    await graphFetch(`/sites/${sid}/lists/${lid}/items/${spItemIds[r.id]}/fields`, {
+      method: 'PATCH', body: JSON.stringify(fields),
+    });
+  } else {
+    const item = await graphFetch(`/sites/${sid}/lists/${lid}/items`, {
+      method: 'POST', body: JSON.stringify({ fields }),
+    });
+    spItemIds[r.id] = item.id;
+  }
+}
+
+// ── One-time migration: Supabase → SharePoint ───────────
+async function migrateFromSupabase(interactive) {
+  if (!msSignedIn()) { if (interactive) toast('Sign in to Microsoft 365 first', 'error'); return false; }
+  let records = null;
+  try {
+    showAppLoading('Fetching your collection from Supabase…');
+    const rows = await sbFetch('records?select=*&order=id.asc');
+    if (rows && rows.length) records = rows.map(rowToRecord);
+  } catch(e) {
+    console.warn('Supabase unreachable for migration:', e.message);
+  }
+  if (!records) {
+    // Supabase gone — fall back to whatever we have locally
+    records = DB.length ? DB : JSON.parse(JSON.stringify(INITIAL_DATA));
+  }
+  for (let i = 0; i < records.length; i++) {
+    showAppLoading(`Copying to Microsoft 365… ${i + 1} / ${records.length}`);
+    try { await spSaveRecord(records[i]); }
+    catch(e) { console.warn('Migrate failed for', records[i].id, e.message); }
+    await new Promise(r => setTimeout(r, 120));
+  }
+  DB = records;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  toast(`☁ Migrated ${records.length} records to Microsoft 365`, 'success');
+  if (interactive) { populateFilterDropdowns(); renderAll(); updateStats(); renderSettingsPage(); hideAppLoading(); }
+  return true;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2684,7 +2956,7 @@ async function syncLocalEnrichmentToDB() {
   if (!changed.length) return;
   try {
     await saveBulk(changed);
-    toast(`☁ Synced ${changed.length} enriched record${changed.length > 1 ? 's' : ''} to Supabase`, 'success');
+    toast(`☁ Synced ${changed.length} enriched record${changed.length > 1 ? 's' : ''} to the backend`, 'success');
   } catch(e) {
     console.warn('Enrichment sync failed', e);
   }
@@ -2799,45 +3071,36 @@ async function loadDB() {
     try { DB = JSON.parse(cached); } catch(e) {}
   }
 
-  // 2. Try loading from Supabase
-  try {
-    showAppLoading('Loading your collection…');
-    const rows = await sbFetch('records?select=*&order=id.asc');
-
-    if (rows && rows.length > 0) {
-      // Build DB: start from INITIAL_DATA, overlay Supabase data
-      const rowMap = {};
-      rows.forEach(r => rowMap[r.id] = r);
-      DB = INITIAL_DATA.map(initial => {
-        return rowMap[initial.id] ? rowToRecord(rowMap[initial.id]) : { ...initial };
-      });
-      // Include any extra records in Supabase not in initial
-      rows.forEach(r => { if (!DB.find(x => x.id === r.id)) DB.push(rowToRecord(r)); });
-    } else {
-      // First run — seed Supabase with all INITIAL_DATA
-      showAppLoading('First run — seeding database…');
-      DB = JSON.parse(JSON.stringify(INITIAL_DATA));
-      await seedDatabase();
+  // 2. Microsoft 365 is the backend — load from the SharePoint list when signed in
+  msalInit();
+  if (msSignedIn() && msConfigured()) {
+    try {
+      showAppLoading('Loading your collection from Microsoft 365…');
+      const recs = await spLoadRecords();
+      if (recs.length > 0) {
+        const recMap = {};
+        recs.forEach(r => recMap[r.id] = r);
+        DB = INITIAL_DATA.map(initial => recMap[initial.id] ? { ...initial, ...recMap[initial.id] } : { ...initial });
+        recs.forEach(r => { if (!DB.find(x => x.id === r.id)) DB.push(r); });
+      } else {
+        // List just created / empty — pull everything across from Supabase (or local data)
+        showAppLoading('First run — migrating your collection to Microsoft 365…');
+        await migrateFromSupabase(false);
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+      return;
+    } catch(e) {
+      console.warn('Microsoft 365 unavailable, using local cache:', e.message);
+      if (!DB.length) DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+      toast('Microsoft 365 unreachable — offline mode', 'error');
+      return;
     }
-    // Cache locally for instant next load
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
-  } catch(e) {
-    console.warn('Supabase unavailable, using local cache:', e.message);
-    if (!DB.length) DB = JSON.parse(JSON.stringify(INITIAL_DATA));
-    toast('Offline mode — changes will sync when reconnected', 'error');
   }
-}
 
-async function seedDatabase() {
-  // Insert all records in batches of 20
-  const batch = 20;
-  for (let i = 0; i < INITIAL_DATA.length; i += batch) {
-    const chunk = INITIAL_DATA.slice(i, i + batch).map(recordToRow);
-    await sbFetch('records', {
-      method: 'POST',
-      prefer: 'return=minimal',
-      body: JSON.stringify(chunk)
-    });
+  // 3. Not signed in — read-only view from cache / built-in data
+  if (!DB.length) DB = JSON.parse(JSON.stringify(INITIAL_DATA));
+  if (msConfigured() && location.protocol !== 'file:') {
+    toast('Viewing offline copy — sign in with Microsoft in Settings to sync');
   }
 }
 
@@ -2847,13 +3110,10 @@ async function saveRecord(r) {
   if (idx !== -1) DB[idx] = r;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
 
-  // Push to Supabase in background
+  // Push to the SharePoint list in the background
+  if (!msSignedIn()) return; // local-only until signed in (syncLocalEnrichmentToDB catches up later)
   try {
-    await sbFetch(`records?id=eq.${encodeURIComponent(r.id)}`, {
-      method: 'PATCH',
-      prefer: 'return=minimal',
-      body: JSON.stringify(recordToRow(r))
-    });
+    await spSaveRecord(r);
   } catch(e) {
     console.warn('Save failed for', r.id, e.message);
   }
@@ -2862,25 +3122,17 @@ async function saveRecord(r) {
 // Keep saveDB as a bulk cache save (no network call — use saveRecord for individual saves)
 function saveDB() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
-  // Sync current record to Supabase if one is open
   if (currentRecord) saveRecord(currentRecord);
 }
 
-// Push multiple records to Supabase in batches (used for bulk operations)
+// Push multiple records to the backend (used for bulk operations)
 async function saveBulk(records) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
-  const batch = 20;
-  for (let i = 0; i < records.length; i += batch) {
-    const chunk = records.slice(i, i + batch).map(recordToRow);
-    try {
-      await sbFetch('records', {
-        method: 'POST',
-        prefer: 'resolution=merge-duplicates,return=minimal',
-        headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify(chunk)
-      });
-    } catch(e) { console.warn('Bulk save chunk failed:', e.message); }
-    await new Promise(r => setTimeout(r, 100));
+  if (!msSignedIn()) return;
+  for (const r of records) {
+    try { await spSaveRecord(r); }
+    catch(e) { console.warn('Bulk save failed for', r.id, e.message); }
+    await new Promise(res => setTimeout(res, 120));
   }
 }
 
@@ -4043,10 +4295,14 @@ function openAdmin() {
   const dgEl = document.getElementById('key-discogs');
   const anEl = document.getElementById('key-anthropic');
   const spEl = document.getElementById('key-spotify-client');
+  const msEl = document.getElementById('key-ms-client');
+  const ssEl = document.getElementById('key-sp-site');
   if (lfEl) lfEl.value = keys.lastfm || '';
   if (dgEl) dgEl.value = keys.discogs || '';
   if (anEl) anEl.value = keys.anthropic || '';
   if (spEl) spEl.value = keys.spotifyClient || '';
+  if (msEl) msEl.value = keys.msClient || '';
+  if (ssEl) ssEl.value = keys.spSite || '';
   renderUserList();
   document.getElementById('admin-modal').classList.add('open');
 }
@@ -4056,9 +4312,13 @@ function saveApiKeysFromAdmin() {
     lastfm:        document.getElementById('key-lastfm')?.value.trim() || '',
     discogs:       document.getElementById('key-discogs')?.value.trim() || '',
     anthropic:     document.getElementById('key-anthropic')?.value.trim() || '',
-    spotifyClient: document.getElementById('key-spotify-client')?.value.trim() || ''
+    spotifyClient: document.getElementById('key-spotify-client')?.value.trim() || '',
+    msClient:      document.getElementById('key-ms-client')?.value.trim() || '',
+    spSite:        document.getElementById('key-sp-site')?.value.trim() || ''
   };
   saveApiKeys(keys);
+  msalApp = null; spSiteId = null; spListId = null; // re-init MSAL with new config
+  msalInit();
   toast('API keys saved ✓');
 }
 
@@ -5946,7 +6206,7 @@ function closeDetail(fromHash) {
 // ═══════════════════════════════════════════════════════
 // VERSION
 // ═══════════════════════════════════════════════════════
-const APP_VERSION = 'v2.2';
+const APP_VERSION = 'v2.3';
 
 // ═══════════════════════════════════════════════════════
 // SETTINGS
@@ -6720,6 +6980,25 @@ function renderSettingsPage() {
   }
 
   // Integrations status
+  const mcEl = document.getElementById('ms-conn-status');
+  const mbEl = document.getElementById('ms-conn-btn');
+  if (mcEl) {
+    if (msSignedIn()) {
+      mcEl.textContent = `Connected as ${msAccount.username} — collection syncs to the ${SP_LIST_NAME} SharePoint list`;
+      if (mbEl) mbEl.textContent = 'Sign out';
+    } else if (!msConfigured()) {
+      mcEl.textContent = 'Add the Entra App Client ID in the Admin panel to enable';
+      if (mbEl) mbEl.textContent = 'Sign in';
+    } else {
+      mcEl.textContent = location.protocol === 'file:'
+        ? 'Sign-in needs the app on a hosted URL; browsing the offline copy'
+        : 'Not signed in — viewing offline copy';
+      if (mbEl) mbEl.textContent = 'Sign in';
+    }
+  }
+  const mrEl = document.getElementById('ms-migrate-row');
+  if (mrEl) mrEl.style.display = (isAdmin() && msSignedIn()) ? 'flex' : 'none';
+
   const scEl = document.getElementById('spotify-conn-status');
   const sbEl = document.getElementById('spotify-conn-btn');
   if (scEl) {
