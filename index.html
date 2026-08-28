@@ -1193,6 +1193,65 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 /* ── Discover connections ── */
 .conn-reason { font-size: .72rem; color: var(--text3); font-style: italic; margin-top: 4px; line-height: 1.4; }
 
+/* ── Inline SVG icons ── */
+.ic { width: 15px; height: 15px; flex-shrink: 0; display: inline-block; vertical-align: -2px; }
+.btn-icon .ic { width: 16px; height: 16px; }
+.ni-ic { width: 20px; height: 20px; margin-bottom: 2px; }
+
+/* ── Toolbar tools (collapsible on mobile) ── */
+#toolbar { position: relative; }
+.toolbar-tools { display: flex; gap: 10px; align-items: center; }
+#toolbar-more { display: none; }
+@media (max-width: 640px) {
+  #toolbar-more { display: flex; }
+  .toolbar-tools {
+    display: none; position: absolute; top: calc(100% + 4px); right: 8px; z-index: 30;
+    flex-direction: column; align-items: stretch; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  }
+  .toolbar-tools.open { display: flex; }
+  .toolbar-tools .view-toggle { justify-content: center; }
+}
+
+/* ── Crate view — flip through covers ── */
+#catalogue-crate { overflow: hidden; }
+.crate-scroll {
+  display: flex; align-items: center; gap: 28px;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  height: calc(100vh - 285px); min-height: 340px;
+  padding: 0 max(calc(50% - 150px), 20px);
+  perspective: 1100px;
+}
+.crate-scroll::-webkit-scrollbar { height: 4px; }
+.crate-card {
+  flex-shrink: 0; width: 300px; scroll-snap-align: center;
+  cursor: pointer;
+}
+.crate-art {
+  width: 300px; height: 300px; border-radius: 6px; overflow: hidden; position: relative;
+  background: var(--surface2);
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  transition: transform .12s ease-out;
+  will-change: transform;
+}
+.crate-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.crate-caption {
+  text-align: center; padding: 18px 20px 26px;
+}
+.crate-caption .cc-artist { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.4rem, 3.5vw, 2rem); letter-spacing: .05em; line-height: 1.05; }
+.crate-caption .cc-title { font-size: .95rem; color: var(--text2); margin-top: 2px; }
+.crate-caption .cc-meta { font-family: 'DM Mono', monospace; font-size: .72rem; color: var(--text3); margin-top: 6px; }
+@media (max-width: 640px) {
+  .crate-scroll { padding: 0 max(calc(50% - 110px), 12px); gap: 18px; }
+  .crate-card, .crate-art { width: 220px; }
+  .crate-art { height: 220px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crate-art { transition: none !important; transform: none !important; }
+}
+
 /* ── Polish ── */
 .shelf-scroll { scroll-snap-type: x proximity; }
 .shelf-card { scroll-snap-align: start; }
@@ -1233,19 +1292,19 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <div class="header-stats" id="header-stats"></div>
   <div class="header-actions">
     <span id="user-badge-display"></span>
-    <button class="btn btn-ghost btn-sm" onclick="openWheel()">🎲</button>
-    <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()">⚙️</button>
-    <button class="btn btn-ghost btn-sm" id="admin-switch-btn" onclick="openAdminLogin()" style="display:none">🔐</button>
-    <button class="btn btn-ghost btn-sm admin-only" id="drop-admin-btn" onclick="dropToGuest()" title="Guest mode">👁</button>
+    <button class="btn btn-ghost btn-sm" onclick="openWheel()" title="Spin the wheel"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17M3.5 12h17M6 6l12 12M18 6 6 18"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg></button>
+    <button class="btn btn-ghost btn-sm admin-only" onclick="openAdmin()" title="Admin panel"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8M12 18.7v2.8M2.5 12h2.8M18.7 12h2.8M5.2 5.2l2 2M16.8 16.8l2 2M18.8 5.2l-2 2M7.2 16.8l-2 2"/></svg></button>
+    <button class="btn btn-ghost btn-sm" id="admin-switch-btn" onclick="openAdminLogin()" style="display:none" title="Admin login"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></button>
+    <button class="btn btn-ghost btn-sm admin-only" id="drop-admin-btn" onclick="dropToGuest()" title="Guest mode"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/></svg></button>
   </div>
 </div>
 <!-- Top nav (desktop) -->
 <nav id="page-nav-top">
-  <div class="nav-tab active" id="ntop-home" onclick="navTo('home')">🏠 Home</div>
-  <div class="nav-tab" id="ntop-catalogue" onclick="navTo('catalogue')">🎵 Catalogue</div>
-  <div class="nav-tab" id="ntop-discover" onclick="navTo('discover')">✨ Discover</div>
-  <div class="nav-tab" id="ntop-sessions" onclick="navTo('sessions')">📖 Sessions</div>
-  <div class="nav-tab" id="ntop-settings" onclick="navTo('settings')">⚙ Settings</div>
+  <div class="nav-tab active" id="ntop-home" onclick="navTo('home')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.3V21h13V9.3"/></svg> Home</div>
+  <div class="nav-tab" id="ntop-catalogue" onclick="navTo('catalogue')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg> Catalogue</div>
+  <div class="nav-tab" id="ntop-discover" onclick="navTo('discover')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15 9-2.1 3.9L9 15l2.1-3.9z"/></svg> Discover</div>
+  <div class="nav-tab" id="ntop-sessions" onclick="navTo('sessions')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4.5h6a2 2 0 0 1 2 2V20a2 2 0 0 0-2-1.5H4z"/><path d="M20 4.5h-6a2 2 0 0 0-2 2V20a2 2 0 0 1 2-1.5h6z"/></svg> Sessions</div>
+  <div class="nav-tab" id="ntop-settings" onclick="navTo('settings')"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8M12 18.7v2.8M2.5 12h2.8M18.7 12h2.8M5.2 5.2l2 2M16.8 16.8l2 2M18.8 5.2l-2 2M7.2 16.8l-2 2"/></svg> Settings</div>
 </nav>
 
 <!-- Sidebar overlay -->
@@ -1253,11 +1312,11 @@ body.is-admin .admin-only-inline { display: inline-flex; }
 
 <!-- Mobile bottom nav -->
 <nav id="page-nav-bottom">
-  <div class="nav-tab-mobile active" id="nbot-home" onclick="navTo('home')"><span class="ni">🏠</span>Home</div>
-  <div class="nav-tab-mobile" id="nbot-catalogue" onclick="navTo('catalogue')"><span class="ni">🎵</span>Catalogue</div>
-  <div class="nav-tab-mobile" id="nbot-discover" onclick="navTo('discover')"><span class="ni">✨</span>Discover</div>
-  <div class="nav-tab-mobile" id="nbot-sessions" onclick="navTo('sessions')"><span class="ni">📖</span>Sessions</div>
-  <div class="nav-tab-mobile" id="nbot-settings" onclick="navTo('settings')"><span class="ni">⚙</span>Settings</div>
+  <div class="nav-tab-mobile active" id="nbot-home" onclick="navTo('home')"><svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.3V21h13V9.3"/></svg>Home</div>
+  <div class="nav-tab-mobile" id="nbot-catalogue" onclick="navTo('catalogue')"><svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>Catalogue</div>
+  <div class="nav-tab-mobile" id="nbot-discover" onclick="navTo('discover')"><svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="m15 9-2.1 3.9L9 15l2.1-3.9z"/></svg>Discover</div>
+  <div class="nav-tab-mobile" id="nbot-sessions" onclick="navTo('sessions')"><svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 4.5h6a2 2 0 0 1 2 2V20a2 2 0 0 0-2-1.5H4z"/><path d="M20 4.5h-6a2 2 0 0 0-2 2V20a2 2 0 0 1 2-1.5h6z"/></svg>Sessions</div>
+  <div class="nav-tab-mobile" id="nbot-settings" onclick="navTo('settings')"><svg class="ni-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.8M12 18.7v2.8M2.5 12h2.8M18.7 12h2.8M5.2 5.2l2 2M16.8 16.8l2 2M18.8 5.2l-2 2M7.2 16.8l-2 2"/></svg>Settings</div>
 </nav>
 
 <!-- HOME PAGE -->
@@ -1384,20 +1443,7 @@ body.is-admin .admin-only-inline { display: inline-flex; }
     <div class="sidebar-section">
       <div class="sidebar-title">Export</div>
       <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="exportCSV()">⬇ Export CSV</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:6px" onclick="exportJSON()">⬇ Export JSON</button>
-      <div class="sidebar-sep" style="margin-top:10px"></div>
-      <div class="sidebar-title">Bulk Fetch (Admin)</div>
-      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center" onclick="openBulkFetch('art')">🖼 Fetch All Art</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('bio')">👤 Fetch All Bios</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('desc')">📝 Fetch All Info</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('tracks')">🎵 Fetch All Tracks</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('credits')">🎼 Fetch Track Credits</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('lyrics')">🎤 Fetch Track Lyrics</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('spotify')">🎧 Match Spotify</button>
-      <button class="btn btn-ghost btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px" onclick="openBulkFetch('ainotes')">✨ AI Liner Notes</button>
-      <div class="sidebar-sep" style="margin-top:8px"></div>
-      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center;margin-top:5px;background:linear-gradient(135deg,var(--accent),var(--accent2))" onclick="openBulkFetch('all')">⚡ Fetch Everything</button>
-      <div style="font-size:.7rem;color:var(--text3);margin-top:8px;padding:0 2px;line-height:1.6" id="art-coverage-label"></div>
+      <button class="btn btn-primary btn-sm admin-only" style="width:100%;justify-content:center;margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2))" onclick="openBulkFetch('art')">⚡ Bulk fetch &amp; enrich</button>
     </div>
     <div class="sidebar-count" id="sidebar-count"></div>
   </div>
@@ -1405,21 +1451,25 @@ body.is-admin .admin-only-inline { display: inline-flex; }
   <!-- Main Content -->
   <div id="main">
     <div id="toolbar">
-      <button class="btn-icon" id="mobile-filter-btn" onclick="toggleSidebar()">⚙</button>
-      <input type="text" id="search-input" placeholder="🔍 Search artist, title, label…  ( / )" oninput="debouncedFilters()">
-      <select class="sort-select" id="sort-select" onchange="applyFilters()">
-        <option value="artist">Sort: Artist</option>
-        <option value="title">Sort: Title</option>
-        <option value="year">Sort: Year</option>
-        <option value="label">Sort: Label</option>
-        <option value="id">Sort: ID</option>
-      </select>
-      <div class="view-toggle">
-        <button class="btn-icon active" id="view-grid" onclick="setView('grid')" title="Grid view">⊞</button>
-        <button class="btn-icon" id="view-list" onclick="setView('list')" title="List view">≡</button>
+      <button class="btn-icon" id="mobile-filter-btn" onclick="toggleSidebar()" title="Filters"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v5.5l-4 2.5v-8z"/></svg></button>
+      <input type="text" id="search-input" placeholder="Search artist, title, label…  ( / )" oninput="debouncedFilters()">
+      <button class="btn-icon" id="toolbar-more" onclick="document.getElementById('toolbar-tools').classList.toggle('open')" title="View options"><svg class="ic" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>
+      <div class="toolbar-tools" id="toolbar-tools">
+        <select class="sort-select" id="sort-select" onchange="applyFilters()">
+          <option value="artist">Sort: Artist</option>
+          <option value="title">Sort: Title</option>
+          <option value="year">Sort: Year</option>
+          <option value="label">Sort: Label</option>
+          <option value="id">Sort: ID</option>
+        </select>
+        <div class="view-toggle">
+          <button class="btn-icon active" id="view-grid" onclick="setView('grid')" title="Grid view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></button>
+          <button class="btn-icon" id="view-list" onclick="setView('list')" title="List view"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg></button>
+          <button class="btn-icon" id="view-crate" onclick="setView('crate')" title="Crate view — flip through covers"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="10" rx="1.5"/><path d="M7.5 10V5.5M12 10V4M16.5 10V5.5"/></svg></button>
+        </div>
+        <button class="btn-icon" onclick="openColOrder()" title="Arrange columns"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="4.4" height="16" rx="1"/><rect x="9.8" y="4" width="4.4" height="16" rx="1"/><rect x="15.6" y="4" width="4.4" height="16" rx="1"/></svg></button>
       </div>
       <div class="toolbar-info" id="toolbar-info"></div>
-      <button class="btn-icon" onclick="openColOrder()" title="Arrange columns">⊟</button>
     </div>
     <div id="filter-chips" class="hidden"></div>
     <div id="catalogue-grid"></div>
@@ -1434,6 +1484,10 @@ body.is-admin .admin-only-inline { display: inline-flex; }
         <span></span>
       </div>
       <div id="list-rows"></div>
+    </div>
+    <div id="catalogue-crate" class="hidden">
+      <div class="crate-scroll" id="crate-scroll" onscroll="crateOnScroll()"></div>
+      <div class="crate-caption" id="crate-caption"></div>
     </div>
     <div class="empty-state hidden" id="empty-state">
       <div class="es-icon">🎵</div>
@@ -1814,9 +1868,12 @@ body.is-admin .admin-only-inline { display: inline-flex; }
       <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup All Data</button>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restore-input').click()">📂 Restore Backup</button>
       <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(event)">
+      <button class="btn btn-ghost btn-sm" onclick="exportJSON()">⬇ Export JSON</button>
       <button class="btn btn-ghost btn-sm" onclick="forgetDevice()" style="color:var(--danger)">🔓 Forget This Device</button>
     </div>
     <p style="font-size:.72rem;color:var(--text3);margin-top:8px">Backup saves all records, art, tracks, and bios to a JSON file.</p>
+    <div class="section-label" style="margin-top:16px">Data Coverage</div>
+    <div style="font-size:.74rem;color:var(--text3);line-height:1.7" id="art-coverage-label"></div>
   </div>
 </div>
 
@@ -3593,15 +3650,12 @@ function renderAll() {
   document.getElementById('empty-state').classList.toggle('hidden', count > 0);
   renderFilterChips();
 
-  if (currentView === 'grid') {
-    renderGrid();
-    document.getElementById('catalogue-grid').classList.remove('hidden');
-    document.getElementById('catalogue-list').classList.add('hidden');
-  } else {
-    renderList();
-    document.getElementById('catalogue-list').classList.remove('hidden');
-    document.getElementById('catalogue-grid').classList.add('hidden');
-  }
+  document.getElementById('catalogue-grid').classList.toggle('hidden', currentView !== 'grid');
+  document.getElementById('catalogue-list').classList.toggle('hidden', currentView !== 'list');
+  document.getElementById('catalogue-crate').classList.toggle('hidden', currentView !== 'crate');
+  if (currentView === 'grid')  renderGrid();
+  if (currentView === 'list')  renderList();
+  if (currentView === 'crate') renderCrate();
   updateStats();
 }
 
@@ -3728,7 +3782,77 @@ function setView(v) {
   currentView = v;
   document.getElementById('view-grid').classList.toggle('active', v==='grid');
   document.getElementById('view-list').classList.toggle('active', v==='list');
+  document.getElementById('view-crate').classList.toggle('active', v==='crate');
+  document.getElementById('toolbar-tools')?.classList.remove('open');
   renderAll();
+}
+
+// ── Crate view: flip through covers with 3D perspective ─
+let crateRaf = null;
+
+function renderCrate() {
+  const el = document.getElementById('crate-scroll');
+  el.innerHTML = filteredRecords.map((r, i) => `
+    <div class="crate-card" data-idx="${i}" onclick="crateClick(${i})">
+      <div class="crate-art" data-rid="${r.id}">
+        ${r.albumArt
+          ? `<img src="${r.albumArt}" alt="Cover of ${escHTML(r.title)}" loading="lazy" decoding="async" onerror="artFallback(this)">`
+          : sleeveHTML(r)}
+        ${r.notes === "Neville's Collection" ? '<div class="crate-ribbon">Neville’s</div>' : ''}
+      </div>
+    </div>`).join('');
+  crateApplyTransforms();
+}
+
+function crateOnScroll() {
+  if (crateRaf) return;
+  crateRaf = requestAnimationFrame(() => { crateRaf = null; crateApplyTransforms(); });
+}
+
+function crateApplyTransforms() {
+  const scroller = document.getElementById('crate-scroll');
+  if (!scroller || scroller.classList.contains('hidden')) return;
+  const mid = scroller.getBoundingClientRect().left + scroller.clientWidth / 2;
+  let best = null, bestDist = Infinity;
+  scroller.querySelectorAll('.crate-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const centre = rect.left + rect.width / 2;
+    const offset = (centre - mid) / rect.width;          // 0 = centred, ±1 = one card away
+    const clamped = Math.max(-2.5, Math.min(2.5, offset));
+    const art = card.firstElementChild;
+    art.style.transform =
+      `rotateY(${(-clamped * 28).toFixed(2)}deg)` +
+      ` translateZ(${(-Math.abs(clamped) * 90).toFixed(1)}px)` +
+      ` scale(${(1 - Math.abs(clamped) * 0.06).toFixed(3)})`;
+    const dist = Math.abs(offset);
+    if (dist < bestDist) { bestDist = dist; best = card; }
+  });
+  // Caption follows the centred record
+  const cap = document.getElementById('crate-caption');
+  if (best && cap) {
+    const r = filteredRecords[+best.dataset.idx];
+    if (r && cap.dataset.rid !== r.id) {
+      cap.dataset.rid = r.id;
+      cap.innerHTML = `
+        <div class="cc-artist">${escHTML(r.artist)}</div>
+        <div class="cc-title">${escHTML(r.title)}</div>
+        <div class="cc-meta">${[r.year, r.genre?.split(/[,\/]/)[0]?.trim(), r.label].filter(Boolean).join(' · ')}</div>`;
+    }
+  }
+}
+
+function crateClick(idx) {
+  const scroller = document.getElementById('crate-scroll');
+  const card = scroller.querySelector(`.crate-card[data-idx="${idx}"]`);
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const srect = scroller.getBoundingClientRect();
+  const offCentre = Math.abs((rect.left + rect.width / 2) - (srect.left + scroller.clientWidth / 2));
+  if (offCentre > rect.width * 0.4) {
+    card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  } else {
+    openDetail(filteredRecords[idx].id);
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -6206,7 +6330,7 @@ function closeDetail(fromHash) {
 // ═══════════════════════════════════════════════════════
 // VERSION
 // ═══════════════════════════════════════════════════════
-const APP_VERSION = 'v2.3';
+const APP_VERSION = 'v2.4';
 
 // ═══════════════════════════════════════════════════════
 // SETTINGS

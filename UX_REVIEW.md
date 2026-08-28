@@ -108,9 +108,9 @@ Ranked by impact-per-effort for a personal vinyl ritual app:
 | 3 | Hash routing: back button, deep links | ★★★★ | M | ✅ Done (v2.1) |
 | 4 | Prev/next in detail sheet + `/` search shortcut | ★★★★ | S | ✅ Done (v2.1) |
 | 5 | Spinning-record Now Playing | ★★★★ | M | ✅ Done (v2.1) |
-| 6 | Gold-discipline + contrast + SVG icon pass | ★★★ | M | ✅ Contrast + gold done; SVG icons pending |
-| 7 | Move bulk-fetch out of sidebar; mobile toolbar collapse | ★★★ | S | Pending |
-| 8 | Crate-flip view | ★★★ | L | Pending |
+| 6 | Gold-discipline + contrast + SVG icon pass | ★★★ | M | ✅ Done (v2.4) |
+| 7 | Move bulk-fetch out of sidebar; mobile toolbar collapse | ★★★ | S | ✅ Done (v2.4) |
+| 8 | Crate-flip view | ★★★ | L | ✅ Done (v2.4) |
 | 9 | Year in the Groove (wrapped) | ★★★ | M | ✅ Done (v2.1) |
 | 10 | A11y sweep (roles, focus, alt, reduced motion) | ★★★ | M | Partial: Esc/arrows, alt text, reduced-motion |
 
